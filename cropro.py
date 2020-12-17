@@ -297,6 +297,9 @@ class MainDialog(QDialog):
             # copy field tags into new note object
             newNote.tags = [tag for tag in otherNote.tags if tag != 'leech']
 
+            otherNote.addTag('exported')  # TODO: control tag
+            otherNote.flush()
+
             # check if note is dupe of existing one
             if newNote.dupeOrEmpty():
                 logDebug('dupe')
