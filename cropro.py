@@ -268,7 +268,7 @@ class MainDialog(QDialog):
             else:
                 logDebug('no matching model, copying')
                 copiedModel = deepcopy(otherNote._model) # do deep copy just to be safe. model is a dict, but might be nested
-                copiedModel['id'] = None
+                copiedModel['id'] = 0
                 mw.col.models.add(copiedModel)
                 matchingModel = copiedModel
 
