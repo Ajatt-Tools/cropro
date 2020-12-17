@@ -1,4 +1,4 @@
-'''
+"""
 Anki Add-on: Cross-Profile Search and Import
 version 0.2.1
 URL: https://ankiweb.net/shared/info/310394744
@@ -17,11 +17,13 @@ TODO:
 - Handle case where user has only one profile
 - Review duplicate checking: check by first field, or all fields?
 - When matching model is found, verify field count (or entire map?)
-'''
+"""
 
 import re
 from copy import deepcopy
+from typing import Optional, TextIO
 
+from anki.models import NoteType
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
@@ -30,20 +32,22 @@ from anki import Collection
 from anki.notes import Note
 
 #############################################################################
-### BEGIN OPTIONS
+# BEGIN OPTIONS
 #############################################################################
 
 MAX_DISPLAYED_NOTES = 100
 ENABLE_DEBUG_LOG = False
 
 #############################################################################
-### END OPTIONS
+# END OPTIONS
 #############################################################################
 
 logfile = None
 
 
-def logDebug(o):
+def logDebug(msg):
+    print('CroPro debug:', str(msg))
+
     if not ENABLE_DEBUG_LOG:
         return
 
@@ -51,7 +55,7 @@ def logDebug(o):
     if not logfile:
         fn = os.path.join(mw.pm.base, 'cropro.log')
         logfile = open(fn, 'a')
-    logfile.write(str(o) + '\n')
+    logfile.write(str(msg) + '\n')
     logfile.flush()
 
 
@@ -68,80 +72,45 @@ def htmlToTextLine(s):
     return s
 
 
-def getOtherProfileNames():
+def getOtherProfileNames() -> list:
     profiles = mw.pm.profiles()
     profiles.remove(mw.pm.name)
     return profiles
 
 
-def openProfileCollection(name):
+def openProfileCollection(name) -> Collection:
     # NOTE: this code is based on aqt/profiles.py; we can't really re-use what's there
     collectionFilename = os.path.join(mw.pm.base, name, 'collection.anki2')
     return Collection(collectionFilename)
 
 
-class MainDialog(QDialog):
+def getProfileDecks(col: Collection):
+    return sorted(col.decks.all(), key=lambda deck: deck["name"])
+
+
+class MainDialogUI(QDialog):
     def __init__(self):
-        super(MainDialog, self).__init__()
+        super(MainDialogUI, self).__init__(parent=mw)
 
-        self.otherProfileName = None
-        self.otherProfileCollection = None
-
+        self.noteCountLabel = QLabel('')
+        self.currentProfileDeckCombo = QComboBox()
+        self.importButton = QPushButton('Import')
+        self.tagCheckBox = QCheckBox("Tag cards as exported")
+        self.filterEdit = QLineEdit()
+        self.otherProfileNamesCombo = QComboBox()
+        self.otherProfileDeckCombo = QComboBox()
+        self.otherProfileCollection: Optional[Collection] = None
+        self.filterButton = QPushButton('Filter')
+        self.noteListView = QListView()
         self.initUI()
 
     def initUI(self):
-        self.otherProfileDeckCombo = QComboBox()
-
-        self.otherProfileCombo = QComboBox()
-        otherProfileNames = getOtherProfileNames()
-        if otherProfileNames:
-            self.otherProfileCombo.addItems(otherProfileNames)
-            self.otherProfileCombo.currentIndexChanged.connect(self.otherProfileComboChange)
-            self.handleSelectOtherProfile(otherProfileNames[0])
-
-        otherProfileDeckRow = QHBoxLayout()
-        otherProfileDeckRow.addWidget(QLabel('Import From Profile:'))
-        otherProfileDeckRow.addWidget(self.otherProfileCombo)
-        otherProfileDeckRow.addWidget(QLabel('Deck:'))
-        otherProfileDeckRow.addWidget(self.otherProfileDeckCombo)
-        otherProfileDeckRow.addStretch(1)
-
-        self.filterEdit = QLineEdit()
         self.filterEdit.setPlaceholderText('<text to filter by>')
 
-        filterButton = QPushButton('Filter')
+        self.setLayout(self.makeMainLayout())
+        self.setWindowTitle('Cross Profile Search and Import')
 
-        filterRow = QHBoxLayout()
-        filterRow.addWidget(self.filterEdit)
-        filterRow.addWidget(filterButton)
-
-        self.noteCountLabel = QLabel('')
-
-        self.noteListView = QListView()
-        self.noteListView.setResizeMode(self.noteListView.Fixed)
-        self.noteListView.setEditTriggers(self.noteListView.NoEditTriggers)
-        self.noteListModel = QStandardItemModel(self.noteListView)
-        self.noteListView.setModel(self.noteListModel)
-        self.noteListView.setSelectionMode(self.noteListView.ExtendedSelection)
-        self.noteListView.doubleClicked.connect(self.doImport)
-
-        currentProfileNameLabel = QLabel(mw.pm.name)
-        currentProfileNameLabelFont = QFont()
-        currentProfileNameLabelFont.setBold(True)
-        currentProfileNameLabel.setFont(currentProfileNameLabelFont)
-
-        self.currentProfileDeckCombo = QComboBox()
-        currentProfileDecks = mw.col.decks.all()
-        currentProfileDecks.sort(key=lambda d: d['name'])
-        selectedDeckId = mw.col.decks.selected()
-        selectedIndex = None
-        for idx, deck in enumerate(currentProfileDecks):
-            self.currentProfileDeckCombo.addItem(deck['name'], deck['id'])
-            if deck['id'] == selectedDeckId:
-                selectedIndex = idx
-        if selectedIndex is not None:
-            self.currentProfileDeckCombo.setCurrentIndex(selectedIndex)
-
+    def makeStatsRow(self):
         statsRow = QVBoxLayout()
 
         self.statSuccessLabel = QLabel()
@@ -159,41 +128,102 @@ class MainDialog(QDialog):
         self.statDupeLabel.hide()
         statsRow.addWidget(self.statDupeLabel)
 
+        return statsRow
+
+    def makeFilterRow(self):
+        filterRow = QHBoxLayout()
+        filterRow.addWidget(self.filterEdit)
+        filterRow.addWidget(self.filterButton)
+        return filterRow
+
+    def makeMainLayout(self):
+        mainVbox = QVBoxLayout()
+        mainVbox.addLayout(self.makeOtherProfileDeckCombo())
+
+        mainVbox.addLayout(self.makeFilterRow())
+        mainVbox.addWidget(self.noteCountLabel)
+        mainVbox.addWidget(self.noteListView)
+        mainVbox.addLayout(self.makeStatsRow())
+        mainVbox.addLayout(self.makeInputRow())
+        return mainVbox
+
+    def makeOtherProfileDeckCombo(self):
+        otherProfileDeckRow = QHBoxLayout()
+        otherProfileDeckRow.addWidget(QLabel('Import From Profile:'))
+        otherProfileDeckRow.addWidget(self.otherProfileNamesCombo)
+        otherProfileDeckRow.addWidget(QLabel('Deck:'))
+        otherProfileDeckRow.addWidget(self.otherProfileDeckCombo)
+        otherProfileDeckRow.addStretch(1)
+        return otherProfileDeckRow
+
+    def makeProfileNameLabel(self):
+        currentProfileNameLabel = QLabel(mw.pm.name)
+        currentProfileNameLabelFont = QFont()
+        currentProfileNameLabelFont.setBold(True)
+        currentProfileNameLabel.setFont(currentProfileNameLabelFont)
+        return currentProfileNameLabel
+
+    def makeInputRow(self):
         importRow = QHBoxLayout()
         importRow.addWidget(QLabel('Into Profile:'))
-        importRow.addWidget(currentProfileNameLabel)
+        importRow.addWidget(self.makeProfileNameLabel())
         importRow.addWidget(QLabel('Deck:'))
         importRow.addWidget(self.currentProfileDeckCombo)
 
-        importButton = QPushButton('Import')
-        importButton.clicked.connect(self.doImport)
-
-        importRow.addWidget(importButton)
+        importRow.addWidget(self.importButton)
         importRow.addStretch(1)
+        importRow.addWidget(self.tagCheckBox)
+        return importRow
 
-        mainVbox = QVBoxLayout()
-        mainVbox.addLayout(otherProfileDeckRow)
-        if not otherProfileNames:
-            noOtherProfilesWarningLabel = QLabel('This add-on only works if you have multiple profiles.')
-            noOtherProfilesWarningLabel.setStyleSheet('QLabel { color : red; }')
-            mainVbox.addWidget(noOtherProfilesWarningLabel)
-        mainVbox.addLayout(filterRow)
-        mainVbox.addWidget(self.noteCountLabel)
-        mainVbox.addWidget(self.noteListView)
-        mainVbox.addLayout(statsRow)
-        mainVbox.addLayout(importRow)
 
+class MainDialog(MainDialogUI):
+    def __init__(self):
+        super().__init__()
+        # TODO: this most likely should be a QListWidget instead
+        self.noteListModel = QStandardItemModel(self.noteListView)
+        self.connectElements()
+        self.otherProfileNames: Optional[list] = None
+
+    def connectElements(self):
+        self.noteListView.setResizeMode(self.noteListView.Fixed)
+        self.noteListView.setEditTriggers(self.noteListView.NoEditTriggers)
+        self.noteListView.setModel(self.noteListModel)
+        self.noteListView.setSelectionMode(self.noteListView.ExtendedSelection)
+
+        self.noteListView.doubleClicked.connect(self.doImport)
         self.otherProfileDeckCombo.currentIndexChanged.connect(self.updateNotesList)
-        filterButton.clicked.connect(self.updateNotesList)
+        self.importButton.clicked.connect(self.doImport)
+        self.filterButton.clicked.connect(self.updateNotesList)
+        self.otherProfileNamesCombo.currentIndexChanged.connect(self.otherProfileComboChange)
 
-        self.setLayout(mainVbox)
+    def show(self):
+        super().show()
+        self.populateUI()
 
-        self.setWindowTitle('Cross Profile Search and Import')
-        self.exec_()
+    def populateUI(self):
+        if not self.otherProfileNames:
+            self.otherProfileNames = getOtherProfileNames()
+            if not self.otherProfileNames:
+                msg: str = 'This add-on only works if you have multiple profiles.'
+                showInfo(msg)
+                logDebug(msg)
+                self.hide()
+                return
+
+            self.otherProfileNamesCombo.addItems(self.otherProfileNames)
+            self.populateCurrentProfileDecks()
+            self.tagCheckBox.setChecked(tag_exported_cards)
 
     def otherProfileComboChange(self):
-        newProfileName = self.otherProfileCombo.currentText()
+        newProfileName = self.otherProfileNamesCombo.currentText()
         self.handleSelectOtherProfile(newProfileName)
+
+    def populateCurrentProfileDecks(self):
+        selected_deck_id = mw.col.decks.selected()
+        for index, deck in enumerate(getProfileDecks(mw.col)):
+            self.currentProfileDeckCombo.addItem(deck['name'], deck['id'])
+            if deck['id'] == selected_deck_id:
+                self.currentProfileDeckCombo.setCurrentIndex(index)
 
     def updateNotesList(self):
         otherProfileDeckName = self.otherProfileDeckCombo.currentText()
@@ -213,7 +243,7 @@ class MainDialog(QDialog):
 
             noteIds = self.otherProfileCollection.findNotes(query)
             foundNoteCount = len(noteIds)
-            limitedNoteIds = noteIds[:MAX_DISPLAYED_NOTES]
+            limitedNoteIds = noteIds[:max_displayed_notes]
             displayedNoteCount = len(limitedNoteIds)
             # TODO: we could try to do this in a single sqlite query, but would be brittle
             for noteId in limitedNoteIds:
@@ -238,17 +268,49 @@ class MainDialog(QDialog):
             self.otherProfileCollection.close()
             self.otherProfileCollection = None
 
-        self.otherProfileName = name
         self.otherProfileCollection = openProfileCollection(name)
-
         self.otherProfileDeckCombo.clear()
-        self.otherProfileDeckCombo.addItems(sorted(self.otherProfileCollection.decks.allNames()))
+        other_profile_decks = [deck['name'] for deck in getProfileDecks(self.otherProfileCollection)]
+        self.otherProfileDeckCombo.addItems(other_profile_decks)
+
+    @staticmethod
+    def equalModels(type1: NoteType, type2: NoteType):
+        def getKeys(note_type: NoteType):
+            return [field['name'] for field in note_type['flds']]
+
+        return getKeys(type1) == getKeys(type2)
+
+    @staticmethod
+    def copyNoteModel(note: Note):
+        # do deep copy just to be safe. model is a dict, but might be nested
+        model_copy = deepcopy(note.model())
+        model_copy['id'] = 0
+        return model_copy
+
+    def copyMediaFiles(self, new_note: Note, other_note: Note) -> Note:
+        # check if there are any media files referenced by the note
+        media_references = self.otherProfileCollection.media.filesInStr(other_note.mid, other_note.joinedFields())
+
+        for filename in media_references:
+            logDebug(f'media file: {filename}')
+            filepath = os.path.join(self.otherProfileCollection.media.dir(), filename)
+
+            # referenced media might not exist, in which case we skip it
+            if not os.path.exists(filepath):
+                continue
+
+            logDebug('copying from %s' % filepath)
+            this_col_filename = mw.col.media.addFile(filepath)
+            # NOTE: this_col_filename may differ from original filename (name conflict, different contents),
+            # in which case we need to update the note.
+            if this_col_filename != filename:
+                logDebug(f'name conflict. new filename: {this_col_filename}')
+                new_note.fields = [field.replace(filename, this_col_filename) for field in new_note.fields]
+
+        return new_note
 
     def doImport(self):
         logDebug('beginning import')
-
-        currentProfileDeckId = self.currentProfileDeckCombo.itemData(self.currentProfileDeckCombo.currentIndex())
-        logDebug('current profile deck id %d' % currentProfileDeckId)
 
         # get the note ids of all selected notes
         noteIds = [self.noteListModel.itemFromIndex(idx).data() for idx in self.noteListView.selectedIndexes()]
@@ -259,7 +321,6 @@ class MainDialog(QDialog):
         logDebug('importing %d notes' % len(noteIds))
 
         statSuccess = 0
-        statNoMatchingModel = 0
         statDupe = 0
 
         for nid in noteIds:
@@ -272,33 +333,39 @@ class MainDialog(QDialog):
             logDebug('model name %r' % modelName)
 
             # find a model in current profile that matches the name of model from other profile
-            matchingModel = mw.col.models.byName(modelName)
-            if matchingModel:
-                # TODO: ensure that field map is same between two models (or same length?), otherwise skip or error?
-                logDebug('matching model found, id %s' % matchingModel['id'])
+            matching_model: NoteType = mw.col.models.byName(modelName)
+            if matching_model:
+                logDebug(f"matching model found. id = {matching_model['id']}.")
+                if not self.equalModels(matching_model, otherNote.model()):
+                    logDebug("models have mismatching fields. copying the other model.")
+                    matching_model = self.copyNoteModel(otherNote)
+                    matching_model['name'] += ' cropro'
+                    mw.col.models.add(matching_model)
             else:
                 logDebug('no matching model, copying')
-                # do deep copy just to be safe. model is a dict, but might be nested
-                copiedModel = deepcopy(otherNote.model())
-                copiedModel['id'] = 0
-                mw.col.models.add(copiedModel)
-                matchingModel = copiedModel
+                matching_model = self.copyNoteModel(otherNote)
+                mw.col.models.add(matching_model)
 
             # create a new note object
-            newNote = Note(mw.col, matchingModel)
+            newNote = Note(mw.col, matching_model)
             logDebug('new note %s %s' % (newNote.id, newNote.mid))
 
             # set the deck that the note will generate cards into
-            newNote.model()['did'] = currentProfileDeckId
+            current_profile_deck_id = self.currentProfileDeckCombo.currentData()
+            logDebug(f'current profile deck id: {current_profile_deck_id}')
+            newNote.model()['did'] = current_profile_deck_id
 
             # copy field values into new note object
             newNote.fields = otherNote.fields[:]  # list of strings, so clone it
 
             # copy field tags into new note object
+            # TODO: add a switch
             newNote.tags = [tag for tag in otherNote.tags if tag != 'leech']
 
-            otherNote.addTag('exported')  # TODO: control tag
-            otherNote.flush()
+            if self.tagCheckBox.isChecked():
+                # TODO: control the tag
+                otherNote.addTag('exported')
+                otherNote.flush()
 
             # check if note is dupe of existing one
             if newNote.dupeOrEmpty():
@@ -306,41 +373,19 @@ class MainDialog(QDialog):
                 statDupe += 1
                 continue
 
-            # check if there are any media files referenced by the note
-            mediaFiles = self.otherProfileCollection.media.filesInStr(otherNote.mid, otherNote.joinedFields())
-            logDebug('mediaFiles %s' % (mediaFiles,))
-            for fn in mediaFiles:
-                fullfn = os.path.join(self.otherProfileCollection.media.dir(), fn)
+            self.copyMediaFiles(newNote, otherNote)
 
-                # referenced media might not exist, in which case we skip it
-                if not os.path.exists(fullfn):
-                    continue
-
-                logDebug('copying from %s' % fullfn)
-                addedFn = mw.col.media.addFile(fullfn)
-                # NOTE: addedFn may differ from fn (name conflict, different contents), in which case we need to update the note.
-                if addedFn != fn:
-                    logDebug('name conflict')
-                    newNote.fields = [f.replace(fn, addedFn) for f in newNote.fields]
-
-            addedCardCount = mw.col.addNote(newNote)
+            mw.col.addNote(newNote)
 
             statSuccess += 1
 
         if statSuccess:
             mw.requireReset()
-
-        if statSuccess:
             self.statSuccessLabel.setText('%d notes successfully imported' % statSuccess)
             self.statSuccessLabel.show()
         else:
             self.statSuccessLabel.hide()
-        if statNoMatchingModel:
-            self.statNoMatchingModelLabel.setText(
-                '%d notes failed to import because there is no matching Note Type in the current profile' % statNoMatchingModel)
-            self.statNoMatchingModelLabel.show()
-        else:
-            self.statNoMatchingModelLabel.hide()
+
         if statDupe:
             self.statDupeLabel.setText('%d notes were duplicates, and skipped' % statDupe)
             self.statDupeLabel.show()
@@ -356,11 +401,14 @@ class MainDialog(QDialog):
         QDialog.reject(self)
 
 
+dialog: MainDialog = MainDialog()
+
+
 def addMenuItem():
     a = QAction(mw)
     a.setText('Cross Profile Search and Import')
     mw.form.menuTools.addAction(a)
-    a.triggered.connect(MainDialog)
+    a.triggered.connect(dialog.show)
 
 
 addMenuItem()
