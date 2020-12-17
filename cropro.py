@@ -294,6 +294,9 @@ class MainDialog(QDialog):
             # copy field values into new note object
             newNote.fields = otherNote.fields[:]  # list of strings, so clone it
 
+            # copy field tags into new note object
+            newNote.tags = [tag for tag in otherNote.tags if tag != 'leech']
+
             # check if note is dupe of existing one
             if newNote.dupeOrEmpty():
                 logDebug('dupe')
