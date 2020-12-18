@@ -24,10 +24,10 @@ from copy import deepcopy
 from typing import Optional, TextIO
 
 from anki.models import NoteType
+from anki.utils import htmlToTextLine
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
-from anki.utils import stripHTMLMedia
 from anki import Collection
 from anki.notes import Note
 
@@ -61,20 +61,6 @@ def logDebug(msg):
         logfile = open(fn, 'a')
     logfile.write(str(msg) + '\n')
     logfile.flush()
-
-
-# backported from Anki 2.1 anki/utils.py
-def htmlToTextLine(s):
-    s = s.replace("<br>", " ")
-    s = s.replace("<br />", " ")
-    s = s.replace("<div>", " ")
-    s = s.replace("\n", " ")
-    s = re.sub("\[sound:[^]]+\]", "", s)
-    s = re.sub("\[\[type:[^]]+\]\]", "", s)
-    s = stripHTMLMedia(s)
-    s = s.strip()
-    return s
-
 
 def getOtherProfileNames() -> list:
     profiles = mw.pm.profiles()
