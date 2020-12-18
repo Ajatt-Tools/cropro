@@ -285,9 +285,9 @@ class MainDialog(MainDialogUI):
         return getKeys(type1) == getKeys(type2)
 
     @staticmethod
-    def copyNoteModel(note: Note):
+    def copyNoteModel(model: NoteType):
         # do deep copy just to be safe. model is a dict, but might be nested
-        model_copy = deepcopy(note.model())
+        model_copy = deepcopy(model)
         model_copy['id'] = 0
         return model_copy
 
@@ -313,42 +313,47 @@ class MainDialog(MainDialogUI):
 
         return new_note
 
+    def findMatchingModel(self, reference_model: NoteType) -> NoteType:
+        # find the model name of the note
+        required_model_name = reference_model.get('name')
+        logDebug(f'model name: {required_model_name}')
+
+        # find a model in current profile that matches the name of model from other profile
+        matching_model: NoteType = mw.col.models.byName(required_model_name)
+        if matching_model:
+            logDebug(f"matching model found. id = {matching_model['id']}.")
+            if not self.equalModels(matching_model, reference_model):
+                logDebug("models have mismatching fields. copying the other model.")
+                matching_model = self.copyNoteModel(reference_model)
+                matching_model['name'] += ' cropro'
+        else:
+            logDebug('no matching model, copying')
+            matching_model = self.copyNoteModel(reference_model)
+
+        return matching_model
+
     def doImport(self):
         logDebug('beginning import')
 
         # get the note ids of all selected notes
-        noteIds = [self.noteListModel.itemFromIndex(idx).data() for idx in self.noteListView.selectedIndexes()]
+        note_ids = [self.noteListModel.itemFromIndex(idx).data() for idx in self.noteListView.selectedIndexes()]
 
         # clear the selection
         self.noteListView.clearSelection()
 
-        logDebug('importing %d notes' % len(noteIds))
+        logDebug('importing %d notes' % len(note_ids))
 
         statSuccess = 0
         statDupe = 0
 
-        for nid in noteIds:
+        for nid in note_ids:
             # load the note
             logDebug('import note id %d' % nid)
             otherNote: Note = self.otherProfileCollection.getNote(nid)
 
-            # find the model name of the note
-            modelName = otherNote.model().get('name')
-            logDebug('model name %r' % modelName)
-
             # find a model in current profile that matches the name of model from other profile
-            matching_model: NoteType = mw.col.models.byName(modelName)
-            if matching_model:
-                logDebug(f"matching model found. id = {matching_model['id']}.")
-                if not self.equalModels(matching_model, otherNote.model()):
-                    logDebug("models have mismatching fields. copying the other model.")
-                    matching_model = self.copyNoteModel(otherNote)
-                    matching_model['name'] += ' cropro'
-                    mw.col.models.add(matching_model)
-            else:
-                logDebug('no matching model, copying')
-                matching_model = self.copyNoteModel(otherNote)
-                mw.col.models.add(matching_model)
+            matching_model: NoteType = self.findMatchingModel(otherNote.model())
+            mw.col.models.add(matching_model)
 
             # create a new note object
             newNote = Note(mw.col, matching_model)
@@ -373,7 +378,7 @@ class MainDialog(MainDialogUI):
 
             # check if note is dupe of existing one
             if newNote.dupeOrEmpty():
-                logDebug('dupe')
+                logDebug(f"note #{newNote['id']} is duplicate. skipping.")
                 statDupe += 1
                 continue
 
