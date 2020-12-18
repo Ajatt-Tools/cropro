@@ -35,25 +35,29 @@ from anki.notes import Note
 # BEGIN OPTIONS
 #############################################################################
 
-MAX_DISPLAYED_NOTES = 100
-ENABLE_DEBUG_LOG = False
+config: dict = mw.addonManager.getConfig(__name__)
+
+max_displayed_notes = config.get('max_displayed_notes', 100)
+enable_debug_log = config.get('enable_debug_log', True)
+tag_exported_cards = config.get('tag_exported_cards', True)
 
 #############################################################################
 # END OPTIONS
 #############################################################################
 
-logfile = None
+logfile: Optional[TextIO] = None
 
 
 def logDebug(msg):
-    print('CroPro debug:', str(msg))
-
-    if not ENABLE_DEBUG_LOG:
+    if not enable_debug_log:
         return
+
+    print('CroPro debug:', str(msg))
 
     global logfile
     if not logfile:
         fn = os.path.join(mw.pm.base, 'cropro.log')
+        print(f'opening log file: {fn}')
         logfile = open(fn, 'a')
     logfile.write(str(msg) + '\n')
     logfile.flush()
