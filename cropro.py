@@ -28,6 +28,7 @@ from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import htmlToTextLine
 from aqt import mw
+from .previewer import CroProPreviewer
 from aqt.qt import *
 from aqt.utils import showInfo
 
@@ -232,10 +233,15 @@ class MainDialog(MainDialogUI):
         self.noteList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def connectElements(self):
+        self.noteList.itemDoubleClicked.connect(self.previewCard)
         self.otherProfileDeckCombo.currentIndexChanged.connect(self.updateNotesList)
         self.importButton.clicked.connect(self.doImport)
         self.filterButton.clicked.connect(self.updateNotesList)
         self.otherProfileNamesCombo.currentIndexChanged.connect(self.otherProfileComboChange)
+
+    def previewCard(self):
+        a = CroProPreviewer(parent=self, mw=mw)
+        a.open()
 
     def show(self):
         super().show()
