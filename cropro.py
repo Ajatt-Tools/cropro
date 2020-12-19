@@ -78,6 +78,40 @@ def getProfileDecks(col: Collection):
     return sorted(col.decks.all(), key=lambda deck: deck["name"])
 
 
+def equalModels(type1: NoteType, type2: NoteType):
+    def getKeys(note_type: NoteType):
+        return [field['name'] for field in note_type['flds']]
+
+    return getKeys(type1) == getKeys(type2)
+
+
+def copyNoteModel(model: NoteType):
+    # do deep copy just to be safe. model is a dict, but might be nested
+    model_copy = deepcopy(model)
+    model_copy['id'] = 0
+    return model_copy
+
+
+def findMatchingModel(reference_model: NoteType) -> NoteType:
+    # find the model name of the note
+    required_model_name = reference_model.get('name')
+    logDebug(f'model name: {required_model_name}')
+
+    # find a model in current profile that matches the name of model from other profile
+    matching_model: NoteType = mw.col.models.byName(required_model_name)
+    if matching_model:
+        logDebug(f"matching model found. id = {matching_model['id']}.")
+        if not equalModels(matching_model, reference_model):
+            logDebug("models have mismatching fields. copying the other model.")
+            matching_model = copyNoteModel(reference_model)
+            matching_model['name'] += ' cropro'
+    else:
+        logDebug('no matching model, copying')
+        matching_model = copyNoteModel(reference_model)
+
+    return matching_model
+
+
 class MainDialogUI(QDialog):
     def __init__(self):
         super(MainDialogUI, self).__init__(parent=mw)
@@ -263,20 +297,6 @@ class MainDialog(MainDialogUI):
         other_profile_decks = [deck['name'] for deck in getProfileDecks(self.otherProfileCollection)]
         self.otherProfileDeckCombo.addItems(other_profile_decks)
 
-    @staticmethod
-    def equalModels(type1: NoteType, type2: NoteType):
-        def getKeys(note_type: NoteType):
-            return [field['name'] for field in note_type['flds']]
-
-        return getKeys(type1) == getKeys(type2)
-
-    @staticmethod
-    def copyNoteModel(model: NoteType):
-        # do deep copy just to be safe. model is a dict, but might be nested
-        model_copy = deepcopy(model)
-        model_copy['id'] = 0
-        return model_copy
-
     def copyMediaFiles(self, new_note: Note, other_note: Note) -> Note:
         # check if there are any media files referenced by the note
         media_references = self.otherProfileCollection.media.filesInStr(other_note.mid, other_note.joinedFields())
@@ -299,24 +319,6 @@ class MainDialog(MainDialogUI):
 
         return new_note
 
-    def findMatchingModel(self, reference_model: NoteType) -> NoteType:
-        # find the model name of the note
-        required_model_name = reference_model.get('name')
-        logDebug(f'model name: {required_model_name}')
-
-        # find a model in current profile that matches the name of model from other profile
-        matching_model: NoteType = mw.col.models.byName(required_model_name)
-        if matching_model:
-            logDebug(f"matching model found. id = {matching_model['id']}.")
-            if not self.equalModels(matching_model, reference_model):
-                logDebug("models have mismatching fields. copying the other model.")
-                matching_model = self.copyNoteModel(reference_model)
-                matching_model['name'] += ' cropro'
-        else:
-            logDebug('no matching model, copying')
-            matching_model = self.copyNoteModel(reference_model)
-
-        return matching_model
 
     def doImport(self):
         logDebug('beginning import')
