@@ -1,5 +1,10 @@
 {
   "max_displayed_notes": 500,
   "enable_debug_log": true,
-  "tag_exported_cards": true
+  "tag_exported_cards": true,
+  "bad_fields": [
+    "furigana",
+    "image",
+    "audio"
+  ]
 }

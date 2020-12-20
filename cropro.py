@@ -36,12 +36,17 @@ from aqt.utils import showInfo
 # BEGIN OPTIONS
 #############################################################################
 
-config: dict = mw.addonManager.getConfig(__name__)
 
-max_displayed_notes = config.get('max_displayed_notes', 100)
-enable_debug_log = config.get('enable_debug_log', True)
-tag_exported_cards = config.get('tag_exported_cards', True)
-bad_fields = ['furigana', 'image', 'audio']
+def getConfig() -> dict:
+    _config: dict = mw.addonManager.getConfig(__name__)
+
+    _config['max_displayed_notes'] = _config.get('max_displayed_notes', 100)
+    _config['enable_debug_log'] = _config.get('enable_debug_log', True)
+    _config['tag_exported_cards'] = _config.get('tag_exported_cards', True)
+    _config['bad_fields'] = _config.get('bad_fields', ['furigana', 'image', 'audio'])
+
+    return _config
+
 
 #############################################################################
 # END OPTIONS
@@ -51,7 +56,7 @@ logfile: Optional[TextIO] = None
 
 
 def logDebug(msg):
-    if not enable_debug_log:
+    if not config['enable_debug_log']:
         return
 
     print('CroPro debug:', str(msg))
@@ -86,7 +91,7 @@ def trim(string: str) -> str:
 
 
 def blocked_field(field_name: str) -> bool:
-    for badword in bad_fields:
+    for badword in config['bad_fields']:
         if badword.lower() in field_name.lower():
             return True
     return False
@@ -260,7 +265,7 @@ class MainDialog(MainDialogUI):
         self.otherProfileNamesCombo.addItems(self.otherProfileNames)
 
         self.populateCurrentProfileDecks()
-        self.tagCheckBox.setChecked(tag_exported_cards)
+        self.tagCheckBox.setChecked(config['tag_exported_cards'])
 
     def otherProfileComboChange(self):
         new_profile_name = self.otherProfileNamesCombo.currentText()
@@ -298,7 +303,7 @@ class MainDialog(MainDialogUI):
             note_ids = self.otherProfileCollection.findNotes(query)
 
             found_note_count = len(note_ids)
-            limited_note_ids = note_ids[:max_displayed_notes]
+            limited_note_ids = note_ids[:config['max_displayed_notes']]
             displayed_note_count = len(limited_note_ids)
             # TODO: we could try to do this in a single sqlite query, but would be brittle
             for noteId in limited_note_ids:
@@ -430,6 +435,7 @@ class MainDialog(MainDialogUI):
         QDialog.reject(self)
 
 
+config: dict = getConfig()
 dialog: MainDialog = MainDialog()
 
 
