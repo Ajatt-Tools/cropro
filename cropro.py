@@ -252,10 +252,8 @@ class MainDialog(MainDialogUI):
         self.populateUI()
 
     def populateUI(self):
-        # 1) If the combo box is emtpy the window is opened for the first time.
-        # 2) If it happens to contain the current profile name the user has switched profiles.
-        if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
-            logDebug("Populating other profiles.")
+        def populateOtherProfileNames():
+            logDebug("populating other profiles.")
 
             other_profile_names = getOtherProfileNames()
             if not other_profile_names:
@@ -268,7 +266,21 @@ class MainDialog(MainDialogUI):
             self.otherProfileNamesCombo.clear()
             self.otherProfileNamesCombo.addItems(other_profile_names)
 
-            self.populateCurrentProfileDecks()
+        def populateCurrentProfileDecks():
+            logDebug("populating current profile decks.")
+
+            self.currentProfileDeckCombo.clear()
+            selected_deck_id = mw.col.decks.selected()
+            for index, deck in enumerate(getProfileDecks(mw.col)):
+                self.currentProfileDeckCombo.addItem(deck['name'], deck['id'])
+                if deck['id'] == selected_deck_id:
+                    self.currentProfileDeckCombo.setCurrentIndex(index)
+
+        # 1) If the combo box is emtpy the window is opened for the first time.
+        # 2) If it happens to contain the current profile name the user has switched profiles.
+        if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
+            populateOtherProfileNames()
+            populateCurrentProfileDecks()
             self.tagCheckBox.setChecked(config['tag_exported_cards'])
 
     def closeOtherCol(self):
@@ -284,15 +296,6 @@ class MainDialog(MainDialogUI):
         self.otherProfileDeckCombo.clear()
         for deck in getProfileDecks(self.otherProfileCollection):
             self.otherProfileDeckCombo.addItem(deck['name'], deck['id'])
-
-    def populateCurrentProfileDecks(self):
-        logDebug("Populating current profile decks.")
-        self.currentProfileDeckCombo.clear()
-        selected_deck_id = mw.col.decks.selected()
-        for index, deck in enumerate(getProfileDecks(mw.col)):
-            self.currentProfileDeckCombo.addItem(deck['name'], deck['id'])
-            if deck['id'] == selected_deck_id:
-                self.currentProfileDeckCombo.setCurrentIndex(index)
 
     def updateNotesList(self):
         if self.otherProfileDeckCombo.count() < 1:
