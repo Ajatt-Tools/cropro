@@ -232,7 +232,6 @@ class MainDialog(MainDialogUI):
     def __init__(self):
         super().__init__()
         self.otherProfileCollection: Optional[Collection] = None
-        self.otherProfileNames: Optional[list] = None
         self.connectElements()
         self.noteList.setAlternatingRowColors(True)
         self.noteList.setSelectionMode(QAbstractItemView.ExtendedSelection)
@@ -242,7 +241,7 @@ class MainDialog(MainDialogUI):
         self.otherProfileDeckCombo.currentIndexChanged.connect(self.updateNotesList)
         self.importButton.clicked.connect(self.doImport)
         self.filterButton.clicked.connect(self.updateNotesList)
-        self.otherProfileNamesCombo.currentIndexChanged.connect(self.otherProfileComboChange)
+        self.otherProfileNamesCombo.currentIndexChanged.connect(self.openOtherCol)
 
     def previewCard(self):
         a = CroProPreviewer(parent=self, mw=mw)
@@ -253,25 +252,41 @@ class MainDialog(MainDialogUI):
         self.populateUI()
 
     def populateUI(self):
-        self.otherProfileNames = getOtherProfileNames()
-        if not self.otherProfileNames:
-            msg: str = 'This add-on only works if you have multiple profiles.'
-            showInfo(msg)
-            logDebug(msg)
-            self.hide()
-            return
+        # 1) If the combo box is emtpy the window is opened for the first time.
+        # 2) If it happens to contain the current profile name the user has switched profiles.
+        if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
+            logDebug("Populating other profiles.")
 
-        self.otherProfileNamesCombo.clear()
-        self.otherProfileNamesCombo.addItems(self.otherProfileNames)
+            other_profile_names = getOtherProfileNames()
+            if not other_profile_names:
+                msg: str = 'This add-on only works if you have multiple profiles.'
+                showInfo(msg)
+                logDebug(msg)
+                self.hide()
+                return
 
-        self.populateCurrentProfileDecks()
-        self.tagCheckBox.setChecked(config['tag_exported_cards'])
+            self.otherProfileNamesCombo.clear()
+            self.otherProfileNamesCombo.addItems(other_profile_names)
 
-    def otherProfileComboChange(self):
-        new_profile_name = self.otherProfileNamesCombo.currentText()
-        self.handleSelectOtherProfile(new_profile_name)
+            self.populateCurrentProfileDecks()
+            self.tagCheckBox.setChecked(config['tag_exported_cards'])
+
+    def closeOtherCol(self):
+        if self.otherProfileCollection is not None:
+            self.otherProfileCollection.close()
+            self.otherProfileCollection = None
+
+    def openOtherCol(self):
+        # Close current collection object, if any
+        self.closeOtherCol()
+
+        self.otherProfileCollection = openProfileCollection(self.otherProfileNamesCombo.currentText())
+        self.otherProfileDeckCombo.clear()
+        for deck in getProfileDecks(self.otherProfileCollection):
+            self.otherProfileDeckCombo.addItem(deck['name'], deck['id'])
 
     def populateCurrentProfileDecks(self):
+        logDebug("Populating current profile decks.")
         self.currentProfileDeckCombo.clear()
         selected_deck_id = mw.col.decks.selected()
         for index, deck in enumerate(getProfileDecks(mw.col)):
@@ -323,14 +338,6 @@ class MainDialog(MainDialogUI):
             self.noteCountLabel.setText(f'{found_note_count} notes found')
         else:
             self.noteCountLabel.setText(f'{found_note_count} notes found (displaying first {displayed_note_count})')
-
-    def handleSelectOtherProfile(self, name):
-        # Close current collection object, if any
-        self.closeOtherCol()
-        self.otherProfileCollection = openProfileCollection(name)
-        self.otherProfileDeckCombo.clear()
-        for deck in getProfileDecks(self.otherProfileCollection):
-            self.otherProfileDeckCombo.addItem(deck['name'], deck['id'])
 
     def copyMediaFiles(self, new_note: Note, other_note: Note) -> Note:
         # check if there are any media files referenced by the note
@@ -424,26 +431,23 @@ class MainDialog(MainDialogUI):
         else:
             self.statDupeLabel.hide()
 
-    def closeOtherCol(self):
-        if self.otherProfileCollection is not None:
-            self.otherProfileCollection.close()
-            self.otherProfileCollection = None
-
     def reject(self):
         self.closeOtherCol()
         mw.maybeReset()
         QDialog.reject(self)
 
 
+######################################################################
+# Entry point
+######################################################################
+
+# Read config file
 config: dict = getConfig()
+# init dialog
 dialog: MainDialog = MainDialog()
-
-
-def addMenuItem():
-    a = QAction(mw)
-    a.setText('Cross Profile Search and Import')
-    mw.form.menuTools.addAction(a)
-    a.triggered.connect(dialog.show)
-
-
-addMenuItem()
+# create a new menu item
+action = QAction('Cross Profile Search and Import', mw)
+# set it to call show function when it's clicked
+action.triggered.connect(dialog.show)
+# and add it to the tools menu
+mw.form.menuTools.addAction(action)
