@@ -235,14 +235,14 @@ class MainDialog(MainDialogUI):
         self.populate_ui()
 
     def populate_ui(self):
+        self.populate_note_type_selection_combo()
+        self.populate_current_profile_decks()
         # 1) If the combo box is emtpy the window is opened for the first time.
         # 2) If it happens to contain the current profile name the user has switched profiles.
         if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
             self.populate_other_profile_names()
-            self.populate_current_profile_decks()
             self.tagCheckBox.setChecked(config['tag_exported_cards'])
             self.into_profile_label.setText(mw.pm.name or 'Unknown')
-            self.populate_note_type_selection_combo()
 
     def populate_other_profile_names(self):
         logDebug("populating other profiles.")
