@@ -18,10 +18,11 @@ TODO:
 - Review duplicate checking: check by first field, or all fields?
 - When matching model is found, verify field count (or entire map?)
 """
-
+import json
+import os.path
 import re
 from copy import deepcopy
-from typing import Optional, TextIO
+from typing import Optional, TextIO, Tuple
 
 from anki.collection import Collection
 from anki.models import NoteType
@@ -54,6 +55,10 @@ def logDebug(msg):
     logfile.write(str(msg) + '\n')
     logfile.flush()
     print('CroPro debug:', str(msg))
+
+
+def invalid_note_type() -> Tuple[str, int]:
+    return 'None', 0
 
 
 def getOtherProfileNames() -> list:
@@ -183,6 +188,7 @@ class MainDialogUI(QDialog):
         for combo in (
                 self.otherProfileNamesCombo,
                 self.otherProfileDeckCombo,
+                self.currentProfileDeckCombo,
                 self.note_type_selection_combo,
         ):
             combo.setMinimumWidth(combo_min_width)
@@ -216,9 +222,41 @@ class MainDialogUI(QDialog):
 #############################################################################
 
 
+class WindowState:
+    def __init__(self, window: MainDialogUI):
+        self.window = window
+        self.json_filepath = os.path.join(os.path.dirname(__file__), 'window_state.json')
+        self.map = {
+            'other_profile_name': self.window.otherProfileNamesCombo,
+            'other_profile_deck_name': self.window.otherProfileDeckCombo,
+            'current_profile_deck': self.window.currentProfileDeckCombo,
+            'current_profile_note_type': self.window.note_type_selection_combo,
+        }
+        self.state = dict()
+
+    def save(self):
+        for key, widget in self.map.items():
+            self.state[key] = widget.currentText()
+        with open(self.json_filepath, 'w') as of:
+            json.dump(self.state, of, indent=4)
+
+    def restore(self):
+        if list(self.state.keys()) == list(self.map.keys()):
+            for key, widget in self.map.items():
+                widget.setCurrentText(self.state[key])
+        else:
+            if not os.path.isfile(self.json_filepath):
+                return
+            with open(self.json_filepath) as f:
+                self.state = json.load(f)
+            for key, widget in self.map.items():
+                widget.setCurrentText(self.state[key])
+
+
 class MainDialog(MainDialogUI):
     def __init__(self):
         super().__init__()
+        self.window_state = WindowState(self)
         self.otherProfileCollection: Optional[Collection] = None
         self.connectElements()
         self.noteList.setAlternatingRowColors(True)
@@ -248,6 +286,7 @@ class MainDialog(MainDialogUI):
             self.populate_other_profile_names()
             self.tagCheckBox.setChecked(config['tag_exported_cards'])
             self.into_profile_label.setText(mw.pm.name or 'Unknown')
+        self.window_state.restore()
 
     def populate_other_profile_names(self):
         logDebug("populating other profiles.")
@@ -275,6 +314,7 @@ class MainDialog(MainDialogUI):
 
     def populate_note_type_selection_combo(self):
         self.note_type_selection_combo.clear()
+        self.note_type_selection_combo.addItem(*invalid_note_type())
         for note_type in mw.col.models.all_names_and_ids():
             self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 
@@ -433,8 +473,8 @@ class MainDialog(MainDialogUI):
             self.statDupeLabel.hide()
 
     def reject(self):
+        self.window_state.save()
         self.closeOtherCol()  # TODO error?
-        mw.maybeReset()
         QDialog.reject(self)
 
 
