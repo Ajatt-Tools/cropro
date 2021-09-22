@@ -23,14 +23,16 @@ import re
 from copy import deepcopy
 from typing import Optional, TextIO
 
-from anki import Collection
+from anki.collection import Collection
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import htmlToTextLine
 from aqt import mw
-from .previewer import CroProPreviewer
 from aqt.qt import *
 from aqt.utils import showInfo
+
+from .previewer import CroProPreviewer
+
 
 #############################################################################
 # BEGIN OPTIONS
@@ -59,15 +61,14 @@ def logDebug(msg):
     if not config['enable_debug_log']:
         return
 
-    print('CroPro debug:', str(msg))
-
     global logfile
     if not logfile:
         fn = os.path.join(mw.pm.base, 'cropro.log')
-        print(f'opening log file: {fn}')
+        print(f'CroPro debug: opening log file "{fn}"')
         logfile = open(fn, 'a')
     logfile.write(str(msg) + '\n')
     logfile.flush()
+    print('CroPro debug:', str(msg))
 
 
 def getOtherProfileNames() -> list:
@@ -137,8 +138,8 @@ def findMatchingModel(reference_model: NoteType) -> NoteType:
 
 
 class MainDialogUI(QDialog):
-    def __init__(self):
-        super(MainDialogUI, self).__init__(parent=mw)
+    def __init__(self, *args, **kwargs):
+        super(MainDialogUI, self).__init__(parent=mw, *args, **kwargs)
 
         self.statSuccessLabel = QLabel()
         self.statNoMatchingModelLabel = QLabel()
@@ -152,12 +153,14 @@ class MainDialogUI(QDialog):
         self.otherProfileDeckCombo = QComboBox()
         self.filterButton = QPushButton('Filter')
         self.noteList = QListWidget()
+        self.settingsButton = QPushButton('Preferences')
         self.initUI()
 
     def initUI(self):
         self.filterEdit.setPlaceholderText('<text to filter by>')
         self.setLayout(self.makeMainLayout())
         self.setWindowTitle('Cross Profile Search and Import')
+        self.setDefaults()
 
     def makeStatsRow(self):
         stats_row = QVBoxLayout()
@@ -199,7 +202,17 @@ class MainDialogUI(QDialog):
         other_profile_deck_row.addWidget(QLabel('Deck:'))
         other_profile_deck_row.addWidget(self.otherProfileDeckCombo)
         other_profile_deck_row.addStretch(1)
+        other_profile_deck_row.addWidget(self.settingsButton)
+
         return other_profile_deck_row
+
+    def setDefaults(self):
+        icon_path = os.path.join(os.path.dirname(__file__), 'gear.svg')
+        combo_min_width = 120
+        self.setMinimumSize(640, 360)
+        self.settingsButton.setIcon(QIcon(icon_path))
+        self.otherProfileNamesCombo.setMinimumWidth(combo_min_width)
+        self.otherProfileDeckCombo.setMinimumWidth(combo_min_width)
 
     @staticmethod
     def makeProfileNameLabel():
@@ -300,6 +313,9 @@ class MainDialog(MainDialogUI):
     def updateNotesList(self):
         if self.otherProfileDeckCombo.count() < 1:
             return
+
+        if self.otherProfileCollection is None:
+            self.openOtherCol()
 
         self.noteList.clear()
         other_profile_deck_name = self.otherProfileDeckCombo.currentText()
@@ -435,7 +451,7 @@ class MainDialog(MainDialogUI):
             self.statDupeLabel.hide()
 
     def reject(self):
-        self.closeOtherCol()
+        self.closeOtherCol()  # TODO error?
         mw.maybeReset()
         QDialog.reject(self)
 
