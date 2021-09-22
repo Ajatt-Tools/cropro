@@ -275,8 +275,8 @@ class MainDialog(MainDialogUI):
 
     def populate_note_type_selection_combo(self):
         self.note_type_selection_combo.clear()
-        for name, note_id in mw.col.models.all_names_and_ids():
-            self.note_type_selection_combo.addItem(name, note_id)
+        for note_type in mw.col.models.all_names_and_ids():
+            self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 
     def closeOtherCol(self):
         if self.otherProfileCollection is not None:
