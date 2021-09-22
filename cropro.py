@@ -232,40 +232,46 @@ class MainDialog(MainDialogUI):
 
     def show(self):
         super().show()
-        self.populateUI()
+        self.populate_ui()
 
-    def populateUI(self):
-        def populateOtherProfileNames():
-            logDebug("populating other profiles.")
-
-            other_profile_names = getOtherProfileNames()
-            if not other_profile_names:
-                msg: str = 'This add-on only works if you have multiple profiles.'
-                showInfo(msg)
-                logDebug(msg)
-                self.hide()
-                return
-
-            self.otherProfileNamesCombo.clear()
-            self.otherProfileNamesCombo.addItems(other_profile_names)
-            self.into_profile_label.setText(mw.pm.name or 'Unknown')
-
-        def populateCurrentProfileDecks():
-            logDebug("populating current profile decks.")
-
-            self.currentProfileDeckCombo.clear()
-            selected_deck_id = mw.col.decks.selected()
-            for index, deck in enumerate(getProfileDecks(mw.col)):
-                self.currentProfileDeckCombo.addItem(deck['name'], deck['id'])
-                if deck['id'] == selected_deck_id:
-                    self.currentProfileDeckCombo.setCurrentIndex(index)
-
+    def populate_ui(self):
         # 1) If the combo box is emtpy the window is opened for the first time.
         # 2) If it happens to contain the current profile name the user has switched profiles.
         if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
-            populateOtherProfileNames()
-            populateCurrentProfileDecks()
+            self.populate_other_profile_names()
+            self.populate_current_profile_decks()
             self.tagCheckBox.setChecked(config['tag_exported_cards'])
+            self.into_profile_label.setText(mw.pm.name or 'Unknown')
+            self.populate_note_type_selection_combo()
+
+    def populate_other_profile_names(self):
+        logDebug("populating other profiles.")
+
+        other_profile_names = getOtherProfileNames()
+        if not other_profile_names:
+            msg: str = 'This add-on only works if you have multiple profiles.'
+            showInfo(msg)
+            logDebug(msg)
+            self.hide()
+            return
+
+        self.otherProfileNamesCombo.clear()
+        self.otherProfileNamesCombo.addItems(other_profile_names)
+
+    def populate_current_profile_decks(self):
+        logDebug("populating current profile decks.")
+
+        self.currentProfileDeckCombo.clear()
+        selected_deck_id = mw.col.decks.selected()
+        for index, deck in enumerate(getProfileDecks(mw.col)):
+            self.currentProfileDeckCombo.addItem(deck['name'], deck['id'])
+            if deck['id'] == selected_deck_id:
+                self.currentProfileDeckCombo.setCurrentIndex(index)
+
+    def populate_note_type_selection_combo(self):
+        self.note_type_selection_combo.clear()
+        for name, note_id in mw.col.models.all_names_and_ids():
+            self.note_type_selection_combo.addItem(name, note_id)
 
     def closeOtherCol(self):
         if self.otherProfileCollection is not None:
