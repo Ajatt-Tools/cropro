@@ -405,8 +405,7 @@ class MainDialog(MainDialogUI):
             new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
             if self.tagCheckBox.isChecked():
-                # TODO: control the tag
-                other_note.addTag('exported')
+                other_note.addTag(config.get('exported_tag'))
                 other_note.flush()
 
             # check if note is dupe of existing one
