@@ -177,10 +177,15 @@ class MainDialogUI(QDialog):
     def setDefaults(self):
         icon_path = os.path.join(os.path.dirname(__file__), 'gear.svg')
         combo_min_width = 120
-        self.setMinimumSize(640, 360)
+        self.setMinimumSize(640, 480)
         self.settingsButton.setIcon(QIcon(icon_path))
-        self.otherProfileNamesCombo.setMinimumWidth(combo_min_width)
-        self.otherProfileDeckCombo.setMinimumWidth(combo_min_width)
+
+        for combo in (
+                self.otherProfileNamesCombo,
+                self.otherProfileDeckCombo,
+                self.note_type_selection_combo,
+        ):
+            combo.setMinimumWidth(combo_min_width)
 
     @staticmethod
     def makeProfileNameLabel():
