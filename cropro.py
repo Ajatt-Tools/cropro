@@ -33,22 +33,7 @@ from aqt.utils import showInfo
 
 from .previewer import CroProPreviewer
 
-
-#############################################################################
-# BEGIN OPTIONS
-#############################################################################
-
-
-def getConfig() -> dict:
-    _config: dict = mw.addonManager.getConfig(__name__)
-
-    _config['max_displayed_notes'] = _config.get('max_displayed_notes', 100)
-    _config['enable_debug_log'] = _config.get('enable_debug_log', True)
-    _config['tag_exported_cards'] = _config.get('tag_exported_cards', True)
-    _config['bad_fields'] = _config.get('bad_fields', ['furigana', 'image', 'audio'])
-
-    return _config
-
+config = mw.addonManager.getConfig(__name__)
 
 #############################################################################
 # END OPTIONS
@@ -125,7 +110,8 @@ class MainDialogUI(QDialog):
         self.statSuccessLabel = QLabel()
         self.statNoMatchingModelLabel = QLabel()
         self.statDupeLabel = QLabel()
-        self.noteCountLabel = QLabel('')
+        self.noteCountLabel = QLabel()
+        self.into_profile_label = self.makeProfileNameLabel()
         self.currentProfileDeckCombo = QComboBox()
         self.importButton = QPushButton('Import')
         self.tagCheckBox = QCheckBox("Tag cards as exported")
@@ -197,7 +183,7 @@ class MainDialogUI(QDialog):
 
     @staticmethod
     def makeProfileNameLabel():
-        current_profile_name_label = QLabel(mw.pm.name)
+        current_profile_name_label = QLabel()
         current_profile_name_label_font = QFont()
         current_profile_name_label_font.setBold(True)
         current_profile_name_label.setFont(current_profile_name_label_font)
@@ -207,7 +193,7 @@ class MainDialogUI(QDialog):
         import_row = QHBoxLayout()
 
         import_row.addWidget(QLabel('Into Profile:'))
-        import_row.addWidget(self.makeProfileNameLabel())
+        import_row.addWidget(self.into_profile_label)
         import_row.addWidget(QLabel('Deck:'))
         import_row.addWidget(self.currentProfileDeckCombo)
         import_row.addWidget(self.importButton)
@@ -259,6 +245,7 @@ class MainDialog(MainDialogUI):
 
             self.otherProfileNamesCombo.clear()
             self.otherProfileNamesCombo.addItems(other_profile_names)
+            self.into_profile_label.setText(mw.pm.name or 'Unknown')
 
         def populateCurrentProfileDecks():
             logDebug("populating current profile decks.")
@@ -441,13 +428,14 @@ class MainDialog(MainDialogUI):
 # Entry point
 ######################################################################
 
-# Read config file
-config: dict = getConfig()
 # init dialog
 dialog: MainDialog = MainDialog()
-# create a new menu item
-action = QAction('Cross Profile Search and Import', mw)
-# set it to call show function when it's clicked
-action.triggered.connect(dialog.show)
-# and add it to the tools menu
-mw.form.menuTools.addAction(action)
+
+
+def init():
+    # create a new menu item
+    action = QAction('Cross Profile Search and Import', mw)
+    # set it to call show function when it's clicked
+    action.triggered.connect(dialog.show)
+    # and add it to the tools menu
+    mw.form.menuTools.addAction(action)
