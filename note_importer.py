@@ -36,21 +36,6 @@ def invalid_note_type() -> NotetypeNameId:
     return NotetypeNameId(name='None', id=0)
 
 
-def get_matching_model(reference_model: NoteType) -> NoteType:
-    matching_model: NoteType = mw.col.models.by_name(reference_model.get('name'))
-    if matching_model:
-        if matching_model.keys() == reference_model.keys():
-            return matching_model
-        else:
-            matching_model = deepcopy(reference_model)
-            matching_model['name'] += ' cropro'
-    else:
-        matching_model = deepcopy(reference_model)
-
-    matching_model['id'] = 0
-    return matching_model
-
-
 class ImportResult(Enum):
     success = auto()
     dupe = auto()
@@ -75,32 +60,30 @@ def copy_media_files(new_note: Note, other_note: Note) -> None:
             new_note.fields = [field.replace(filename, new_filename) for field in new_note.fields]
 
 
-def import_note(other_note: Note, model_id: int, deck_id: int, tag_exported: bool = True) -> ImportResult:
+def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
     if model_id != invalid_note_type().id:
-        loop = True
-        matching_model = mw.col.models.get(model_id)
+        return mw.col.models.get(model_id)
     else:
-        loop = False
         # find a model in current profile that matches the name of model from other profile
-        matching_model: NoteType = get_matching_model(other_note.model())
-        if matching_model['id'] == 0:
+        matching_model: NoteType = mw.col.models.by_name(reference_model.get('name'))
+
+        if not matching_model or matching_model.keys() != reference_model.keys():
+            matching_model = deepcopy(reference_model)
+            matching_model['id'] = 0
             mw.col.models.add(matching_model)
+        return matching_model
 
-    # create a new note object
+
+def import_note(other_note: Note, model_id: int, deck_id: int, tag_exported: bool = True) -> ImportResult:
+    matching_model: NoteType = get_matching_model(model_id, other_note.model())
     new_note = Note(mw.col, matching_model)
-
-    # set the deck that the note will generate cards into
     new_note.model()['did'] = deck_id
 
-    # copy field values into new note object
-    if loop:
-        for key in new_note.keys():
-            try:
-                new_note[key] = str(other_note[key])
-            except KeyError:
-                pass
-    else:
-        new_note.fields = other_note.fields[:]  # list of strings, so clone it
+    for key in new_note.keys():
+        try:
+            new_note[key] = str(other_note[key])
+        except KeyError:
+            pass
 
     # copy field tags into new note object
     if config.get('copy_tags'):

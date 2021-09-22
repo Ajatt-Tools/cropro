@@ -60,11 +60,6 @@ def getOtherProfileNames() -> list:
     return profiles
 
 
-#
-# def trim(string: str) -> str:
-#     return re.sub("[\"\']", '', string).strip()
-
-
 def blocked_field(field_name: str) -> bool:
     field_name = field_name.lower()
     return any(badword.lower() in field_name for badword in config['bad_fields'])
