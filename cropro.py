@@ -105,30 +105,24 @@ def equalModels(type1: NoteType, type2: NoteType):
     return getKeys(type1) == getKeys(type2)
 
 
-def copyNoteModel(model: NoteType):
-    # do deep copy just to be safe. model is a dict, but might be nested
-    model_copy = deepcopy(model)
-    model_copy['id'] = 0
-    return model_copy
-
-
 def findMatchingModel(reference_model: NoteType) -> NoteType:
     # find the model name of the note
     required_model_name = reference_model.get('name')
     logDebug(f'model name: {required_model_name}')
 
     # find a model in current profile that matches the name of model from other profile
-    matching_model: NoteType = mw.col.models.byName(required_model_name)
+    matching_model: NoteType = mw.col.models.by_name(required_model_name)
     if matching_model:
         logDebug(f"matching model found. id = {matching_model['id']}.")
         if not equalModels(matching_model, reference_model):
             logDebug("models have mismatching fields. copying the other model.")
-            matching_model = copyNoteModel(reference_model)
+            matching_model = deepcopy(reference_model)
             matching_model['name'] += ' cropro'
     else:
         logDebug('no matching model, copying')
-        matching_model = copyNoteModel(reference_model)
+        matching_model = deepcopy(reference_model)
 
+    matching_model['id'] = 0
     return matching_model
 
 
