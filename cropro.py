@@ -18,23 +18,20 @@ TODO:
 - Review duplicate checking: check by first field, or all fields?
 - When matching model is found, verify field count (or entire map?)
 """
+
 import json
 import os.path
-import re
-from copy import deepcopy
-from typing import Optional, TextIO, Tuple
+from typing import Optional, TextIO
 
-from anki.collection import Collection
-from anki.models import NoteType
-from anki.notes import Note
 from anki.utils import htmlToTextLine
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
 
+from .collection_manager import CollectionManager, sorted_decks
+from .config import config
+from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
-
-config = mw.addonManager.getConfig(__name__)
 
 #############################################################################
 # END OPTIONS
@@ -57,50 +54,20 @@ def logDebug(msg):
     print('CroPro debug:', str(msg))
 
 
-def invalid_note_type() -> Tuple[str, int]:
-    return 'None', 0
-
-
 def getOtherProfileNames() -> list:
     profiles = mw.pm.profiles()
     profiles.remove(mw.pm.name)
     return profiles
 
 
-def openProfileCollection(name) -> Collection:
-    # NOTE: this code is based on aqt/profiles.py; we can't really re-use what's there
-    collection_filename = os.path.join(mw.pm.base, name, 'collection.anki2')
-    return Collection(collection_filename)
-
-
-def getProfileDecks(col: Collection):
-    return sorted(col.decks.all(), key=lambda deck: deck["name"])
-
-
-def trim(string: str) -> str:
-    return re.sub("[\"\']", '', string)
+#
+# def trim(string: str) -> str:
+#     return re.sub("[\"\']", '', string).strip()
 
 
 def blocked_field(field_name: str) -> bool:
-    for badword in config['bad_fields']:
-        if badword.lower() in field_name.lower():
-            return True
-    return False
-
-
-def get_matching_model(reference_model: NoteType) -> NoteType:
-    matching_model: NoteType = mw.col.models.by_name(reference_model.get('name'))
-    if matching_model:
-        if matching_model.keys() == reference_model.keys():
-            return matching_model
-        else:
-            matching_model = deepcopy(reference_model)
-            matching_model['name'] += ' cropro'
-    else:
-        matching_model = deepcopy(reference_model)
-
-    matching_model['id'] = 0
-    return matching_model
+    field_name = field_name.lower()
+    return any(badword.lower() in field_name for badword in config['bad_fields'])
 
 
 #############################################################################
@@ -238,7 +205,7 @@ class WindowState:
         for key, widget in self.map.items():
             self.state[key] = widget.currentText()
         with open(self.json_filepath, 'w') as of:
-            json.dump(self.state, of, indent=4)
+            json.dump(self.state, of, indent=4, ensure_ascii=False)
 
     def restore(self):
         if list(self.state.keys()) == list(self.map.keys()):
@@ -257,7 +224,7 @@ class MainDialog(MainDialogUI):
     def __init__(self):
         super().__init__()
         self.window_state = WindowState(self)
-        self.otherProfileCollection: Optional[Collection] = None
+        self.other_col = CollectionManager()
         self.connectElements()
         self.noteList.setAlternatingRowColors(True)
         self.noteList.setSelectionMode(QAbstractItemView.ExtendedSelection)
@@ -278,6 +245,8 @@ class MainDialog(MainDialogUI):
         self.populate_ui()
 
     def populate_ui(self):
+        self.statSuccessLabel.hide()
+        self.statDupeLabel.hide()
         self.populate_note_type_selection_combo()
         self.populate_current_profile_decks()
         # 1) If the combo box is emtpy the window is opened for the first time.
@@ -304,103 +273,58 @@ class MainDialog(MainDialogUI):
 
     def populate_current_profile_decks(self):
         logDebug("populating current profile decks.")
-
         self.currentProfileDeckCombo.clear()
-        selected_deck_id = mw.col.decks.selected()
-        for index, deck in enumerate(getProfileDecks(mw.col)):
-            self.currentProfileDeckCombo.addItem(deck['name'], deck['id'])
-            if deck['id'] == selected_deck_id:
-                self.currentProfileDeckCombo.setCurrentIndex(index)
+        for deck in sorted_decks(mw.col):
+            self.currentProfileDeckCombo.addItem(deck.name, deck.id)
 
     def populate_note_type_selection_combo(self):
         self.note_type_selection_combo.clear()
-        self.note_type_selection_combo.addItem(*invalid_note_type())
+        self.note_type_selection_combo.addItem(invalid_note_type().name, invalid_note_type().id)
         for note_type in mw.col.models.all_names_and_ids():
             self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 
-    def closeOtherCol(self):
-        if self.otherProfileCollection is not None:
-            self.otherProfileCollection.close()
-            self.otherProfileCollection = None
-
     def openOtherCol(self):
-        # Close current collection object, if any
-        self.closeOtherCol()
+        self.other_col.open(self.otherProfileNamesCombo.currentText())
+        self.populate_other_profile_decks_combo()
 
-        self.otherProfileCollection = openProfileCollection(self.otherProfileNamesCombo.currentText())
+    def populate_other_profile_decks_combo(self):
         self.otherProfileDeckCombo.clear()
-        for deck in getProfileDecks(self.otherProfileCollection):
-            self.otherProfileDeckCombo.addItem(deck['name'], deck['id'])
+        for deck in self.other_col.decks:
+            self.otherProfileDeckCombo.addItem(deck.name, deck.id)
 
     def updateNotesList(self):
         if self.otherProfileDeckCombo.count() < 1:
             return
 
-        if self.otherProfileCollection is None:
+        if not self.other_col.opened:
             self.openOtherCol()
 
         self.noteList.clear()
-        other_profile_deck_name = self.otherProfileDeckCombo.currentText()
         other_profile_did = self.otherProfileDeckCombo.currentData()
         logDebug(f"deck id: {other_profile_did}")
         found_note_count = 0
         displayed_note_count = 0
-        if other_profile_deck_name:
+        if other_profile_did > 0:
             # deck was selected, fill list
-
-            # build query string
-            query = f'deck:"{trim(other_profile_deck_name)}"'  # quote name in case it has spaces
-
-            # get filter text, if any
-            filter_text = self.filterEdit.text()
-            if filter_text:
-                query += f' "{trim(filter_text)}"'
-
-            note_ids = self.otherProfileCollection.findNotes(query)
-
+            note_ids = self.other_col.find_notes(other_profile_did, self.filterEdit.text())
             found_note_count = len(note_ids)
             limited_note_ids = note_ids[:config['max_displayed_notes']]
             displayed_note_count = len(limited_note_ids)
-            # TODO: we could try to do this in a single sqlite query, but would be brittle
-            for noteId in limited_note_ids:
-                note = self.otherProfileCollection.getNote(noteId)
+            for note_id in limited_note_ids:
+                note = self.other_col.get_note(note_id)
                 item = QListWidgetItem()
-                item.setText(' | '.join(htmlToTextLine(note[field_name])
-                                        for field_name in note.keys()
-                                        if not blocked_field(field_name) and note[field_name].strip())
-                             )
-                item.setData(Qt.UserRole, noteId)
+                item.setText(' | '.join(
+                    htmlToTextLine(field_content)
+                    for field_name, field_content in note.items()
+                    if not blocked_field(field_name) and field_content.strip())
+                )
+                item.setData(Qt.UserRole, note_id)
                 self.noteList.addItem(item)
-        else:
-            # deck was unselected, leave list cleared
-            pass
 
         if displayed_note_count == found_note_count:
             self.noteCountLabel.setText(f'{found_note_count} notes found')
         else:
             self.noteCountLabel.setText(f'{found_note_count} notes found (displaying first {displayed_note_count})')
-
-    def copyMediaFiles(self, new_note: Note, other_note: Note) -> Note:
-        # check if there are any media files referenced by the note
-        media_references = self.otherProfileCollection.media.filesInStr(other_note.mid, other_note.joinedFields())
-
-        for filename in media_references:
-            logDebug(f'media file: {filename}')
-            filepath = os.path.join(self.otherProfileCollection.media.dir(), filename)
-
-            # referenced media might not exist, in which case we skip it
-            if not os.path.exists(filepath):
-                continue
-
-            logDebug(f'copying from {filepath}')
-            this_col_filename = mw.col.media.addFile(filepath)
-            # NOTE: this_col_filename may differ from original filename (name conflict, different contents),
-            # in which case we need to update the note.
-            if this_col_filename != filename:
-                logDebug(f'name conflict. new filename: {this_col_filename}')
-                new_note.fields = [field.replace(filename, this_col_filename) for field in new_note.fields]
-
-        return new_note
 
     def getSelectedNoteIDs(self):
         return [item.data(Qt.UserRole) for item in self.noteList.selectedItems()]
@@ -416,65 +340,32 @@ class MainDialog(MainDialogUI):
 
         logDebug(f'importing {len(note_ids)} notes')
 
-        stat_success = 0
-        stat_dupe = 0
+        results = []
 
         for nid in note_ids:
-            # load the note
-            logDebug(f'import note id {nid}')
-            other_note: Note = self.otherProfileCollection.getNote(nid)
+            results.append(import_note(
+                other_note=self.other_col.get_note(nid),
+                model_id=self.note_type_selection_combo.currentData(),
+                deck_id=self.currentProfileDeckCombo.currentData(),
+                tag_exported=self.tagCheckBox.isChecked(),
+            ))
 
-            # find a model in current profile that matches the name of model from other profile
-            matching_model: NoteType = get_matching_model(other_note.model())
-            if matching_model['id'] == 0:
-                mw.col.models.add(matching_model)
-
-            # create a new note object
-            new_note = Note(mw.col, matching_model)
-            logDebug(f'new note id={new_note.id}, mid={new_note.mid}')
-
-            # set the deck that the note will generate cards into
-            current_profile_deck_id = self.currentProfileDeckCombo.currentData()
-            logDebug(f'current profile deck id: {current_profile_deck_id}')
-            new_note.model()['did'] = current_profile_deck_id
-
-            # copy field values into new note object
-            new_note.fields = other_note.fields[:]  # list of strings, so clone it
-
-            # copy field tags into new note object
-            # TODO: add a switch
-            new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
-
-            if self.tagCheckBox.isChecked():
-                other_note.addTag(config.get('exported_tag'))
-                other_note.flush()
-
-            # check if note is dupe of existing one
-            if new_note.dupeOrEmpty():
-                logDebug(f"note #{new_note.id} is duplicate. skipping.")
-                stat_dupe += 1
-                continue
-
-            self.copyMediaFiles(new_note, other_note)
-            mw.col.addNote(new_note)
-            stat_success += 1
-
-        if stat_success:
+        if successes := results.count(ImportResult.success):
             mw.requireReset()
-            self.statSuccessLabel.setText(f'{stat_success} notes successfully imported')
+            self.statSuccessLabel.setText(f'{successes} notes successfully imported')
             self.statSuccessLabel.show()
         else:
             self.statSuccessLabel.hide()
 
-        if stat_dupe:
-            self.statDupeLabel.setText(f'{stat_dupe} notes were duplicates, and skipped')
+        if dupes := results.count(ImportResult.dupe):
+            self.statDupeLabel.setText(f'{dupes} notes were duplicates, and skipped')
             self.statDupeLabel.show()
         else:
             self.statDupeLabel.hide()
 
     def reject(self):
         self.window_state.save()
-        self.closeOtherCol()  # TODO error?
+        self.other_col.close()  # TODO error?
         QDialog.reject(self)
 
 

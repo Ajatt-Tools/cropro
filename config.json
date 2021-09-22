@@ -2,10 +2,12 @@
   "max_displayed_notes": 500,
   "enable_debug_log": true,
   "tag_exported_cards": true,
+  "exported_tag": "cropro_exported",
   "bad_fields": [
     "furigana",
     "image",
     "audio"
   ],
-  "exported_tag": "cropro_exported"
+  "skip_duplicates": true,
+  "copy_tags": true
 }
