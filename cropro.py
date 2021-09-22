@@ -98,28 +98,15 @@ def blocked_field(field_name: str) -> bool:
     return False
 
 
-def equalModels(type1: NoteType, type2: NoteType):
-    def getKeys(note_type: NoteType):
-        return [field['name'] for field in note_type['flds']]
-
-    return getKeys(type1) == getKeys(type2)
-
-
-def findMatchingModel(reference_model: NoteType) -> NoteType:
-    # find the model name of the note
-    required_model_name = reference_model.get('name')
-    logDebug(f'model name: {required_model_name}')
-
-    # find a model in current profile that matches the name of model from other profile
-    matching_model: NoteType = mw.col.models.by_name(required_model_name)
+def get_matching_model(reference_model: NoteType) -> NoteType:
+    matching_model: NoteType = mw.col.models.by_name(reference_model.get('name'))
     if matching_model:
-        logDebug(f"matching model found. id = {matching_model['id']}.")
-        if not equalModels(matching_model, reference_model):
-            logDebug("models have mismatching fields. copying the other model.")
+        if matching_model.keys() == reference_model.keys():
+            return matching_model
+        else:
             matching_model = deepcopy(reference_model)
             matching_model['name'] += ' cropro'
     else:
-        logDebug('no matching model, copying')
         matching_model = deepcopy(reference_model)
 
     matching_model['id'] = 0
@@ -397,8 +384,9 @@ class MainDialog(MainDialogUI):
             other_note: Note = self.otherProfileCollection.getNote(nid)
 
             # find a model in current profile that matches the name of model from other profile
-            matching_model: NoteType = findMatchingModel(other_note.model())
-            mw.col.models.add(matching_model)
+            matching_model: NoteType = get_matching_model(other_note.model())
+            if matching_model['id'] == 0:
+                mw.col.models.add(matching_model)
 
             # create a new note object
             new_note = Note(mw.col, matching_model)
