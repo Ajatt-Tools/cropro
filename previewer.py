@@ -18,30 +18,36 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
-from typing import Optional
+from typing import Optional, List
+
 from anki.cards import Card
+from anki.collection import Collection
 from aqt import AnkiQt, QDialog
 from aqt.browser.previewer import Previewer
 
 
 class CroProPreviewer(Previewer):
-    def __init__(self, parent: QDialog, mw: AnkiQt):
+    def __init__(self, parent: QDialog, mw: AnkiQt, col: Collection, selected_nids: List):
         super().__init__(parent=parent, mw=mw, on_close=lambda: None)
-        self.otherCol = parent.otherProfileCollection
+        self.current_col = self.mw.col
+        self.mw.col = col
+        self.cards = self.get_cards(selected_nids)
+        self.idx = 0
+
+    def get_cards(self, selected_nids: List) -> List[Card]:
+        cards = []
+        for nid in selected_nids:
+            for card in self.mw.col.getNote(nid).cards():
+                cards.append(card)
+        return cards
 
     def card(self) -> Optional[Card]:
-        selected_note_ids = self._parent.getSelectedNoteIDs()
-        note = self.otherCol.getNote(selected_note_ids[0])
-        note_cards = note.cards()
-        return note_cards[0]
+        self.idx = inc if (inc := self.idx + 1) < len(self.cards) else 0
+        return self.cards[self.idx]
 
     def card_changed(self) -> bool:
         return False
 
-    def open(self):
-        self.mw.col, self.otherCol = self.otherCol, self.mw.col
-        super().open()
-        self.mw.col, self.otherCol = self.otherCol, self.mw.col
-
-    def render_card(self):
-        self._render_scheduled()
+    def reject(self):
+        self.mw.col = self.current_col
+        super(CroProPreviewer, self).reject()

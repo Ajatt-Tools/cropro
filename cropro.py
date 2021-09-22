@@ -232,7 +232,12 @@ class MainDialog(MainDialogUI):
         self.otherProfileNamesCombo.currentIndexChanged.connect(self.openOtherCol)
 
     def previewCard(self):
-        a = CroProPreviewer(parent=self, mw=mw)
+        a = CroProPreviewer(
+            parent=self,
+            mw=mw,
+            col=self.other_col.col,
+            selected_nids=self.getSelectedNoteIDs(),
+        )
         a.open()
 
     def show(self):
@@ -250,6 +255,8 @@ class MainDialog(MainDialogUI):
             self.populate_other_profile_names()
             self.tagCheckBox.setChecked(config['tag_exported_cards'])
             self.into_profile_label.setText(mw.pm.name or 'Unknown')
+        if not self.other_col.opened:
+            self.openOtherCol()
         self.window_state.restore()
 
     def populate_other_profile_names(self):
@@ -360,7 +367,7 @@ class MainDialog(MainDialogUI):
 
     def reject(self):
         self.window_state.save()
-        self.other_col.close()  # TODO error?
+        self.other_col.close()
         QDialog.reject(self)
 
 
