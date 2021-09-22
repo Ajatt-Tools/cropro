@@ -121,6 +121,7 @@ class MainDialogUI(QDialog):
         self.filterButton = QPushButton('Filter')
         self.noteList = QListWidget()
         self.settingsButton = QPushButton('Preferences')
+        self.note_type_selection_combo = QComboBox()
         self.initUI()
 
     def initUI(self):
@@ -197,6 +198,8 @@ class MainDialogUI(QDialog):
         import_row.addWidget(QLabel('Deck:'))
         import_row.addWidget(self.currentProfileDeckCombo)
         import_row.addWidget(self.importButton)
+        import_row.addWidget(QLabel('Map to Note Type:'))
+        import_row.addWidget(self.note_type_selection_combo)
         import_row.addStretch(1)
         import_row.addWidget(self.tagCheckBox)
 
