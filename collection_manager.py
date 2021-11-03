@@ -34,6 +34,10 @@ class CollectionManager:
     def __init__(self):
         self.col: Optional[Collection] = None
 
+    @property
+    def col_did(self):
+        return -1
+
     @staticmethod
     def _load(name: str) -> Collection:
         return Collection(os.path.join(mw.pm.base, name, 'collection.anki2'))
@@ -55,8 +59,11 @@ class CollectionManager:
     def decks(self):
         return sorted_decks(self.col)
 
-    def find_notes(self, deck_id: int, filter_text: str):
-        return self.col.find_notes(query=f'did:{deck_id} {filter_text}')
+    def find_notes(self, deck_name: str, filter_text: str):
+        if deck_name:
+            return self.col.find_notes(query=f'"deck:{deck_name}" {filter_text}')
+        else:
+            return self.col.find_notes(query=filter_text)
 
     def get_note(self, note_id):
         return self.col.get_note(note_id)

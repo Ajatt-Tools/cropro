@@ -291,6 +291,7 @@ class MainDialog(MainDialogUI):
 
     def populate_other_profile_decks_combo(self):
         self.otherProfileDeckCombo.clear()
+        self.otherProfileDeckCombo.addItem("Whole collection", self.other_col.col_did)
         for deck in self.other_col.decks:
             self.otherProfileDeckCombo.addItem(deck.name, deck.id)
 
@@ -304,24 +305,26 @@ class MainDialog(MainDialogUI):
         self.noteList.clear()
         other_profile_did = self.otherProfileDeckCombo.currentData()
         logDebug(f"deck id: {other_profile_did}")
-        found_note_count = 0
-        displayed_note_count = 0
-        if other_profile_did > 0:
-            # deck was selected, fill list
-            note_ids = self.other_col.find_notes(other_profile_did, self.filterEdit.text())
-            found_note_count = len(note_ids)
-            limited_note_ids = note_ids[:config['max_displayed_notes']]
-            displayed_note_count = len(limited_note_ids)
-            for note_id in limited_note_ids:
-                note = self.other_col.get_note(note_id)
-                item = QListWidgetItem()
-                item.setText(' | '.join(
-                    htmlToTextLine(field_content)
-                    for field_name, field_content in note.items()
-                    if not blocked_field(field_name) and field_content.strip())
-                )
-                item.setData(Qt.UserRole, note_id)
-                self.noteList.addItem(item)
+
+        if self.other_col.col_did == other_profile_did:
+            deck_name = ""
+        else:
+            deck_name = self.otherProfileDeckCombo.currentText()
+
+        note_ids = self.other_col.find_notes(deck_name, self.filterEdit.text())
+        found_note_count = len(note_ids)
+        limited_note_ids = note_ids[:config['max_displayed_notes']]
+        displayed_note_count = len(limited_note_ids)
+        for note_id in limited_note_ids:
+            note = self.other_col.get_note(note_id)
+            item = QListWidgetItem()
+            item.setText(' | '.join(
+                htmlToTextLine(field_content)
+                for field_name, field_content in note.items()
+                if not blocked_field(field_name) and field_content.strip())
+            )
+            item.setData(Qt.UserRole, note_id)
+            self.noteList.addItem(item)
 
         if displayed_note_count == found_note_count:
             self.noteCountLabel.setText(f'{found_note_count} notes found')
