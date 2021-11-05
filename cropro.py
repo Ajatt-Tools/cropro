@@ -279,7 +279,7 @@ class MainDialog(MainDialogUI):
 
     def populate_note_type_selection_combo(self):
         self.note_type_selection_combo.clear()
-        self.note_type_selection_combo.addItem(invalid_note_type().name, invalid_note_type().id)
+        self.note_type_selection_combo.addItem(*invalid_note_type())
         for note_type in mw.col.models.all_names_and_ids():
             self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 

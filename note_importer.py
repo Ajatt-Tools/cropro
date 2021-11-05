@@ -6,17 +6,18 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import Generator, Tuple
 
-from anki.models import NoteType, NotetypeNameId
+from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import joinFields
 from aqt import mw
 from aqt.qt import *
 
+from .collection_manager import NameId
 from .config import config
 
 
-def invalid_note_type() -> NotetypeNameId:
-    return NotetypeNameId(name='None', id=0)
+def invalid_note_type() -> NameId:
+    return NameId('None (create new if needed)', -1)
 
 
 class ImportResult(Enum):
