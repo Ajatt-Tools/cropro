@@ -1,10 +1,12 @@
 #!/bin/bash
+# Copyright: Ren Tatsumoto <tatsu at autistici.org>
+# License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 readonly archive=cropro.ankiaddon
 readonly manifest=manifest.json
 readonly target=${*:-ankiweb}
 
-rm -- $archive 2>/dev/null
+rm -- "$archive" 2>/dev/null
 
 if [[ $target != 'ankiweb' ]]; then
     # https://addon-docs.ankiweb.net/#/sharing?id=sharing-outside-ankiweb

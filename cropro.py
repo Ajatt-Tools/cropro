@@ -9,7 +9,8 @@ For example, you can make a "sentence bank" profile where you store thousands of
 and then use this add-on to search for and import cards with certain words into your main profile.
 This helps keep your main profile uncluttered and free of large amounts of unneeded media.
 
-MIT License
+GNU AGPL
+Copyright (c) 2021 Ren Tatsumoto
 Copyright (c) 2018 Russel Simmons
 Original concept by CalculusAce, with help from Matt VS Japan (@mattvsjapan)
 
@@ -73,7 +74,7 @@ def blocked_field(field_name: str) -> bool:
 
 class MainDialogUI(QDialog):
     def __init__(self, *args, **kwargs):
-        super(MainDialogUI, self).__init__(parent=mw, *args, **kwargs)
+        super().__init__(parent=mw, *args, **kwargs)
 
         self.statSuccessLabel = QLabel()
         self.statNoMatchingModelLabel = QLabel()
@@ -291,7 +292,9 @@ class MainDialog(MainDialogUI):
 
     def populate_other_profile_decks(self):
         logDebug("populating other profile decks...")
-        self.otherProfileDeckCombo.set_decks(self.other_col.deck_names_and_ids())
+        self.otherProfileDeckCombo.set_decks([
+            self.other_col.col_name_and_id(), *self.other_col.deck_names_and_ids(),
+        ])
 
     def updateNotesList(self):
         self.noteList.clear()
