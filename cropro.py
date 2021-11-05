@@ -294,13 +294,16 @@ class MainDialog(MainDialogUI):
         self.otherProfileDeckCombo.set_decks(self.other_col.deck_names_and_ids())
 
     def updateNotesList(self):
+        self.noteList.clear()
+
+        if not self.filterEdit.text() and not config['allow_empty_search']:
+            return
+
         if not self.other_col.opened:
             self.openOtherCol()
 
         if self.otherProfileDeckCombo.count() < 1:
             return
-
-        self.noteList.clear()
 
         note_ids = self.other_col.find_notes(self.otherProfileDeckCombo.current_deck(), self.filterEdit.text())
         limited_note_ids = note_ids[:config['max_displayed_notes']]

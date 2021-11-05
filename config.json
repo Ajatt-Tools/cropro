@@ -9,5 +9,6 @@
     "audio"
   ],
   "skip_duplicates": true,
-  "copy_tags": true
+  "copy_tags": true,
+  "allow_empty_search": false
 }

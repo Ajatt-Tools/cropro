@@ -10,6 +10,7 @@ Log location: `~/.local/share/Anki2/cropro.log` (GNU systems).
 * `tag_exported_cards` - tag cards in the other profile as `exported`
 so that you could easily find and delete them later.
 * `bad_fields` - contents of fields that contain these keywords won't be shown.
+* `allow_empty_search` - Search notes even if the search field is emtpy. May be slow.
 
 ---
 
