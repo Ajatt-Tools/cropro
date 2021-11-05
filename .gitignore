@@ -1,6 +1,7 @@
 __pycache__
-/cropro.ankiaddon
-/cropro/
-/.idea/
+/*.ankiaddon
+/*.zip
+.idea
 /meta.json
+/manifest.json
 /window_state.json
