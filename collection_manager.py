@@ -19,24 +19,28 @@
 # Any modifications to this file must keep this entire header intact.
 
 import os
-from typing import Optional, List
+from typing import Optional, List, NamedTuple
 
 from anki.collection import Collection
-from anki.decks import DeckNameId
 from aqt import mw
 
 
-def sorted_decks(col: Collection) -> List[DeckNameId]:
-    return sorted(col.decks.all_names_and_ids(), key=lambda deck: deck.name)
+class NameId(NamedTuple):
+    name: str
+    id: int
+
+
+def sorted_decks_and_ids(col: Collection) -> List[NameId]:
+    return sorted(NameId(deck.name, deck.id) for deck in col.decks.all_names_and_ids())
 
 
 class CollectionManager:
     def __init__(self):
         self.col: Optional[Collection] = None
 
-    @property
-    def col_did(self):
-        return -1
+    @staticmethod
+    def col_name_and_id() -> NameId:
+        return NameId("Whole collection", -1)
 
     @staticmethod
     def _load(name: str) -> Collection:
@@ -55,15 +59,14 @@ class CollectionManager:
         self.close()
         self.col = self._load(name)
 
-    @property
-    def decks(self):
-        return sorted_decks(self.col)
+    def deck_names_and_ids(self) -> List[NameId]:
+        return [self.col_name_and_id(), *sorted_decks_and_ids(self.col), ]
 
-    def find_notes(self, deck_name: str, filter_text: str):
-        if deck_name:
-            return self.col.find_notes(query=f'"deck:{deck_name}" {filter_text}')
-        else:
+    def find_notes(self, deck: NameId, filter_text: str):
+        if deck == self.col_name_and_id():
             return self.col.find_notes(query=filter_text)
+        else:
+            return self.col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
 
     def get_note(self, note_id):
         return self.col.get_note(note_id)

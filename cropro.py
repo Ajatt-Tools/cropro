@@ -28,10 +28,11 @@ from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
 
-from .collection_manager import CollectionManager, sorted_decks
+from .collection_manager import CollectionManager, sorted_decks_and_ids
 from .config import config
 from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
+from .widgets import SearchResultLabel, DeckCombo
 
 #############################################################################
 # END OPTIONS
@@ -77,14 +78,14 @@ class MainDialogUI(QDialog):
         self.statSuccessLabel = QLabel()
         self.statNoMatchingModelLabel = QLabel()
         self.statDupeLabel = QLabel()
-        self.noteCountLabel = QLabel()
+        self.search_result_label = SearchResultLabel()
         self.into_profile_label = self.makeProfileNameLabel()
-        self.currentProfileDeckCombo = QComboBox()
+        self.currentProfileDeckCombo = DeckCombo()
         self.importButton = QPushButton('Import')
         self.tagCheckBox = QCheckBox("Tag cards as exported")
         self.filterEdit = QLineEdit()
         self.otherProfileNamesCombo = QComboBox()
-        self.otherProfileDeckCombo = QComboBox()
+        self.otherProfileDeckCombo = DeckCombo()
         self.filterButton = QPushButton('Filter')
         self.noteList = QListWidget()
         self.settingsButton = QPushButton('Preferences')
@@ -124,7 +125,7 @@ class MainDialogUI(QDialog):
         main_vbox = QVBoxLayout()
         main_vbox.addLayout(self.makeOtherProfileSettingsBox())
         main_vbox.addLayout(self.makeFilterRow())
-        main_vbox.addWidget(self.noteCountLabel)
+        main_vbox.addWidget(self.search_result_label)
         main_vbox.addWidget(self.noteList)
         main_vbox.addLayout(self.makeStatsRow())
         main_vbox.addLayout(self.makeInputRow())
@@ -225,11 +226,12 @@ class MainDialog(MainDialogUI):
         self.noteList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def connectElements(self):
-        self.noteList.itemDoubleClicked.connect(self.previewCard)
-        self.otherProfileDeckCombo.currentIndexChanged.connect(self.updateNotesList)
-        self.importButton.clicked.connect(self.doImport)
-        self.filterButton.clicked.connect(self.updateNotesList)
-        self.otherProfileNamesCombo.currentIndexChanged.connect(self.openOtherCol)
+        qconnect(self.noteList.itemDoubleClicked, self.previewCard)
+        qconnect(self.otherProfileDeckCombo.currentIndexChanged, self.updateNotesList)
+        qconnect(self.importButton.clicked, self.doImport)
+        qconnect(self.filterButton.clicked, self.updateNotesList)
+        qconnect(self.filterEdit.editingFinished, self.updateNotesList)
+        qconnect(self.otherProfileNamesCombo.currentIndexChanged, self.openOtherCol)
 
     def previewCard(self):
         a = CroProPreviewer(
@@ -273,12 +275,6 @@ class MainDialog(MainDialogUI):
         self.otherProfileNamesCombo.clear()
         self.otherProfileNamesCombo.addItems(other_profile_names)
 
-    def populate_current_profile_decks(self):
-        logDebug("populating current profile decks.")
-        self.currentProfileDeckCombo.clear()
-        for deck in sorted_decks(mw.col):
-            self.currentProfileDeckCombo.addItem(deck.name, deck.id)
-
     def populate_note_type_selection_combo(self):
         self.note_type_selection_combo.clear()
         self.note_type_selection_combo.addItem(invalid_note_type().name, invalid_note_type().id)
@@ -287,34 +283,28 @@ class MainDialog(MainDialogUI):
 
     def openOtherCol(self):
         self.other_col.open(self.otherProfileNamesCombo.currentText())
-        self.populate_other_profile_decks_combo()
+        self.populate_other_profile_decks()
 
-    def populate_other_profile_decks_combo(self):
-        self.otherProfileDeckCombo.clear()
-        self.otherProfileDeckCombo.addItem("Whole collection", self.other_col.col_did)
-        for deck in self.other_col.decks:
-            self.otherProfileDeckCombo.addItem(deck.name, deck.id)
+    def populate_current_profile_decks(self):
+        logDebug("populating current profile decks...")
+        self.currentProfileDeckCombo.set_decks(sorted_decks_and_ids(mw.col))
+
+    def populate_other_profile_decks(self):
+        logDebug("populating other profile decks...")
+        self.otherProfileDeckCombo.set_decks(self.other_col.deck_names_and_ids())
 
     def updateNotesList(self):
-        if self.otherProfileDeckCombo.count() < 1:
-            return
-
         if not self.other_col.opened:
             self.openOtherCol()
 
+        if self.otherProfileDeckCombo.count() < 1:
+            return
+
         self.noteList.clear()
-        other_profile_did = self.otherProfileDeckCombo.currentData()
-        logDebug(f"deck id: {other_profile_did}")
 
-        if self.other_col.col_did == other_profile_did:
-            deck_name = ""
-        else:
-            deck_name = self.otherProfileDeckCombo.currentText()
-
-        note_ids = self.other_col.find_notes(deck_name, self.filterEdit.text())
-        found_note_count = len(note_ids)
+        note_ids = self.other_col.find_notes(self.otherProfileDeckCombo.current_deck(), self.filterEdit.text())
         limited_note_ids = note_ids[:config['max_displayed_notes']]
-        displayed_note_count = len(limited_note_ids)
+
         for note_id in limited_note_ids:
             note = self.other_col.get_note(note_id)
             item = QListWidgetItem()
@@ -326,10 +316,7 @@ class MainDialog(MainDialogUI):
             item.setData(Qt.UserRole, note_id)
             self.noteList.addItem(item)
 
-        if displayed_note_count == found_note_count:
-            self.noteCountLabel.setText(f'{found_note_count} notes found')
-        else:
-            self.noteCountLabel.setText(f'{found_note_count} notes found (displaying first {displayed_note_count})')
+        self.search_result_label.set_count(len(note_ids), len(limited_note_ids))
 
     def getSelectedNoteIDs(self):
         return [item.data(Qt.UserRole) for item in self.noteList.selectedItems()]
