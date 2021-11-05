@@ -29,6 +29,7 @@ from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
 
+from .ajt_common import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids
 from .config import config
 from .note_importer import invalid_note_type, import_note, ImportResult
@@ -376,9 +377,11 @@ dialog: MainDialog = MainDialog()
 
 
 def init():
+    # get AJT menu
+    root_menu = menu_root_entry()
     # create a new menu item
-    action = QAction('Cross Profile Search and Import', mw)
+    action = QAction('Cross Profile Search and Import', root_menu)
     # set it to call show function when it's clicked
-    action.triggered.connect(dialog.show)
+    qconnect(action.triggered, dialog.show)
     # and add it to the tools menu
-    mw.form.menuTools.addAction(action)
+    root_menu.addAction(action)
