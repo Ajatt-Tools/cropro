@@ -22,12 +22,11 @@ TODO:
 
 import json
 import os.path
-from typing import Optional, TextIO
-
 from anki.utils import htmlToTextLine
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo
+from typing import Optional, TextIO
 
 from .ajt_common import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids
@@ -173,11 +172,11 @@ class MainDialogUI(QDialog):
         import_row.addWidget(self.into_profile_label)
         import_row.addWidget(QLabel('Deck:'))
         import_row.addWidget(self.currentProfileDeckCombo)
-        import_row.addWidget(self.importButton)
         import_row.addWidget(QLabel('Map to Note Type:'))
         import_row.addWidget(self.note_type_selection_combo)
-        import_row.addStretch(1)
         import_row.addWidget(self.tagCheckBox)
+        import_row.addStretch(1)
+        import_row.addWidget(self.importButton)
 
         return import_row
 
