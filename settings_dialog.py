@@ -12,6 +12,15 @@ def fetch_toggleables() -> Iterable[str]:
             yield key
 
 
+def make_max_notes_spinbox() -> QSpinBox:
+    box = QSpinBox()
+    box.config_key = 'max_displayed_notes'
+    box.setRange(10, 10_000)
+    box.setValue(config[box.config_key])
+    box.setSingleStep(50)
+    return box
+
+
 class CroProSettingsDialog(QDialog):
     name = 'cropro_settings_dialog'
 
@@ -24,7 +33,7 @@ class CroProSettingsDialog(QDialog):
         saveGeom(self, self.name)
 
     def _setup_ui(self) -> None:
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(300)
         self.setWindowTitle("CroPro Settings")
         self.setLayout(self._make_layout())
         self.add_tooltips()
@@ -39,16 +48,24 @@ class CroProSettingsDialog(QDialog):
         qconnect(self.button_box.rejected, self.reject)
 
         layout = QVBoxLayout()
+        layout.addLayout(self._make_form())
         for key, checkbox in self.checkboxes.items():
             layout.addWidget(checkbox)
             checkbox.setChecked(config.get(key))
         layout.addWidget(self.button_box)
         return layout
 
+    def _make_form(self) -> QFormLayout:
+        self.max_notes_edit = make_max_notes_spinbox()
+        layout = QFormLayout()
+        layout.addRow("Max displayed notes", self.max_notes_edit)
+        return layout
+
     def add_tooltips(self) -> None:
         pass
 
     def accept(self) -> None:
+        config[self.max_notes_edit.config_key] = self.max_notes_edit.value()
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
         write_config()
