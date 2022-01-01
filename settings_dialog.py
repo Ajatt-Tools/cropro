@@ -1,4 +1,3 @@
-import os.path
 from typing import Iterable, Dict, List
 
 from aqt.qt import *
@@ -52,30 +51,27 @@ class ItemBox(QWidget):
 
     def _make_layout(self) -> QLayout:
         self.layout = QHBoxLayout()
-        self.new_item_edit = QLineEdit()
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.new_item_edit)
-        self.new_item_edit.setPlaceholderText("New item")
-        qconnect(self.new_item_edit.textChanged, self._parse_edit_content)
         for text in self.items:
             self._add_item(text)
+        self.layout.addStretch()
         return self.layout
 
     def _add_item(self, text: str) -> None:
         b = self.items[text] = self.ItemButton(self, text)
-        self.layout.addWidget(b)
+        self.layout.insertWidget(0, b)
 
     def remove_item(self, text: str) -> None:
         if widget := self.items.pop(text, None):
             widget.deleteLater()
 
-    def _parse_edit_content(self) -> None:
+    def new_item(self, edit: QLineEdit) -> None:
         separators = (',', ' ', ';')
-        if (text := self.new_item_edit.text()).endswith(separators):
+        if (text := edit.text()).endswith(separators):
             text = text.strip(''.join(separators))
             if text and text not in self.items:
                 self._add_item(text)
-                self.new_item_edit.setText('')
+            edit.setText('')
 
 
 class CroProSettingsDialog(QDialog):
@@ -96,6 +92,7 @@ class CroProSettingsDialog(QDialog):
         self.add_tooltips()
 
     def _make_layout(self) -> QLayout:
+        self.hidden_fields_box = ItemBox(parent=self, initial_values=config['hidden_fields'])
         self.checkboxes: Dict[str, QCheckBox] = {
             key: QCheckBox(key.replace('_', ' ').capitalize())
             for key in fetch_toggleables()
@@ -106,6 +103,7 @@ class CroProSettingsDialog(QDialog):
 
         layout = QVBoxLayout()
         layout.addLayout(self._make_form())
+        layout.addWidget(self.hidden_fields_box)
         for key, checkbox in self.checkboxes.items():
             layout.addWidget(checkbox)
             checkbox.setChecked(config.get(key))
@@ -116,11 +114,17 @@ class CroProSettingsDialog(QDialog):
     def _make_form(self) -> QFormLayout:
         self.tag_edit = QLineEdit(config['exported_tag'])
         self.max_notes_edit = make_max_notes_spinbox()
-        self.item_box = ItemBox(parent=self, initial_values=config['hidden_fields'])
+        self.hidden_fields_edit = QLineEdit()
+        self.hidden_fields_edit.setPlaceholderText("New item")
+        qconnect(
+            self.hidden_fields_edit.textChanged,
+            lambda: self.hidden_fields_box.new_item(self.hidden_fields_edit)
+        )
+
         layout = QFormLayout()
         layout.addRow("Max displayed notes", self.max_notes_edit)
         layout.addRow("Tag original cards with", self.tag_edit)
-        layout.addRow("Hide fields matching", self.item_box)
+        layout.addRow("Hide fields matching", self.hidden_fields_edit)
         return layout
 
     def add_tooltips(self) -> None:
@@ -129,7 +133,7 @@ class CroProSettingsDialog(QDialog):
     def accept(self) -> None:
         config[self.max_notes_edit.config_key] = self.max_notes_edit.value()
         config['exported_tag'] = self.tag_edit.text()
-        config['hidden_fields'] = self.item_box.values()
+        config['hidden_fields'] = self.hidden_fields_box.values()
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
         write_config()
