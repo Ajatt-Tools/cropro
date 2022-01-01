@@ -49,7 +49,7 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
         return mw.col.models.get(model_id)
     else:
         # find a model in current profile that matches the name of model from other profile
-        matching_model: NoteType = mw.col.models.by_name(reference_model.get('name'))
+        matching_model = mw.col.models.by_name(reference_model.get('name'))
 
         if not matching_model or matching_model.keys() != reference_model.keys():
             matching_model = deepcopy(reference_model)
@@ -58,8 +58,8 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
         return matching_model
 
 
-def import_note(other_note: Note, model_id: int, deck_id: int, tag_exported: bool = True) -> ImportResult:
-    matching_model: NoteType = get_matching_model(model_id, other_note.model())
+def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
+    matching_model = get_matching_model(model_id, other_note.model())
     new_note = Note(mw.col, matching_model)
     new_note.model()['did'] = deck_id
 
@@ -73,7 +73,7 @@ def import_note(other_note: Note, model_id: int, deck_id: int, tag_exported: boo
     if config.get('copy_tags'):
         new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
-    if tag_exported:
+    if config.get('tag_exported_cards'):
         other_note.addTag(config.get('exported_tag', 'exported'))
         other_note.flush()
 

@@ -90,7 +90,6 @@ class MainDialogUI(QDialog):
         self.into_profile_label = self.makeProfileNameLabel()
         self.currentProfileDeckCombo = DeckCombo()
         self.importButton = QPushButton('Import')
-        self.tagCheckBox = QCheckBox("Tag cards as exported")
         self.filterEdit = QLineEdit()
         self.otherProfileNamesCombo = QComboBox()
         self.otherProfileDeckCombo = DeckCombo()
@@ -180,7 +179,6 @@ class MainDialogUI(QDialog):
         import_row.addWidget(self.currentProfileDeckCombo)
         import_row.addWidget(QLabel('Map to Note Type:'))
         import_row.addWidget(self.note_type_selection_combo)
-        import_row.addWidget(self.tagCheckBox)
         import_row.addStretch(1)
         import_row.addWidget(self.importButton)
 
@@ -265,7 +263,6 @@ class MainDialog(MainDialogUI):
         # 2) If it happens to contain the current profile name the user has switched profiles.
         if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
             self.populate_other_profile_names()
-            self.tagCheckBox.setChecked(config['tag_exported_cards'])
             self.into_profile_label.setText(mw.pm.name or 'Unknown')
         if not self.other_col.opened:
             self.openOtherCol()
@@ -354,7 +351,6 @@ class MainDialog(MainDialogUI):
                 other_note=self.other_col.get_note(nid),
                 model_id=self.note_type_selection_combo.currentData(),
                 deck_id=self.currentProfileDeckCombo.currentData(),
-                tag_exported=self.tagCheckBox.isChecked(),
             ))
 
         if successes := results.count(ImportResult.success):
