@@ -33,7 +33,7 @@ class ItemBox(QWidget):
                     background-color: #eef0f2;
                     color: #292c31;
                     border-radius: 12px;
-                    padding: 2px 3px 3px;
+                    padding: 3px 6px;
                     border: 0px;
                 }
             ''')
@@ -89,17 +89,16 @@ class CroProSettingsDialog(QDialog):
         self.setMinimumWidth(300)
         self.setWindowTitle("CroPro Settings")
         self.setLayout(self._make_layout())
+        self.connect_widgets()
         self.add_tooltips()
 
     def _make_layout(self) -> QLayout:
         self.hidden_fields_box = ItemBox(parent=self, initial_values=config['hidden_fields'])
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.checkboxes: Dict[str, QCheckBox] = {
             key: QCheckBox(key.replace('_', ' ').capitalize())
             for key in fetch_toggleables()
         }
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        qconnect(self.button_box.accepted, self.accept)
-        qconnect(self.button_box.rejected, self.reject)
 
         layout = QVBoxLayout()
         layout.addLayout(self._make_form())
@@ -116,16 +115,17 @@ class CroProSettingsDialog(QDialog):
         self.max_notes_edit = make_max_notes_spinbox()
         self.hidden_fields_edit = QLineEdit()
         self.hidden_fields_edit.setPlaceholderText("New item")
-        qconnect(
-            self.hidden_fields_edit.textChanged,
-            lambda: self.hidden_fields_box.new_item(self.hidden_fields_edit)
-        )
 
         layout = QFormLayout()
         layout.addRow("Max displayed notes", self.max_notes_edit)
         layout.addRow("Tag original cards with", self.tag_edit)
         layout.addRow("Hide fields matching", self.hidden_fields_edit)
         return layout
+
+    def connect_widgets(self):
+        qconnect(self.button_box.accepted, self.accept)
+        qconnect(self.button_box.rejected, self.reject)
+        qconnect(self.hidden_fields_edit.textChanged, lambda: self.hidden_fields_box.new_item(self.hidden_fields_edit))
 
     def add_tooltips(self) -> None:
         pass
