@@ -59,9 +59,9 @@ def getOtherProfileNames() -> list:
     return profiles
 
 
-def blocked_field(field_name: str) -> bool:
+def is_hidden(field_name: str) -> bool:
     field_name = field_name.lower()
-    return any(badword.lower() in field_name for badword in config['bad_fields'])
+    return any(hidden_field.lower() in field_name for hidden_field in config['hidden_fields'])
 
 
 #############################################################################
@@ -326,7 +326,7 @@ class MainDialog(MainDialogUI):
             item.setText(' | '.join(
                 htmlToTextLine(field_content)
                 for field_name, field_content in note.items()
-                if not blocked_field(field_name) and field_content.strip())
+                if not is_hidden(field_name) and field_content.strip())
             )
             item.setData(Qt.UserRole, note_id)
             self.noteList.addItem(item)

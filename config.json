@@ -3,7 +3,7 @@
   "enable_debug_log": true,
   "tag_exported_cards": true,
   "exported_tag": "cropro_exported",
-  "bad_fields": [
+  "hidden_fields": [
     "furigana",
     "image",
     "audio"
