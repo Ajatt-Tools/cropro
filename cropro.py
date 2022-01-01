@@ -36,10 +36,6 @@ from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
 from .widgets import SearchResultLabel, DeckCombo
 
-#############################################################################
-# END OPTIONS
-#############################################################################
-
 logfile: Optional[TextIO] = None
 
 
@@ -72,6 +68,14 @@ def blocked_field(field_name: str) -> bool:
 # UI layout
 #############################################################################
 
+def make_prefs_button() -> QPushButton:
+    icon_path = os.path.join(os.path.dirname(__file__), 'img', 'gear.svg')
+
+    b = QPushButton('Preferences')
+    b.setIcon(QIcon(icon_path))
+    b.setMaximumHeight(29)
+    return b
+
 
 class MainDialogUI(QDialog):
     name = "cropro_dialog"
@@ -92,7 +96,7 @@ class MainDialogUI(QDialog):
         self.otherProfileDeckCombo = DeckCombo()
         self.filterButton = QPushButton('Filter')
         self.noteList = QListWidget()
-        self.settingsButton = QPushButton('Preferences')
+        self.settingsButton = make_prefs_button()
         self.note_type_selection_combo = QComboBox()
         disable_help_button(self)
         self.initUI()
@@ -148,10 +152,8 @@ class MainDialogUI(QDialog):
         return other_profile_deck_row
 
     def setDefaults(self):
-        icon_path = os.path.join(os.path.dirname(__file__), 'gear.svg')
         combo_min_width = 120
         self.setMinimumSize(640, 480)
-        self.settingsButton.setIcon(QIcon(icon_path))
 
         for combo in (
                 self.otherProfileNamesCombo,
