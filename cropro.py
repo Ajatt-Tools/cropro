@@ -22,11 +22,12 @@ TODO:
 
 import json
 import os.path
+from typing import Optional, TextIO
+
 from anki.utils import htmlToTextLine
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import showInfo
-from typing import Optional, TextIO
+from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
 from .ajt_common import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids
@@ -73,6 +74,8 @@ def blocked_field(field_name: str) -> bool:
 
 
 class MainDialogUI(QDialog):
+    name = "cropro_dialog"
+
     def __init__(self, *args, **kwargs):
         super().__init__(parent=mw, *args, **kwargs)
 
@@ -91,6 +94,7 @@ class MainDialogUI(QDialog):
         self.noteList = QListWidget()
         self.settingsButton = QPushButton('Preferences')
         self.note_type_selection_combo = QComboBox()
+        disable_help_button(self)
         self.initUI()
 
     def initUI(self):
@@ -203,6 +207,7 @@ class WindowState:
             self.state[key] = widget.currentText()
         with open(self.json_filepath, 'w') as of:
             json.dump(self.state, of, indent=4, ensure_ascii=False)
+        saveGeom(self.window, self.window.name)
 
     def restore(self):
         if list(self.state.keys()) == list(self.map.keys()):
@@ -215,6 +220,7 @@ class WindowState:
                 self.state = json.load(f)
             for key, widget in self.map.items():
                 widget.setCurrentText(self.state[key])
+        restoreGeom(self.window, self.window.name, adjustSize=True)
 
 
 class MainDialog(MainDialogUI):
@@ -361,10 +367,10 @@ class MainDialog(MainDialogUI):
         else:
             self.statDupeLabel.hide()
 
-    def reject(self):
+    def closeEvent(self, event):
         self.window_state.save()
         self.other_col.close()
-        QDialog.reject(self)
+        super().closeEvent(event)
 
 
 ######################################################################
