@@ -43,7 +43,7 @@ from .widgets import SearchResultLabel, DeckCombo
 logfile: Optional[TextIO] = None
 
 
-def logDebug(msg):
+def logDebug(msg: str) -> None:
     if not config['enable_debug_log']:
         return
 
@@ -208,6 +208,7 @@ class WindowState:
         with open(self.json_filepath, 'w') as of:
             json.dump(self.state, of, indent=4, ensure_ascii=False)
         saveGeom(self.window, self.window.name)
+        logDebug(f'saved window state.')
 
     def restore(self):
         if list(self.state.keys()) == list(self.map.keys()):
