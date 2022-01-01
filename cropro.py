@@ -380,16 +380,14 @@ class MainDialog(MainDialogUI):
 # Entry point
 ######################################################################
 
-# init dialog
-dialog: MainDialog = MainDialog()
-
-
 def init():
+    # init dialog
+    d = mw.__cropro_main_dialog = MainDialog()
     # get AJT menu
     root_menu = menu_root_entry()
     # create a new menu item
     action = QAction('Cross Profile Search and Import', root_menu)
     # set it to call show function when it's clicked
-    qconnect(action.triggered, dialog.show)
+    qconnect(action.triggered, d.show)
     # and add it to the tools menu
     root_menu.addAction(action)
