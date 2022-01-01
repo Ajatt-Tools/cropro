@@ -34,6 +34,7 @@ from .collection_manager import CollectionManager, sorted_decks_and_ids
 from .config import config
 from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
+from .settings_dialog import CroProSettingsDialog
 from .widgets import SearchResultLabel, DeckCombo
 
 logfile: Optional[TextIO] = None
@@ -238,6 +239,7 @@ class MainDialog(MainDialogUI):
         qconnect(self.otherProfileDeckCombo.currentIndexChanged, self.updateNotesList)
         qconnect(self.importButton.clicked, self.doImport)
         qconnect(self.filterButton.clicked, self.updateNotesList)
+        qconnect(self.settingsButton.clicked, lambda: CroProSettingsDialog(parent=self))
         qconnect(self.filterEdit.editingFinished, self.updateNotesList)
         qconnect(self.otherProfileNamesCombo.currentIndexChanged, self.openOtherCol)
 
