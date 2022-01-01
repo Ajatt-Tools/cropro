@@ -73,8 +73,8 @@ def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
     if config.get('copy_tags'):
         new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
-    if config.get('tag_exported_cards'):
-        other_note.addTag(config.get('exported_tag', 'exported'))
+    if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
+        other_note.addTag(tag)
         other_note.flush()
 
     # check if note is dupe of existing one
