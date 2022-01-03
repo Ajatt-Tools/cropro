@@ -358,10 +358,10 @@ class MainDialog(MainDialogUI):
         else:
             self.statDupeLabel.hide()
 
-    def closeEvent(self, event):
+    def done(self, result_code):
         self.window_state.save()
         self.other_col.close()
-        super().closeEvent(event)
+        super().done(result_code)
 
 
 ######################################################################
