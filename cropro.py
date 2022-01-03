@@ -230,7 +230,7 @@ class MainDialog(MainDialogUI):
         qconnect(self.filterButton.clicked, self.updateNotesList)
         qconnect(self.settingsButton.clicked, lambda: CroProSettingsDialog(parent=self))
         qconnect(self.filterEdit.editingFinished, self.updateNotesList)
-        qconnect(self.otherProfileNamesCombo.currentIndexChanged, self.openOtherCol)
+        qconnect(self.otherProfileNamesCombo.currentIndexChanged, self.open_other_col)
 
     def previewCard(self):
         a = CroProPreviewer(
@@ -254,8 +254,7 @@ class MainDialog(MainDialogUI):
         # 2) If it happens to contain the current profile name the user has switched profiles.
         if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
             self.populate_other_profile_names()
-        if not self.other_col.opened:
-            self.openOtherCol()
+        self.open_other_col()
         self.into_profile_label.setText(mw.pm.name or 'Unknown')
         self.window_state.restore()
 
@@ -279,9 +278,12 @@ class MainDialog(MainDialogUI):
         for note_type in mw.col.models.all_names_and_ids():
             self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 
-    def openOtherCol(self):
-        self.other_col.open(self.otherProfileNamesCombo.currentText())
-        self.populate_other_profile_decks()
+    def open_other_col(self):
+        col_name = self.otherProfileNamesCombo.currentText()
+
+        if not self.other_col.is_opened or col_name != self.other_col.name:
+            self.other_col.open(col_name)
+            self.populate_other_profile_decks()
 
     def populate_current_profile_decks(self):
         logDebug("populating current profile decks...")
@@ -296,12 +298,10 @@ class MainDialog(MainDialogUI):
     def updateNotesList(self):
         self.search_result_label.hide()
         self.noteList.clear()
+        self.open_other_col()
 
         if not self.filterEdit.text() and not config['allow_empty_search']:
             return
-
-        if not self.other_col.opened:
-            self.openOtherCol()
 
         if self.otherProfileDeckCombo.count() < 1:
             return
