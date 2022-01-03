@@ -218,7 +218,7 @@ class WindowState:
             return True
         elif os.path.isfile(self._json_filepath):
             with open(self._json_filepath, encoding='utf8') as f:
-                self._state = json.load(f)
+                self._state.update(json.load(f))
             return True
         else:
             return False
@@ -270,9 +270,9 @@ class MainDialog(MainDialogUI):
         # 2) If it happens to contain the current profile name the user has switched profiles.
         if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
             self.populate_other_profile_names()
-            self.into_profile_label.setText(mw.pm.name or 'Unknown')
         if not self.other_col.opened:
             self.openOtherCol()
+        self.into_profile_label.setText(mw.pm.name or 'Unknown')
         self.window_state.restore()
 
     def populate_other_profile_names(self):
