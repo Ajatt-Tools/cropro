@@ -1,8 +1,9 @@
-from typing import Iterable, Dict, List
+from typing import Iterable, Dict
 
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
+from .widgets import ItemBox
 from .config import config, write_config
 
 
@@ -19,59 +20,6 @@ def make_max_notes_spinbox() -> QSpinBox:
     box.setValue(config[box.config_key])
     box.setSingleStep(50)
     return box
-
-
-class ItemBox(QWidget):
-    class ItemButton(QPushButton):
-        _close_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), 'img', 'close.png')))
-
-        def __init__(self, item_box: 'ItemBox', text: str):
-            super().__init__(text)
-            self.item_box = item_box
-            self.setStyleSheet('''
-                QPushButton {
-                    background-color: #eef0f2;
-                    color: #292c31;
-                    border-radius: 12px;
-                    padding: 3px 6px;
-                    border: 0px;
-                }
-            ''')
-            self.setIcon(self._close_icon)
-            self.setLayoutDirection(Qt.RightToLeft)
-            qconnect(self.clicked, lambda: self.item_box.remove_item(text))
-
-    def __init__(self, parent: QWidget, initial_values: List[str]):
-        super().__init__(parent=parent)
-        self.items = dict.fromkeys(initial_values)
-        self.setLayout(self._make_layout())
-
-    def values(self) -> List[str]:
-        return list(self.items)
-
-    def _make_layout(self) -> QLayout:
-        self.layout = QHBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        for text in self.items:
-            self._add_item(text)
-        self.layout.addStretch()
-        return self.layout
-
-    def _add_item(self, text: str) -> None:
-        b = self.items[text] = self.ItemButton(self, text)
-        self.layout.insertWidget(0, b)
-
-    def remove_item(self, text: str) -> None:
-        if widget := self.items.pop(text, None):
-            widget.deleteLater()
-
-    def new_item(self, edit: QLineEdit) -> None:
-        separators = (',', ' ', ';')
-        if (text := edit.text()).endswith(separators):
-            text = text.strip(''.join(separators))
-            if text and text not in self.items:
-                self._add_item(text)
-            edit.setText('')
 
 
 class CroProSettingsDialog(QDialog):
@@ -128,7 +76,10 @@ class CroProSettingsDialog(QDialog):
         qconnect(self.hidden_fields_edit.textChanged, lambda: self.hidden_fields_box.new_item(self.hidden_fields_edit))
 
     def add_tooltips(self) -> None:
-        pass
+        self.hidden_fields_edit.setToolTip(
+            "Hide fields whose names contain these words.\n"
+            "Press space or comma to commit."
+        )
 
     def accept(self) -> None:
         config[self.max_notes_edit.config_key] = self.max_notes_edit.value()
