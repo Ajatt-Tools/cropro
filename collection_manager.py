@@ -17,6 +17,12 @@ def sorted_decks_and_ids(col: Collection) -> List[NameId]:
     return sorted(NameId(deck.name, deck.id) for deck in col.decks.all_names_and_ids())
 
 
+def get_other_profile_names() -> List[str]:
+    profiles = mw.pm.profiles()
+    profiles.remove(mw.pm.name)
+    return profiles
+
+
 class CollectionManager:
     def __init__(self):
         self._col: Optional[Collection] = None

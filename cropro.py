@@ -31,7 +31,7 @@ from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
 from .ajt_common import menu_root_entry
-from .collection_manager import CollectionManager, sorted_decks_and_ids
+from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names
 from .config import config
 from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
@@ -55,12 +55,6 @@ def logDebug(msg: str) -> None:
     print('CroPro debug:', str(msg))
 
 
-def getOtherProfileNames() -> list:
-    profiles = mw.pm.profiles()
-    profiles.remove(mw.pm.name)
-    return profiles
-
-
 def is_hidden(field_name: str) -> bool:
     field_name = field_name.lower()
     return any(hidden_field.lower() in field_name for hidden_field in config['hidden_fields'])
@@ -76,7 +70,6 @@ class MainDialogUI(QDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(parent=mw, *args, **kwargs)
-
         self.statSuccessLabel = QLabel()
         self.statNoMatchingModelLabel = QLabel()
         self.statDupeLabel = QLabel()
@@ -261,7 +254,7 @@ class MainDialog(MainDialogUI):
     def populate_other_profile_names(self):
         logDebug("populating other profiles.")
 
-        other_profile_names = getOtherProfileNames()
+        other_profile_names = get_other_profile_names()
         if not other_profile_names:
             msg: str = 'This add-on only works if you have multiple profiles.'
             showInfo(msg)
