@@ -29,6 +29,8 @@ class SearchResultLabel(QLabel):
         else:
             self.setText(f'{found} notes found (displaying first {displayed})')
             self.setStyleSheet('QLabel { color: orange; }')
+        if self.isHidden():
+            self.show()
 
 
 class ItemBox(QWidget):

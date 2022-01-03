@@ -310,6 +310,7 @@ class MainDialog(MainDialogUI):
         ])
 
     def updateNotesList(self):
+        self.search_result_label.hide()
         self.noteList.clear()
 
         if not self.filterEdit.text() and not config['allow_empty_search']:
