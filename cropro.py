@@ -26,7 +26,7 @@ from collections import defaultdict
 from typing import Optional, TextIO
 
 from anki.utils import htmlToTextLine
-from aqt import mw
+from aqt import mw, gui_hooks
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
@@ -395,3 +395,5 @@ def init():
     qconnect(action.triggered, d.show)
     # and add it to the tools menu
     root_menu.addAction(action)
+    # hook to close
+    gui_hooks.profile_will_close.append(d.close)
