@@ -1,7 +1,7 @@
 from typing import Iterable, Dict
 
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom, disable_help_button
+from aqt.utils import restoreGeom, saveGeom
 
 from .widgets import ItemBox
 from .config import config, write_config
@@ -27,7 +27,6 @@ class CroProSettingsDialog(QDialog):
 
     def __init__(self, parent: QDialog) -> None:
         QDialog.__init__(self, parent)
-        disable_help_button(self)
         self._setup_ui()
         restoreGeom(self, self.name, adjustSize=True)
         self.exec()

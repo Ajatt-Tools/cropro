@@ -25,10 +25,11 @@ import os.path
 from collections import defaultdict
 from typing import Optional, TextIO
 
+import anki.rsbackend
 from anki.utils import htmlToTextLine
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
+from aqt.utils import showInfo, restoreGeom, saveGeom
 
 from .ajt_common import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids
@@ -99,7 +100,6 @@ class MainDialogUI(QDialog):
         self.noteList = QListWidget()
         self.settingsButton = make_prefs_button()
         self.note_type_selection_combo = QComboBox()
-        disable_help_button(self)
         self.initUI()
 
     def initUI(self):
@@ -238,6 +238,7 @@ class MainDialog(MainDialogUI):
         self.connectElements()
         self.noteList.setAlternatingRowColors(True)
         self.noteList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self._errored = None
 
     def connectElements(self):
         qconnect(self.noteList.itemDoubleClicked, self.previewCard)
@@ -296,8 +297,14 @@ class MainDialog(MainDialogUI):
             self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 
     def openOtherCol(self):
-        self.other_col.open(self.otherProfileNamesCombo.currentText())
-        self.populate_other_profile_decks()
+        if self._errored == (profile_name := self.otherProfileNamesCombo.currentText()):
+            return
+        try:
+            self.other_col.open(profile_name)
+            self.populate_other_profile_decks()
+        except anki.rsbackend.DBError:
+            self._errored = profile_name
+            showInfo(f"Profile {profile_name} cannot be opened.")
 
     def populate_current_profile_decks(self):
         logDebug("populating current profile decks...")

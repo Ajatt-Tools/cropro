@@ -52,4 +52,4 @@ class CollectionManager:
             return self.col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
 
     def get_note(self, note_id):
-        return self.col.get_note(note_id)
+        return self.col.getNote(note_id)

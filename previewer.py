@@ -6,7 +6,7 @@ from typing import Optional, List
 from anki.cards import Card
 from anki.collection import Collection
 from aqt import AnkiQt, QDialog
-from aqt.browser.previewer import Previewer
+from aqt.browser import Previewer
 
 
 class CroProPreviewer(Previewer):

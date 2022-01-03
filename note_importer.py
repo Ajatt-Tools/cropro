@@ -49,7 +49,7 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
         return mw.col.models.get(model_id)
     else:
         # find a model in current profile that matches the name of model from other profile
-        matching_model = mw.col.models.by_name(reference_model.get('name'))
+        matching_model = mw.col.models.byName(reference_model.get('name'))
 
         if not matching_model or matching_model.keys() != reference_model.keys():
             matching_model = deepcopy(reference_model)
