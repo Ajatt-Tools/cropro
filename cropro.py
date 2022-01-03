@@ -354,7 +354,7 @@ class MainDialog(MainDialogUI):
             ))
 
         if successes := results.count(ImportResult.success):
-            mw.requireReset()
+            mw.reset()
             self.statSuccessLabel.setText(f'{successes} notes successfully imported')
             self.statSuccessLabel.show()
         else:

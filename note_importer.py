@@ -59,9 +59,9 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
 
 
 def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
-    matching_model = get_matching_model(model_id, other_note.model())
+    matching_model = get_matching_model(model_id, other_note.note_type())
     new_note = Note(mw.col, matching_model)
-    new_note.model()['did'] = deck_id
+    new_note.note_type()['did'] = deck_id
 
     for key in new_note.keys():
         try:
@@ -74,7 +74,7 @@ def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
         new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
     if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
-        other_note.addTag(tag)
+        other_note.add_tag(tag)
         other_note.flush()
 
     # check if note is dupe of existing one
