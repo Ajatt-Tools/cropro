@@ -36,7 +36,7 @@ from .config import config
 from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
 from .settings_dialog import CroProSettingsDialog
-from .widgets import SearchResultLabel, DeckCombo
+from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox
 
 logfile: Optional[TextIO] = None
 
@@ -70,14 +70,6 @@ def is_hidden(field_name: str) -> bool:
 # UI layout
 #############################################################################
 
-def make_prefs_button() -> QPushButton:
-    icon_path = os.path.join(os.path.dirname(__file__), 'img', 'gear.svg')
-
-    b = QPushButton('Preferences')
-    b.setIcon(QIcon(icon_path))
-    b.setMaximumHeight(29)
-    return b
-
 
 class MainDialogUI(QDialog):
     name = "cropro_dialog"
@@ -93,12 +85,12 @@ class MainDialogUI(QDialog):
         self.currentProfileDeckCombo = DeckCombo()
         self.importButton = QPushButton('Import')
         self.filterEdit = QLineEdit()
-        self.otherProfileNamesCombo = QComboBox()
+        self.otherProfileNamesCombo = ComboBox()
         self.otherProfileDeckCombo = DeckCombo()
         self.filterButton = QPushButton('Filter')
         self.noteList = QListWidget()
-        self.settingsButton = make_prefs_button()
-        self.note_type_selection_combo = QComboBox()
+        self.settingsButton = PreferencesButton()
+        self.note_type_selection_combo = ComboBox()
         disable_help_button(self)
         self.initUI()
 
