@@ -12,4 +12,9 @@ def write_config():
     return mw.addonManager.writeConfig(__name__, config)
 
 
+def is_hidden(field_name: str) -> bool:
+    field_name = field_name.lower()
+    return any(hidden_field.lower() in field_name for hidden_field in config['hidden_fields'])
+
+
 config = get_config()

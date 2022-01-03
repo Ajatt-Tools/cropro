@@ -32,7 +32,7 @@ from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
 from .ajt_common import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names
-from .config import config
+from .config import config, is_hidden
 from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
 from .settings_dialog import CroProSettingsDialog
@@ -54,10 +54,6 @@ def logDebug(msg: str) -> None:
     logfile.flush()
     print('CroPro debug:', str(msg))
 
-
-def is_hidden(field_name: str) -> bool:
-    field_name = field_name.lower()
-    return any(hidden_field.lower() in field_name for hidden_field in config['hidden_fields'])
 
 
 #############################################################################
