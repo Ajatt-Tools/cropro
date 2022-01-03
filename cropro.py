@@ -22,6 +22,7 @@ TODO:
 
 import json
 import os.path
+from collections import defaultdict
 from typing import Optional, TextIO
 
 from anki.utils import htmlToTextLine
@@ -194,36 +195,39 @@ class MainDialogUI(QDialog):
 
 class WindowState:
     def __init__(self, window: MainDialogUI):
-        self.window = window
-        self.json_filepath = os.path.join(os.path.dirname(__file__), 'window_state.json')
-        self.map = {
-            'other_profile_name': self.window.otherProfileNamesCombo,
-            'other_profile_deck_name': self.window.otherProfileDeckCombo,
-            'current_profile_deck': self.window.currentProfileDeckCombo,
-            'current_profile_note_type': self.window.note_type_selection_combo,
+        self._window = window
+        self._json_filepath = os.path.join(os.path.dirname(__file__), 'window_state.json')
+        self._map = {
+            "from_profile": self._window.otherProfileNamesCombo,
+            "from_deck": self._window.otherProfileDeckCombo,
+            "to_deck": self._window.currentProfileDeckCombo,
+            "note_type": self._window.note_type_selection_combo,
         }
-        self.state = dict()
+        self._state = defaultdict(dict)
 
     def save(self):
-        for key, widget in self.map.items():
-            self.state[key] = widget.currentText()
-        with open(self.json_filepath, 'w') as of:
-            json.dump(self.state, of, indent=4, ensure_ascii=False)
-        saveGeom(self.window, self.window.name)
+        for key, widget in self._map.items():
+            self._state[mw.pm.name][key] = widget.currentText()
+        with open(self._json_filepath, 'w', encoding='utf8') as of:
+            json.dump(self._state, of, indent=4, ensure_ascii=False)
+        saveGeom(self._window, self._window.name)
         logDebug(f'saved window state.')
 
-    def restore(self):
-        if list(self.state.keys()) == list(self.map.keys()):
-            for key, widget in self.map.items():
-                widget.setCurrentText(self.state[key])
+    def _load(self) -> bool:
+        if self._state:
+            return True
+        elif os.path.isfile(self._json_filepath):
+            with open(self._json_filepath, encoding='utf8') as f:
+                self._state = json.load(f)
+            return True
         else:
-            if not os.path.isfile(self.json_filepath):
-                return
-            with open(self.json_filepath) as f:
-                self.state = json.load(f)
-            for key, widget in self.map.items():
-                widget.setCurrentText(self.state[key])
-        restoreGeom(self.window, self.window.name, adjustSize=True)
+            return False
+
+    def restore(self):
+        if self._load() and (profile_settings := self._state.get(mw.pm.name)):
+            for key, widget in self._map.items():
+                widget.setCurrentText(profile_settings[key])
+        restoreGeom(self._window, self._window.name, adjustSize=True)
 
 
 class MainDialog(MainDialogUI):
