@@ -36,7 +36,7 @@ from .config import config
 from .note_importer import invalid_note_type, import_note, ImportResult
 from .previewer import CroProPreviewer
 from .settings_dialog import CroProSettingsDialog
-from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox
+from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel
 
 logfile: Optional[TextIO] = None
 
@@ -81,7 +81,7 @@ class MainDialogUI(QDialog):
         self.statNoMatchingModelLabel = QLabel()
         self.statDupeLabel = QLabel()
         self.search_result_label = SearchResultLabel()
-        self.into_profile_label = self.makeProfileNameLabel()
+        self.into_profile_label = ProfileNameLabel()
         self.currentProfileDeckCombo = DeckCombo()
         self.importButton = QPushButton('Import')
         self.filterEdit = QLineEdit()
@@ -156,14 +156,6 @@ class MainDialogUI(QDialog):
                 self.note_type_selection_combo,
         ):
             combo.setMinimumWidth(combo_min_width)
-
-    @staticmethod
-    def makeProfileNameLabel():
-        current_profile_name_label = QLabel()
-        current_profile_name_label_font = QFont()
-        current_profile_name_label_font.setBold(True)
-        current_profile_name_label.setFont(current_profile_name_label_font)
-        return current_profile_name_label
 
     def makeInputRow(self):
         import_row = QHBoxLayout()

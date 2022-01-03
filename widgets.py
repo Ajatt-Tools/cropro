@@ -10,6 +10,14 @@ from .collection_manager import NameId
 WIDGET_HEIGHT = 29
 
 
+class ProfileNameLabel(QLabel):
+    def __init__(self, *args):
+        super().__init__(*args)
+        font = QFont()
+        font.setBold(True)
+        self.setFont(font)
+
+
 class PreferencesButton(QPushButton):
     _icon = QIcon(os.path.join(os.path.dirname(__file__), 'img', 'gear.svg'))
 
