@@ -195,7 +195,8 @@ class WindowState:
     def restore(self):
         if self._load() and (profile_settings := self._state.get(mw.pm.name)):
             for key, widget in self._map.items():
-                widget.setCurrentText(profile_settings[key])
+                if (value := profile_settings[key]) in widget.all_items():
+                    widget.setCurrentText(value)
         restoreGeom(self._window, self._window.name, adjustSize=True)
 
 

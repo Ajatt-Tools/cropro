@@ -33,6 +33,11 @@ class ComboBox(QComboBox):
         super().__init__(*args, **kwargs)
         self.setMaximumHeight(WIDGET_HEIGHT)
 
+    def all_items(self) -> Iterable[str]:
+        """Returns an iterable of all items stored in the combo box."""
+        for i in range(self.count()):
+            yield self.itemText(i)
+
 
 class DeckCombo(ComboBox):
     def set_decks(self, decks: Iterable[NameId]):
