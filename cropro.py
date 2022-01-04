@@ -28,9 +28,9 @@ from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
 from .ajt_common import menu_root_entry
-from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names
+from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .config import config, is_hidden
-from .note_importer import invalid_note_type, import_note, ImportResult
+from .note_importer import import_note, ImportResult
 from .previewer import CroProPreviewer
 from .settings_dialog import CroProSettingsDialog
 from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel
@@ -50,7 +50,6 @@ def logDebug(msg: str) -> None:
     logfile.write(str(msg) + '\n')
     logfile.flush()
     print('CroPro debug:', str(msg))
-
 
 
 #############################################################################
@@ -260,7 +259,7 @@ class MainDialog(MainDialogUI):
 
     def populate_note_type_selection_combo(self):
         self.note_type_selection_combo.clear()
-        self.note_type_selection_combo.addItem(*invalid_note_type())
+        self.note_type_selection_combo.addItem(*NameId.none_type())
         for note_type in mw.col.models.all_names_and_ids():
             self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 

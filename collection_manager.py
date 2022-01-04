@@ -12,6 +12,10 @@ class NameId(NamedTuple):
     name: str
     id: int
 
+    @classmethod
+    def none_type(cls) -> 'NameId':
+        return cls('None (create new if needed)', -1)
+
 
 def sorted_decks_and_ids(col: Collection) -> List[NameId]:
     return sorted(NameId(deck.name, deck.id) for deck in col.decks.all_names_and_ids())

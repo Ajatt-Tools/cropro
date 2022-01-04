@@ -4,7 +4,7 @@
 import os.path
 from copy import deepcopy
 from enum import Enum, auto
-from typing import Generator, Tuple
+from typing import NamedTuple, Iterable
 
 from anki.models import NoteType
 from anki.notes import Note
@@ -16,36 +16,38 @@ from .collection_manager import NameId
 from .config import config
 
 
-def invalid_note_type() -> NameId:
-    return NameId('None (create new if needed)', -1)
-
-
 class ImportResult(Enum):
     success = auto()
     dupe = auto()
 
 
-def files_in_note(note: Note) -> Generator[Tuple[str, str], None, None]:
+class FileInfo(NamedTuple):
+    name: str
+    path: str
+
+
+def files_in_note(note: Note) -> Iterable[FileInfo]:
+    """
+    Returns FileInfo for every file referenced by the note.
+    Skips missing files.
+    """
     for file_ref in note.col.media.filesInStr(note.mid, joinFields(note.fields)):
-        yield file_ref, os.path.join(note.col.media.dir(), file_ref)
+        if os.path.exists(file_path := os.path.join(note.col.media.dir(), file_ref)):
+            yield FileInfo(file_ref, file_path)
 
 
 def copy_media_files(new_note: Note, other_note: Note) -> None:
     # check if there are any media files referenced by the note
-    for filename, filepath in files_in_note(other_note):
-        # referenced media might not exist, in which case we skip it
-        if not os.path.exists(filepath):
-            continue
-
-        new_filename = new_note.col.media.addFile(filepath)
+    for file in files_in_note(other_note):
+        new_filename = new_note.col.media.addFile(file.path)
         # NOTE: this_col_filename may differ from original filename (name conflict, different contents),
         # in which case we need to update the note.
-        if new_filename != filename:
-            new_note.fields = [field.replace(filename, new_filename) for field in new_note.fields]
+        if new_filename != file.name:
+            new_note.fields = [field.replace(file.name, new_filename) for field in new_note.fields]
 
 
 def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
-    if model_id != invalid_note_type().id:
+    if model_id != NameId.none_type().id:
         return mw.col.models.get(model_id)
     else:
         # find a model in current profile that matches the name of model from other profile
