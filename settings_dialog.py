@@ -6,8 +6,8 @@ from typing import Iterable, Dict
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
-from .widgets import ItemBox
 from .config import config, write_config
+from .widgets import ItemBox, SpinBox
 
 
 def fetch_toggleables() -> Iterable[str]:
@@ -16,13 +16,6 @@ def fetch_toggleables() -> Iterable[str]:
             yield key
 
 
-def make_max_notes_spinbox() -> QSpinBox:
-    box = QSpinBox()
-    box.config_key = 'max_displayed_notes'
-    box.setRange(10, 10_000)
-    box.setValue(config[box.config_key])
-    box.setSingleStep(50)
-    return box
 
 
 class CroProSettingsDialog(QDialog):
@@ -63,7 +56,7 @@ class CroProSettingsDialog(QDialog):
 
     def _make_form(self) -> QFormLayout:
         self.tag_edit = QLineEdit(config['exported_tag'])
-        self.max_notes_edit = make_max_notes_spinbox()
+        self.max_notes_edit = SpinBox(min_val=10, max_val=10_000, step=50, value=config['max_displayed_notes'])
         self.hidden_fields_edit = QLineEdit()
         self.hidden_fields_edit.setPlaceholderText("New item")
 
@@ -85,7 +78,7 @@ class CroProSettingsDialog(QDialog):
         )
 
     def accept(self) -> None:
-        config[self.max_notes_edit.config_key] = self.max_notes_edit.value()
+        config['max_displayed_notes'] = self.max_notes_edit.value()
         config['exported_tag'] = self.tag_edit.text()
         config['hidden_fields'] = self.hidden_fields_box.values()
         for key, checkbox in self.checkboxes.items():

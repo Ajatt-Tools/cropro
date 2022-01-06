@@ -10,6 +10,14 @@ from .collection_manager import NameId
 WIDGET_HEIGHT = 29
 
 
+class SpinBox(QSpinBox):
+    def __init__(self, min_val: int, max_val: int, step: int, value: int):
+        super().__init__()
+        self.setRange(min_val, max_val)
+        self.setSingleStep(step)
+        self.setValue(value)
+
+
 class ProfileNameLabel(QLabel):
     def __init__(self, *args):
         super().__init__(*args)
