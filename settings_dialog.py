@@ -16,6 +16,8 @@ def fetch_toggleables() -> Iterable[str]:
             yield key
 
 
+def make_checkboxes() -> Dict[str, QCheckBox]:
+    return {key: QCheckBox(key.replace('_', ' ').capitalize()) for key in fetch_toggleables()}
 
 
 class CroProSettingsDialog(QDialog):
@@ -39,10 +41,7 @@ class CroProSettingsDialog(QDialog):
     def _make_layout(self) -> QLayout:
         self.hidden_fields_box = ItemBox(parent=self, initial_values=config['hidden_fields'])
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.checkboxes: Dict[str, QCheckBox] = {
-            key: QCheckBox(key.replace('_', ' ').capitalize())
-            for key in fetch_toggleables()
-        }
+        self.checkboxes = make_checkboxes()
 
         layout = QVBoxLayout()
         layout.addLayout(self._make_form())
