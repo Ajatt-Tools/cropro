@@ -7,8 +7,39 @@ from aqt.qt import *
 
 from .collection_manager import NameId
 
+WIDGET_HEIGHT = 29
 
-class DeckCombo(QComboBox):
+
+class ProfileNameLabel(QLabel):
+    def __init__(self, *args):
+        super().__init__(*args)
+        font = QFont()
+        font.setBold(True)
+        self.setFont(font)
+
+
+class PreferencesButton(QPushButton):
+    _icon = QIcon(os.path.join(os.path.dirname(__file__), 'img', 'gear.svg'))
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.setText('Preferences')
+        self.setIcon(self._icon)
+        self.setMaximumHeight(WIDGET_HEIGHT)
+
+
+class ComboBox(QComboBox):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setMaximumHeight(WIDGET_HEIGHT)
+
+    def all_items(self) -> Iterable[str]:
+        """Returns an iterable of all items stored in the combo box."""
+        for i in range(self.count()):
+            yield self.itemText(i)
+
+
+class DeckCombo(ComboBox):
     def set_decks(self, decks: Iterable[NameId]):
         self.clear()
         for deck_name, deck_id in decks:

@@ -31,6 +31,6 @@ class CroProPreviewer(Previewer):
     def card_changed(self) -> bool:
         return False
 
-    def reject(self):
+    def done(self, result_code):
         self.mw.col = self.current_col
-        super().reject()
+        super().done(result_code)

@@ -12,14 +12,33 @@ class NameId(NamedTuple):
     name: str
     id: int
 
+    @classmethod
+    def none_type(cls) -> 'NameId':
+        return cls('None (create new if needed)', -1)
+
 
 def sorted_decks_and_ids(col: Collection) -> List[NameId]:
     return sorted(NameId(deck.name, deck.id) for deck in col.decks.all_names_and_ids())
 
 
+def get_other_profile_names() -> List[str]:
+    profiles = mw.pm.profiles()
+    profiles.remove(mw.pm.name)
+    return profiles
+
+
 class CollectionManager:
     def __init__(self):
-        self.col: Optional[Collection] = None
+        self._col: Optional[Collection] = None
+        self._name: Optional[str] = None
+
+    @property
+    def col(self):
+        return self._col
+
+    @property
+    def name(self):
+        return self._name if self._col else None
 
     @staticmethod
     def col_name_and_id() -> NameId:
@@ -30,26 +49,27 @@ class CollectionManager:
         return Collection(os.path.join(mw.pm.base, name, 'collection.anki2'))
 
     @property
-    def opened(self) -> bool:
-        return self.col is not None
+    def is_opened(self) -> bool:
+        return self._col is not None
 
     def close(self):
-        if self.opened:
-            self.col.close()
-            self.col = None
+        if self.is_opened:
+            self._col.close()
+            self._name = self._col = None
 
     def open(self, name: str) -> None:
         self.close()
-        self.col = self._load(name)
+        self._col = self._load(name)
+        self._name = name
 
     def deck_names_and_ids(self) -> List[NameId]:
-        return sorted_decks_and_ids(self.col)
+        return sorted_decks_and_ids(self._col)
 
     def find_notes(self, deck: NameId, filter_text: str):
         if deck == self.col_name_and_id():
-            return self.col.find_notes(query=filter_text)
+            return self._col.find_notes(query=filter_text)
         else:
-            return self.col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
+            return self._col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
 
     def get_note(self, note_id):
         return self.col.getNote(note_id)
