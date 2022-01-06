@@ -108,9 +108,13 @@ class ItemBox(QWidget):
         self.layout.addStretch()
         return self.layout
 
+    def count(self) -> int:
+        # The last element in the layout is a stretch.
+        return self.layout.count() - 1
+
     def _add_item(self, text: str) -> None:
         b = self.items[text] = self.ItemButton(self, text)
-        self.layout.insertWidget(0, b)
+        self.layout.insertWidget(self.count(), b)
 
     def remove_item(self, text: str) -> None:
         if widget := self.items.pop(text, None):
