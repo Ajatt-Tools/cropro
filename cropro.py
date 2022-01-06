@@ -33,7 +33,7 @@ from .config import config, is_hidden
 from .note_importer import import_note, ImportResult
 from .previewer import CroProPreviewer
 from .settings_dialog import CroProSettingsDialog
-from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel
+from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel, StatusBar
 
 logfile: Optional[TextIO] = None
 
@@ -62,9 +62,7 @@ class MainDialogUI(QDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(parent=mw, *args, **kwargs)
-        self.statSuccessLabel = QLabel()
-        self.statNoMatchingModelLabel = QLabel()
-        self.statDupeLabel = QLabel()
+        self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
         self.currentProfileDeckCombo = DeckCombo()
@@ -86,23 +84,6 @@ class MainDialogUI(QDialog):
         self.filterEdit.setFocus()
         self.setDefaults()
 
-    def makeStatsRow(self):
-        stats_row = QVBoxLayout()
-
-        self.statSuccessLabel.setStyleSheet('QLabel { color : green; }')
-        self.statSuccessLabel.hide()
-        stats_row.addWidget(self.statSuccessLabel)
-
-        self.statNoMatchingModelLabel.setStyleSheet('QLabel { color : red; }')
-        self.statNoMatchingModelLabel.hide()
-        stats_row.addWidget(self.statNoMatchingModelLabel)
-
-        self.statDupeLabel.setStyleSheet('QLabel { color : orange; }')
-        self.statDupeLabel.hide()
-        stats_row.addWidget(self.statDupeLabel)
-
-        return stats_row
-
     def makeFilterRow(self):
         filter_row = QHBoxLayout()
         filter_row.addWidget(self.filterEdit)
@@ -115,7 +96,7 @@ class MainDialogUI(QDialog):
         main_vbox.addLayout(self.makeFilterRow())
         main_vbox.addWidget(self.search_result_label)
         main_vbox.addWidget(self.noteList)
-        main_vbox.addLayout(self.makeStatsRow())
+        main_vbox.addLayout(self.status_bar)
         main_vbox.addLayout(self.makeInputRow())
         return main_vbox
 
@@ -232,8 +213,7 @@ class MainDialog(MainDialogUI):
         self.populate_ui()
 
     def populate_ui(self):
-        self.statSuccessLabel.hide()
-        self.statDupeLabel.hide()
+        self.status_bar.hide()
         self.populate_note_type_selection_combo()
         self.populate_current_profile_decks()
         # 1) If the combo box is emtpy the window is opened for the first time.
@@ -331,18 +311,8 @@ class MainDialog(MainDialogUI):
                 deck_id=self.currentProfileDeckCombo.currentData(),
             ))
 
-        if successes := results.count(ImportResult.success):
-            mw.reset()
-            self.statSuccessLabel.setText(f'{successes} notes successfully imported')
-            self.statSuccessLabel.show()
-        else:
-            self.statSuccessLabel.hide()
-
-        if dupes := results.count(ImportResult.dupe):
-            self.statDupeLabel.setText(f'{dupes} notes were duplicates, and skipped')
-            self.statDupeLabel.show()
-        else:
-            self.statDupeLabel.hide()
+        self.status_bar.set_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
+        mw.reset()
 
     def done(self, result_code):
         self.window_state.save()

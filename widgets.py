@@ -72,6 +72,42 @@ class SearchResultLabel(QLabel):
             self.show()
 
 
+class StatusBar(QHBoxLayout):
+    def __init__(self):
+        super().__init__()
+        self._add_success_label()
+        self._add_dupes_label()
+        self.addStretch()
+        self.hide()
+
+    def _add_dupes_label(self):
+        self._dupes_label = QLabel()
+        self._dupes_label.setStyleSheet('QLabel { color: #FF8C00; }')
+        self.addWidget(self._dupes_label)
+
+    def _add_success_label(self):
+        self._success_label = QLabel()
+        self._success_label.setStyleSheet('QLabel { color: #228B22; }')
+        self.addWidget(self._success_label)
+
+    def hide(self):
+        self._dupes_label.hide()
+        self._success_label.hide()
+
+    def set_status(self, successes: int, dupes: int):
+        if successes:
+            self._success_label.setText(f'{successes} notes successfully imported.')
+            self._success_label.show()
+        else:
+            self._success_label.hide()
+
+        if dupes:
+            self._dupes_label.setText(f'{dupes} notes were duplicates, and skipped.')
+            self._dupes_label.show()
+        else:
+            self._dupes_label.hide()
+
+
 class ItemBox(QWidget):
     class ItemButton(QPushButton):
         _close_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), 'img', 'close.png')))
