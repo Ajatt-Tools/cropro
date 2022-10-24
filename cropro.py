@@ -81,8 +81,8 @@ class MainDialogUI(QDialog):
         self.filterEdit.setPlaceholderText('<text to filter by>')
         self.setLayout(self.makeMainLayout())
         self.setWindowTitle('Cross Profile Search and Import')
-        self.filterEdit.setFocus()
         self.setDefaults()
+        self.filterEdit.setFocus()
 
     def makeFilterRow(self):
         filter_row = QHBoxLayout()
