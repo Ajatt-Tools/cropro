@@ -33,4 +33,4 @@ class CroProPreviewer(Previewer):
 
     def done(self, result_code):
         self.mw.col = self.current_col
-        super().done(result_code)
+        return super().done(result_code)

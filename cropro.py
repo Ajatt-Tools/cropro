@@ -317,7 +317,7 @@ class MainDialog(MainDialogUI):
     def done(self, result_code):
         self.window_state.save()
         self.other_col.close()
-        super().done(result_code)
+        return super().done(result_code)
 
 
 ######################################################################
@@ -326,7 +326,7 @@ class MainDialog(MainDialogUI):
 
 def init():
     # init dialog
-    d = mw.__cropro_main_dialog = MainDialog()
+    d = mw._cropro_main_dialog = MainDialog()
     # get AJT menu
     root_menu = menu_root_entry()
     # create a new menu item
