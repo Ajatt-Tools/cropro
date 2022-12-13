@@ -27,7 +27,7 @@ from aqt import mw, gui_hooks
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
-from .ajt_common import menu_root_entry
+from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .config import config, is_hidden
 from .note_importer import import_note, ImportResult
