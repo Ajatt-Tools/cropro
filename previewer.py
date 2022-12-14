@@ -10,14 +10,14 @@ from aqt.browser.previewer import Previewer
 
 
 class CroProPreviewer(Previewer):
-    def __init__(self, parent: QDialog, mw: AnkiQt, col: Collection, selected_nids: List):
+    def __init__(self, parent: QDialog, mw: AnkiQt, col: Collection, selected_nids: list):
         super().__init__(parent=parent, mw=mw, on_close=lambda: None)
         self.current_col = self.mw.col
         self.mw.col = col
         self.cards = self.get_cards(selected_nids)
         self.idx = 0
 
-    def get_cards(self, selected_nids: List) -> List[Card]:
+    def get_cards(self, selected_nids: list) -> list[Card]:
         cards = []
         for nid in selected_nids:
             for card in self.mw.col.getNote(nid).cards():

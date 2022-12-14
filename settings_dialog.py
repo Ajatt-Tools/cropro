@@ -16,7 +16,7 @@ def fetch_toggleables() -> Iterable[str]:
             yield key
 
 
-def make_checkboxes() -> Dict[str, QCheckBox]:
+def make_checkboxes() -> dict[str, QCheckBox]:
     return {key: QCheckBox(key.replace('_', ' ').capitalize()) for key in fetch_toggleables()}
 
 

@@ -17,11 +17,11 @@ class NameId(NamedTuple):
         return cls('None (create new if needed)', -1)
 
 
-def sorted_decks_and_ids(col: Collection) -> List[NameId]:
+def sorted_decks_and_ids(col: Collection) -> list[NameId]:
     return sorted(NameId(deck.name, deck.id) for deck in col.decks.all_names_and_ids())
 
 
-def get_other_profile_names() -> List[str]:
+def get_other_profile_names() -> list[str]:
     profiles = mw.pm.profiles()
     profiles.remove(mw.pm.name)
     return profiles
@@ -62,7 +62,7 @@ class CollectionManager:
         self._col = self._load(name)
         self._name = name
 
-    def deck_names_and_ids(self) -> List[NameId]:
+    def deck_names_and_ids(self) -> list[NameId]:
         return sorted_decks_and_ids(self._col)
 
     def find_notes(self, deck: NameId, filter_text: str):

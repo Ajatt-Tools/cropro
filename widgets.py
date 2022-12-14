@@ -128,12 +128,12 @@ class ItemBox(QWidget):
             self.setLayoutDirection(Qt.RightToLeft)
             qconnect(self.clicked, lambda: self.item_box.remove_item(text))
 
-    def __init__(self, parent: QWidget, initial_values: List[str]):
+    def __init__(self, parent: QWidget, initial_values: list[str]):
         super().__init__(parent=parent)
         self.items = dict.fromkeys(initial_values)
         self.setLayout(self._make_layout())
 
-    def values(self) -> List[str]:
+    def values(self) -> list[str]:
         return list(self.items)
 
     def _make_layout(self) -> QLayout:
