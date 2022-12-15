@@ -1,8 +1,14 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import Iterable, List
+import functools
+import re
+from typing import Iterable, Collection
 
+from anki.notes import Note
+from anki.sound import SoundOrVideoTag
+from anki.utils import html_to_text_line
+from aqt import sound
 from aqt.qt import *
 
 from .collection_manager import NameId
@@ -163,3 +169,118 @@ class ItemBox(QWidget):
             if text and text not in self.items:
                 self._add_item(text)
             edit.setText('')
+
+
+class AudioButtonList(QWidget):
+    """Displays play buttons."""
+    _play_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), 'img', 'play-button.svg')))
+
+    def __init__(self, video_tags: list[SoundOrVideoTag], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setLayout(layout := QHBoxLayout())
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
+        for tag in video_tags:
+            layout.addWidget(button := QPushButton())
+            qconnect(button.clicked, functools.partial(sound.av_player.play_tags, [tag, ]), )
+            button.setIcon(QIcon(self._play_icon))
+            button.setIconSize(QSize(16, 16))
+            button.setFixedSize(QSize(32, 32))
+            button.setStyleSheet('''
+                QPushButton {
+                    background-color: #eef0f2;
+                    color: #292c31;
+                    border-radius: 16px;
+                    padding: 8px 7px 8px 9px;
+                    border: 0px;
+                    outline: 0px;
+                }
+                QPushButton:pressed {
+                    background-color: #ced0d2;
+                }
+            ''')
+        layout.addStretch()
+
+
+class NoteList(QWidget):
+    _role = Qt.ItemDataRole.UserRole
+    _media_tag_regex = re.compile(r'\[sound:([^\[\]]+?\.[^\[\]]+?)]')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._note_list = QListWidget()
+        self._previewer = QTableWidget()
+        self._other_media_dir = None
+        self._setup_ui()
+        self.itemDoubleClicked = self._note_list.itemDoubleClicked
+        qconnect(self._note_list.currentItemChanged, self._preview_note)
+
+    def _setup_ui(self):
+        self.setLayout(layout := QHBoxLayout())
+        layout.addWidget(self._note_list)
+        layout.addWidget(self._previewer)
+
+        self._note_list.setAlternatingRowColors(True)
+        self._note_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+        self._previewer.horizontalHeader().setStretchLastSection(True)
+        self._previewer.horizontalHeader().hide()
+        # don't stretch rows with the mouse
+        self._previewer.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self._previewer.setHidden(True)
+
+    def _preview_note(self, current: QListWidgetItem, _previous: QListWidgetItem):
+        self._previewer.setHidden(current is None)
+        self._previewer.setRowCount(0)
+        if current is None:
+            return
+
+        note: Note = current.data(self._role)
+
+        self._previewer.setRowCount(len(note.keys()))
+        self._previewer.setColumnCount(1)
+
+        for row, field_content in enumerate(note.values()):
+            self._add_field(row, field_content)
+
+        self._previewer.setVerticalHeaderLabels(list(note.keys()))
+        self._previewer.resizeRowsToContents()
+        self._previewer.resizeColumnsToContents()
+
+    def _add_field(self, row: int, field_text: str):
+        self._previewer.removeCellWidget(row, 0)
+
+        if audio_files := re.findall(self._media_tag_regex, field_text):
+            tags = [SoundOrVideoTag(filename=os.path.join(self._other_media_dir, f)) for f in audio_files]
+            self._previewer.setCellWidget(row, 0, AudioButtonList(tags))
+        else:
+            table_item = QTableWidgetItem(field_text)
+            table_item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            self._previewer.setItem(row, 0, table_item)
+
+    def selected_notes(self) -> Collection[Note]:
+        return [item.data(self._role) for item in self._note_list.selectedItems()]
+
+    def clear_selection(self):
+        return self._note_list.clearSelection()
+
+    def clear(self):
+        self._note_list.clear()
+
+    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], media_dir: str):
+        self._other_media_dir = media_dir
+
+        def is_hidden(field_name: str) -> bool:
+            field_name = field_name.lower()
+            return any(hidden_field.lower() in field_name for hidden_field in hide_fields)
+
+        self.clear()
+        for note in notes:
+            item = QListWidgetItem()
+            item.setText(' | '.join(
+                html_to_text_line(field_content)
+                for field_name, field_content in note.items()
+                if not is_hidden(field_name) and field_content.strip())
+            )
+            item.setData(self._role, note)
+            self._note_list.addItem(item)

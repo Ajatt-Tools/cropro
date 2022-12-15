@@ -22,18 +22,17 @@ import os.path
 from collections import defaultdict
 from typing import Optional, TextIO
 
-from anki.utils import htmlToTextLine
 from aqt import mw, gui_hooks
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
 from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
-from .config import config, is_hidden
+from .config import config
 from .note_importer import import_note, ImportResult
 from .previewer import CroProPreviewer
 from .settings_dialog import CroProSettingsDialog
-from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel, StatusBar
+from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel, StatusBar, NoteList
 
 logfile: Optional[TextIO] = None
 
@@ -71,7 +70,7 @@ class MainDialogUI(QDialog):
         self.otherProfileNamesCombo = ComboBox()
         self.otherProfileDeckCombo = DeckCombo()
         self.filterButton = QPushButton('Filter')
-        self.noteList = QListWidget()
+        self.noteList = NoteList()
         self.settingsButton = PreferencesButton()
         self.note_type_selection_combo = ComboBox()
         disable_help_button(self)
@@ -187,8 +186,6 @@ class MainDialog(MainDialogUI):
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
         self.connectElements()
-        self.noteList.setAlternatingRowColors(True)
-        self.noteList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def connectElements(self):
         qconnect(self.noteList.itemDoubleClicked, self.previewCard)
@@ -204,7 +201,7 @@ class MainDialog(MainDialogUI):
             parent=self,
             mw=mw,
             col=self.other_col.col,
-            selected_nids=self.getSelectedNoteIDs(),
+            selected_notes=self.noteList.selected_notes(),
         )
         a.open()
 
@@ -263,7 +260,6 @@ class MainDialog(MainDialogUI):
 
     def updateNotesList(self):
         self.search_result_label.hide()
-        self.noteList.clear()
         self.open_other_col()
 
         if not self.filterEdit.text() and not config['allow_empty_search']:
@@ -275,38 +271,30 @@ class MainDialog(MainDialogUI):
         note_ids = self.other_col.find_notes(self.otherProfileDeckCombo.current_deck(), self.filterEdit.text())
         limited_note_ids = note_ids[:config['max_displayed_notes']]
 
-        for note_id in limited_note_ids:
-            note = self.other_col.get_note(note_id)
-            item = QListWidgetItem()
-            item.setText(' | '.join(
-                htmlToTextLine(field_content)
-                for field_name, field_content in note.items()
-                if not is_hidden(field_name) and field_content.strip())
-            )
-            item.setData(Qt.ItemDataRole.UserRole, note_id)
-            self.noteList.addItem(item)
+        self.noteList.set_notes(
+            map(self.other_col.get_note, limited_note_ids),
+            hide_fields=config['hidden_fields'],
+            media_dir=self.other_col.media_dir
+        )
 
         self.search_result_label.set_count(len(note_ids), len(limited_note_ids))
-
-    def getSelectedNoteIDs(self):
-        return [item.data(Qt.ItemDataRole.UserRole) for item in self.noteList.selectedItems()]
 
     def doImport(self):
         logDebug('beginning import')
 
-        # get the note ids of all selected notes
-        note_ids = self.getSelectedNoteIDs()
+        # get selected notes
+        notes = self.noteList.selected_notes()
 
         # clear the selection
-        self.noteList.clearSelection()
+        self.noteList.clear_selection()
 
-        logDebug(f'importing {len(note_ids)} notes')
+        logDebug(f'importing {len(notes)} notes')
 
         results = []
 
-        for nid in note_ids:
+        for note in notes:
             results.append(import_note(
-                other_note=self.other_col.get_note(nid),
+                other_note=note,
                 model_id=self.note_type_selection_combo.currentData(),
                 deck_id=self.currentProfileDeckCombo.currentData(),
             ))

@@ -5,6 +5,7 @@ import os
 from typing import Optional, NamedTuple
 
 from anki.collection import Collection
+from anki.notes import NoteId
 from aqt import mw
 
 
@@ -44,6 +45,10 @@ class CollectionManager:
     def col(self):
         return self._opened_cols[self.name]
 
+    @property
+    def media_dir(self):
+        return os.path.join(os.path.dirname(self.col.path), 'collection.media')
+
     @staticmethod
     def col_name_and_id() -> NameId:
         return NameId("Whole collection", -1)
@@ -77,5 +82,5 @@ class CollectionManager:
         else:
             return self.col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
 
-    def get_note(self, note_id):
+    def get_note(self, note_id: NoteId):
         return self.col.get_note(note_id)
