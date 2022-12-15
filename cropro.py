@@ -316,7 +316,7 @@ class MainDialog(MainDialogUI):
 
     def done(self, result_code):
         self.window_state.save()
-        self.other_col.close()
+        self.other_col.close_all()
         return super().done(result_code)
 
 
