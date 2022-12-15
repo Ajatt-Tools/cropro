@@ -192,9 +192,14 @@ class MainDialog(MainDialogUI):
         qconnect(self.otherProfileDeckCombo.currentIndexChanged, self.updateNotesList)
         qconnect(self.importButton.clicked, self.doImport)
         qconnect(self.filterButton.clicked, self.updateNotesList)
-        qconnect(self.settingsButton.clicked, lambda: CroProSettingsDialog(parent=self))
+        qconnect(self.settingsButton.clicked, self.on_settings_button_pressed)
         qconnect(self.filterEdit.editingFinished, self.updateNotesList)
         qconnect(self.otherProfileNamesCombo.currentIndexChanged, self.open_other_col)
+
+    def on_settings_button_pressed(self):
+        d = CroProSettingsDialog(parent=self)
+        qconnect(d.accepted, self.updateNotesList)
+        d.exec()
 
     def previewCard(self):
         a = CroProPreviewer(

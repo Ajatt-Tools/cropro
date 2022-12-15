@@ -6,6 +6,7 @@ from typing import Iterable
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
+from .ajt_common.about_menu import tweak_window
 from .config import config, write_config
 from .widgets import ItemBox, SpinBox
 
@@ -27,9 +28,8 @@ class CroProSettingsDialog(QDialog):
         QDialog.__init__(self, parent)
         disable_help_button(self)
         self._setup_ui()
+        tweak_window(self)
         restoreGeom(self, self.name, adjustSize=True)
-        self.exec()
-        saveGeom(self, self.name)
 
     def _setup_ui(self) -> None:
         self.setMinimumWidth(300)
@@ -76,6 +76,10 @@ class CroProSettingsDialog(QDialog):
             "Press space or comma to commit."
         )
 
+    def finished(self, result: int) -> None:
+        saveGeom(self, self.name)
+        return super().finished(result)
+
     def accept(self) -> None:
         config['max_displayed_notes'] = self.max_notes_edit.value()
         config['exported_tag'] = self.tag_edit.text()
@@ -83,4 +87,4 @@ class CroProSettingsDialog(QDialog):
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
         write_config()
-        QDialog.accept(self)
+        return super().accept()
