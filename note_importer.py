@@ -48,9 +48,11 @@ def copy_media_files(new_note: Note, other_note: Note) -> None:
 
 def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
     if model_id != NameId.none_type().id:
+        # use existing note type (even if its name or fields are different)
         return mw.col.models.get(model_id)
     else:
         # find a model in current profile that matches the name of model from other profile
+        # create a new note type (clone) if needed.
         matching_model = mw.col.models.by_name(reference_model.get('name'))
 
         if not matching_model or matching_model.keys() != reference_model.keys():
@@ -66,10 +68,8 @@ def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
     new_note.note_type()['did'] = deck_id
 
     for key in new_note.keys():
-        try:
+        if key in other_note:
             new_note[key] = str(other_note[key])
-        except KeyError:
-            pass
 
     # copy field tags into new note object
     if config.get('copy_tags'):
