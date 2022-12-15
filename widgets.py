@@ -64,6 +64,10 @@ class DeckCombo(ComboBox):
 
 
 class SearchResultLabel(QLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+
     def set_count(self, found: int, displayed: int):
         if found == 0:
             self.setText(f'No notes found')
@@ -203,6 +207,7 @@ class AudioButtonList(QWidget):
 
 
 class NoteList(QWidget):
+    """Lists notes and previews them."""
     _role = Qt.ItemDataRole.UserRole
     _media_tag_regex = re.compile(r'\[sound:([^\[\]]+?\.[^\[\]]+?)]')
 
@@ -217,8 +222,13 @@ class NoteList(QWidget):
 
     def _setup_ui(self):
         self.setLayout(layout := QHBoxLayout())
-        layout.addWidget(self._note_list)
-        layout.addWidget(self._previewer)
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+
+        layout.addWidget(splitter := QSplitter(Qt.Horizontal))
+        splitter.addWidget(self._note_list)
+        splitter.addWidget(self._previewer)
+        splitter.setCollapsible(0, False)
+        splitter.setCollapsible(1, True)
 
         self._note_list.setAlternatingRowColors(True)
         self._note_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
