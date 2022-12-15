@@ -274,7 +274,8 @@ class MainDialog(MainDialogUI):
         self.noteList.set_notes(
             map(self.other_col.get_note, limited_note_ids),
             hide_fields=config['hidden_fields'],
-            media_dir=self.other_col.media_dir
+            media_dir=self.other_col.media_dir,
+            previewer=config['preview_on_right_side'],
         )
 
         self.search_result_label.set_count(len(note_ids), len(limited_note_ids))

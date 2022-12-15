@@ -216,9 +216,10 @@ class NoteList(QWidget):
         self._note_list = QListWidget()
         self._previewer = QTableWidget()
         self._other_media_dir = None
+        self._enable_previewer = True
         self._setup_ui()
         self.itemDoubleClicked = self._note_list.itemDoubleClicked
-        qconnect(self._note_list.currentItemChanged, self._preview_note)
+        qconnect(self._note_list.currentItemChanged, self._on_current_item_changed)
 
     def _setup_ui(self):
         self.setLayout(layout := QHBoxLayout())
@@ -239,14 +240,15 @@ class NoteList(QWidget):
         self._previewer.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self._previewer.setHidden(True)
 
-    def _preview_note(self, current: QListWidgetItem, _previous: QListWidgetItem):
-        self._previewer.setHidden(current is None)
-        self._previewer.setRowCount(0)
-        if current is None:
-            return
+    def _on_current_item_changed(self, current: QListWidgetItem, _previous: QListWidgetItem):
+        if current is None or self._enable_previewer is False:
+            self._previewer.setRowCount(0)
+            self._previewer.setHidden(True)
+        else:
+            self._previewer.setHidden(False)
+            self._preview_note(current.data(self._role))
 
-        note: Note = current.data(self._role)
-
+    def _preview_note(self, note: Note):
         self._previewer.setRowCount(len(note.keys()))
         self._previewer.setColumnCount(1)
 
@@ -277,8 +279,9 @@ class NoteList(QWidget):
     def clear(self):
         self._note_list.clear()
 
-    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], media_dir: str):
+    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], media_dir: str, previewer: bool = True):
         self._other_media_dir = media_dir
+        self._enable_previewer = previewer
 
         def is_hidden(field_name: str) -> bool:
             field_name = field_name.lower()

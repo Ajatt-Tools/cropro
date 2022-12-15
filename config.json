@@ -10,5 +10,6 @@
   ],
   "skip_duplicates": true,
   "copy_tags": true,
-  "allow_empty_search": false
+  "allow_empty_search": false,
+  "preview_on_right_side": true
 }

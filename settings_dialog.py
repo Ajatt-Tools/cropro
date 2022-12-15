@@ -1,7 +1,7 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import Iterable, Dict
+from typing import Iterable
 
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
