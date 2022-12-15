@@ -283,13 +283,13 @@ class MainDialog(MainDialogUI):
                 for field_name, field_content in note.items()
                 if not is_hidden(field_name) and field_content.strip())
             )
-            item.setData(Qt.UserRole, note_id)
+            item.setData(Qt.ItemDataRole.UserRole, note_id)
             self.noteList.addItem(item)
 
         self.search_result_label.set_count(len(note_ids), len(limited_note_ids))
 
     def getSelectedNoteIDs(self):
-        return [item.data(Qt.UserRole) for item in self.noteList.selectedItems()]
+        return [item.data(Qt.ItemDataRole.UserRole) for item in self.noteList.selectedItems()]
 
     def doImport(self):
         logDebug('beginning import')

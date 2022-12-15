@@ -125,7 +125,7 @@ class ItemBox(QWidget):
                 }
             ''')
             self.setIcon(self._close_icon)
-            self.setLayoutDirection(Qt.RightToLeft)
+            self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
             qconnect(self.clicked, lambda: self.item_box.remove_item(text))
 
     def __init__(self, parent: QWidget, initial_values: list[str]):

@@ -40,7 +40,7 @@ class CroProSettingsDialog(QDialog):
 
     def _make_layout(self) -> QLayout:
         self.hidden_fields_box = ItemBox(parent=self, initial_values=config['hidden_fields'])
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.checkboxes = make_checkboxes()
 
         layout = QVBoxLayout()
