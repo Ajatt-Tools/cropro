@@ -47,7 +47,7 @@ class CollectionManager:
 
     @property
     def media_dir(self):
-        return os.path.join(os.path.dirname(self.col.path), 'collection.media')
+        return self.col.media.dir()
 
     @staticmethod
     def col_name_and_id() -> NameId:
