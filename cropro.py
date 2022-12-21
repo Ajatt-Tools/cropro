@@ -20,7 +20,6 @@ TODO:
 import json
 import os.path
 from collections import defaultdict
-from typing import Optional, TextIO
 
 from aqt import mw, gui_hooks
 from aqt.qt import *
@@ -28,26 +27,13 @@ from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
 from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
+from .common import ADDON_NAME, LogDebug
 from .config import config
 from .note_importer import import_note, ImportResult
 from .settings_dialog import CroProSettingsDialog
 from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel, StatusBar, NoteList
 
-logfile: Optional[TextIO] = None
-
-
-def logDebug(msg: str) -> None:
-    if not config['enable_debug_log']:
-        return
-
-    global logfile
-    if not logfile:
-        fn = os.path.join(mw.pm.base, 'cropro.log')
-        print(f'CroPro debug: opening log file "{fn}"')
-        logfile = open(fn, 'a')
-    logfile.write(str(msg) + '\n')
-    logfile.flush()
-    print('CroPro debug:', str(msg))
+logDebug = LogDebug()
 
 
 #############################################################################
