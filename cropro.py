@@ -30,7 +30,6 @@ from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .config import config
 from .note_importer import import_note, ImportResult
-from .previewer import CroProPreviewer
 from .settings_dialog import CroProSettingsDialog
 from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel, StatusBar, NoteList
 
@@ -186,7 +185,6 @@ class MainDialog(MainDialogUI):
         self.connectElements()
 
     def connectElements(self):
-        qconnect(self.noteList.itemDoubleClicked, self.previewCard)
         qconnect(self.otherProfileDeckCombo.currentIndexChanged, self.updateNotesList)
         qconnect(self.importButton.clicked, self.doImport)
         qconnect(self.filterButton.clicked, self.updateNotesList)
@@ -198,15 +196,6 @@ class MainDialog(MainDialogUI):
         d = CroProSettingsDialog(parent=self)
         qconnect(d.accepted, self.updateNotesList)
         d.exec()
-
-    def previewCard(self):
-        a = CroProPreviewer(
-            parent=self,
-            mw=mw,
-            col=self.other_col.col,
-            selected_notes=self.noteList.selected_notes(),
-        )
-        a.open()
 
     def show(self):
         super().show()
