@@ -1,10 +1,8 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import base64
 import os.path
 import re
-from gettext import gettext as _
 from typing import Iterable, Collection, Optional
 
 from anki.notes import Note
@@ -13,7 +11,7 @@ from aqt.qt import *
 from aqt.webview import AnkiWebView
 
 from .collection_manager import NameId
-from .web import get_previewer_css_relpath, get_previewer_html
+from .web import get_previewer_css_relpath, get_previewer_html, make_play_buttons, make_images
 
 WIDGET_HEIGHT = 29
 
@@ -194,48 +192,39 @@ class NotePreviewer(AnkiWebView):
         self.setContentsMargins(0, 0, 0, 0)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-    def load_note(self, note: Note, note_media_dir: str):
+    def load_note(self, note: Note, note_media_dir: str) -> None:
         self._note_media_dir = note_media_dir
         rows: list[str] = []
         for field_name, field_content in note.items():
-            rows.append((
+            rows.append(
                 f'<div class="name">{field_name}</div>'
                 f'<div class="content">{self._create_html_row_for_field(field_content)}</div>'
-            ))
+            )
         self.stdHtml(
             get_previewer_html().replace('<!--CONTENT-->', ''.join(rows)),
             js=[],
             css=[get_previewer_css_relpath(), ]
         )
 
-    def _create_html_row_for_field(self, field_content: str):
+    def _create_html_row_for_field(self, field_content: str) -> str:
         """Creates a row for the previewer showing the current note's field."""
         if audio_files := re.findall(self._media_tag_regex, field_content):
-            def make_buttons() -> str:
-                return ''.join(
-                    """
-                    <button class="cropro__play_button" title="{}" onclick='pycmd("cropro__play_file:{}");'></button>
-                    """.format(_(f"Play file: {f}"), os.path.join(self._note_media_dir, f), )
-                    for f in audio_files
-                )
-
-            return f'<div class="cropro__button_list">{make_buttons()}</div>'
-        elif image_files := re.findall(self._image_tag_regex, field_content):
-            def make_images():
-                return ''.join([
-                    f'<img alt="image:{f}" src="{self._img_as_base64_src(f)}"/>'
-                    for f in image_files
-                ])
-
-            return f'<div class="cropro__image_list">{make_images()}</div>'
-        else:
-            return f'<span class="cropro__text_item">{html_to_text_line(field_content)}</span>'
-
-    def _img_as_base64_src(self, filename: str):
-        with open(os.path.join(self._note_media_dir, filename), 'rb') as f:
             return (
-                f'data:image/{os.path.splitext(filename)[-1]};base64,'
-                f'{base64.b64encode(f.read()).decode("ascii")}'
+                '<div class="cropro__button_list">'
+                f'{make_play_buttons(os.path.join(self._note_media_dir, f) for f in audio_files)}'
+                '</div>'
+            )
+        elif image_files := re.findall(self._image_tag_regex, field_content):
+            return (
+                '<div class="cropro__image_list">'
+                f'{make_images(os.path.join(self._note_media_dir, f) for f in image_files)}'
+                '</div>'
+            )
+        else:
+            return (
+                '<span class="cropro__text_item">'
+                f'{html_to_text_line(field_content)}'
+                '</span>'
             )
 
 
