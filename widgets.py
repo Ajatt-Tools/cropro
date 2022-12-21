@@ -189,7 +189,7 @@ class NotePreviewer(AnkiWebView):
         self.set_title("Note previewer")
         self.disable_zoom()
         self.setProperty("url", QUrl("about:blank"))
-        self.setMinimumSize(320, 320)
+        self.setMinimumSize(200, 320)
         self.setContentsMargins(0, 0, 0, 0)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 

@@ -21,23 +21,23 @@ main {
 body {
     margin: 0 !important;
     padding: 0 !important;
+    background-color: hsl(0, 0%, 70%);
 }
 
 main {
     display: grid;
     grid-template-columns: minmax(100px, auto) minmax(150px, 1fr);
-    background-color: hsl(0, 0%, 70%);
     gap: 1px;
     min-height: 100vh;
 }
 
-main>div {
+main>* {
     padding: 3px;
 }
 
 .name {
     font-weight: bold;
-    background-color: hsl(0, 0%, 85%);
+    background-color: hsl(0, 0%, 88%);
     color: hsl(0, 0%, 25%);
 }
 
