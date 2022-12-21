@@ -3,10 +3,12 @@
 
 from typing import Iterable
 
+from aqt import mw
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
-from .ajt_common.about_menu import tweak_window
+from .ajt_common.about_menu import tweak_window, menu_root_entry
+from .common import ADDON_NAME
 from .config import config, write_config
 from .widgets import ItemBox, SpinBox
 
@@ -24,8 +26,8 @@ def make_checkboxes() -> dict[str, QCheckBox]:
 class CroProSettingsDialog(QDialog):
     name = 'cropro_settings_dialog'
 
-    def __init__(self, parent: QDialog) -> None:
-        QDialog.__init__(self, parent)
+    def __init__(self, *args, **kwargs) -> None:
+        QDialog.__init__(self, *args, **kwargs)
         disable_help_button(self)
         self._setup_ui()
         tweak_window(self)
@@ -33,7 +35,7 @@ class CroProSettingsDialog(QDialog):
 
     def _setup_ui(self) -> None:
         self.setMinimumWidth(300)
-        self.setWindowTitle("CroPro Settings")
+        self.setWindowTitle(f"{ADDON_NAME} Settings")
         self.setLayout(self._make_layout())
         self.connect_widgets()
         self.add_tooltips()
@@ -88,3 +90,13 @@ class CroProSettingsDialog(QDialog):
             config[key] = checkbox.isChecked()
         write_config()
         return super().accept()
+
+
+def init():
+    def on_open_settings():
+        dialog = CroProSettingsDialog(parent=mw)
+        dialog.exec()
+
+    root_menu = menu_root_entry()
+    action = root_menu.addAction(f"{ADDON_NAME} Options...")
+    qconnect(action.triggered, on_open_settings)
