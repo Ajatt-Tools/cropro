@@ -32,16 +32,6 @@ class ProfileNameLabel(QLabel):
         self.setFont(font)
 
 
-class PreferencesButton(QPushButton):
-    _icon = QIcon(os.path.join(os.path.dirname(__file__), 'img', 'gear.svg'))
-
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.setText('Preferences')
-        self.setIcon(self._icon)
-        self.setMaximumHeight(WIDGET_HEIGHT)
-
-
 class ComboBox(QComboBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -83,8 +73,8 @@ class SearchResultLabel(QLabel):
 
 
 class StatusBar(QHBoxLayout):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._add_success_label()
         self._add_dupes_label()
         self.addStretch()

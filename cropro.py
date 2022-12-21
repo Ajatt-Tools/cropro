@@ -30,8 +30,7 @@ from .collection_manager import CollectionManager, sorted_decks_and_ids, get_oth
 from .common import ADDON_NAME, LogDebug
 from .config import config
 from .note_importer import import_note, ImportResult
-from .settings_dialog import CroProSettingsDialog
-from .widgets import SearchResultLabel, DeckCombo, PreferencesButton, ComboBox, ProfileNameLabel, StatusBar, NoteList
+from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
 
 logDebug = LogDebug()
 
@@ -45,7 +44,7 @@ class MainDialogUI(QDialog):
     name = "cropro_dialog"
 
     def __init__(self, *args, **kwargs):
-        super().__init__(parent=mw, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
@@ -55,16 +54,14 @@ class MainDialogUI(QDialog):
         self.otherProfileNamesCombo = ComboBox()
         self.otherProfileDeckCombo = DeckCombo()
         self.filterButton = QPushButton('Filter')
-        self.noteList = NoteList(self)
-        self.settingsButton = PreferencesButton(self)
+        self.noteList = NoteList()
         self.note_type_selection_combo = ComboBox()
-        disable_help_button(self)
         self.initUI()
 
     def initUI(self):
         self.filterEdit.setPlaceholderText('<text to filter by>')
         self.setLayout(self.makeMainLayout())
-        self.setWindowTitle('Cross Profile Search and Import')
+        self.setWindowTitle(ADDON_NAME)
         self.setDefaults()
 
     def makeFilterRow(self) -> QLayout:
@@ -89,14 +86,17 @@ class MainDialogUI(QDialog):
         other_profile_deck_row.addWidget(self.otherProfileNamesCombo)
         other_profile_deck_row.addWidget(QLabel('Deck:'))
         other_profile_deck_row.addWidget(self.otherProfileDeckCombo)
-        other_profile_deck_row.addStretch(1)
-        other_profile_deck_row.addWidget(self.settingsButton)
         return other_profile_deck_row
 
     def setDefaults(self):
         combo_min_width = 120
         self.setMinimumSize(640, 480)
-
+        for w in (
+                self.importButton,
+                self.filterButton,
+                self.filterEdit,
+        ):
+            w.setMinimumHeight(WIDGET_HEIGHT)
         for combo in (
                 self.otherProfileNamesCombo,
                 self.otherProfileDeckCombo,
@@ -104,10 +104,10 @@ class MainDialogUI(QDialog):
                 self.note_type_selection_combo,
         ):
             combo.setMinimumWidth(combo_min_width)
+            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def makeInputRow(self) -> QLayout:
         import_row = QHBoxLayout()
-
         import_row.addWidget(QLabel('Into Profile:'))
         import_row.addWidget(self.into_profile_label)
         import_row.addWidget(QLabel('Deck:'))
@@ -116,7 +116,6 @@ class MainDialogUI(QDialog):
         import_row.addWidget(self.note_type_selection_combo)
         import_row.addStretch(1)
         import_row.addWidget(self.importButton)
-
         return import_row
 
 
@@ -169,24 +168,18 @@ class MainDialog(MainDialogUI):
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
         self.connectElements()
+        disable_help_button(self)
 
     def connectElements(self):
         qconnect(self.otherProfileDeckCombo.currentIndexChanged, self.updateNotesList)
         qconnect(self.importButton.clicked, self.doImport)
         qconnect(self.filterButton.clicked, self.updateNotesList)
-        qconnect(self.settingsButton.clicked, self.on_settings_button_pressed)
         qconnect(self.filterEdit.editingFinished, self.updateNotesList)
         qconnect(self.otherProfileNamesCombo.currentIndexChanged, self.open_other_col)
-
-    def on_settings_button_pressed(self):
-        d = CroProSettingsDialog(parent=self)
-        qconnect(d.accepted, self.updateNotesList)
-        d.exec()
 
     def show(self):
         super().show()
         self.populate_ui()
-        self.settingsButton.clearFocus()
         self.filterEdit.setFocus()
 
     def populate_ui(self):
@@ -194,7 +187,7 @@ class MainDialog(MainDialogUI):
         self.populate_note_type_selection_combo()
         self.populate_current_profile_decks()
         # 1) If the combo box is emtpy the window is opened for the first time.
-        # 2) If it happens to contain the current profile name the user has switched profiles.
+        # 2) If it happens to contain the current profile name, the user has switched profiles.
         if self.otherProfileNamesCombo.count() == 0 or self.otherProfileNamesCombo.findText(mw.pm.name) != -1:
             self.populate_other_profile_names()
         self.open_other_col()
@@ -296,11 +289,11 @@ class MainDialog(MainDialogUI):
 
 def init():
     # init dialog
-    d = mw._cropro_main_dialog = MainDialog()
+    d = mw._cropro_main_dialog = MainDialog(parent=mw)
     # get AJT menu
     root_menu = menu_root_entry()
     # create a new menu item
-    action = QAction('Cross Profile Search and Import', root_menu)
+    action = QAction(ADDON_NAME, root_menu)
     # set it to call show function when it's clicked
     qconnect(action.triggered, d.show)
     # and add it to the tools menu
