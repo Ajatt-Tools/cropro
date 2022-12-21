@@ -23,7 +23,7 @@ def get_previewer_html():
 
 def handle_js_messages(handled: tuple[bool, Any], message: str, _context: Any) -> tuple[bool, Any]:
     if handled[0] is False and message.startswith('cropro__play_file:'):
-        file_path = message.split(':')[-1]
+        file_path = message.split(':', maxsplit=1)[-1]
         sound.av_player.play_tags([SoundOrVideoTag(file_path), ])
         return True, None
 
