@@ -1,6 +1,7 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import base64
 import os.path
 import re
 from gettext import gettext as _
@@ -65,8 +66,8 @@ class DeckCombo(ComboBox):
 
 
 class SearchResultLabel(QLabel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, ):
+        super().__init__(*args, )
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
 
     def set_count(self, found: int, displayed: int):
@@ -193,9 +194,6 @@ class NotePreviewer(AnkiWebView):
         self.setContentsMargins(0, 0, 0, 0)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-    def clear_all(self):
-        pass
-
     def load_note(self, note: Note, note_media_dir: str):
         self._note_media_dir = note_media_dir
         rows: list[str] = []
@@ -223,12 +221,22 @@ class NotePreviewer(AnkiWebView):
 
             return f'<div class="cropro__button_list">{make_buttons()}</div>'
         elif image_files := re.findall(self._image_tag_regex, field_content):
-            return ''.join([
-                f'<img alt="image" src="{os.path.join(self._note_media_dir, f)}">'
-                for f in image_files
-            ])
+            def make_images():
+                return ''.join([
+                    f'<img alt="image:{f}" src="{self._img_as_base64_src(f)}"/>'
+                    for f in image_files
+                ])
+
+            return f'<div class="cropro__image_list">{make_images()}</div>'
         else:
-            return f'<span class="text_item">{html_to_text_line(field_content)}</span>'
+            return f'<span class="cropro__text_item">{html_to_text_line(field_content)}</span>'
+
+    def _img_as_base64_src(self, filename: str):
+        with open(os.path.join(self._note_media_dir, filename), 'rb') as f:
+            return (
+                f'data:image/{os.path.splitext(filename)[-1]};base64,'
+                f'{base64.b64encode(f.read()).decode("ascii")}'
+            )
 
 
 class NoteList(QWidget):
@@ -262,8 +270,6 @@ class NoteList(QWidget):
         self._previewer.setHidden(True)
 
     def _on_current_item_changed(self, current: QListWidgetItem, _previous: QListWidgetItem):
-        self._previewer.clear_all()
-
         if current is None or self._enable_previewer is False:
             self._previewer.setHidden(True)
         else:

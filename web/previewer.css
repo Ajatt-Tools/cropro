@@ -1,3 +1,7 @@
+:root {
+    --elem-pad: 3px;
+}
+
 *,
 *::before,
 *::after {
@@ -11,6 +15,10 @@ picture,
 video {
     max-width: 100%;
     display: block;
+}
+
+img {
+    max-height: 50vh;
 }
 
 body,
@@ -32,7 +40,7 @@ main {
 }
 
 main>* {
-    padding: 3px;
+    padding: var(--elem-pad);
 }
 
 .name {
@@ -48,7 +56,13 @@ main>* {
 .cropro__button_list {
     display: flex;
     flex-flow: row nowrap;
-    gap: 4px;
+    gap: var(--elem-pad);
+}
+
+.cropro__image_list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: var(--elem-pad);
 }
 
 button.cropro__play_button {
