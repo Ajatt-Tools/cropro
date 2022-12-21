@@ -1,17 +1,18 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import functools
+import os.path
 import re
-from typing import Iterable, Collection
+from gettext import gettext as _
+from typing import Iterable, Collection, Optional
 
 from anki.notes import Note
-from anki.sound import SoundOrVideoTag
 from anki.utils import html_to_text_line
-from aqt import sound
 from aqt.qt import *
+from aqt.webview import AnkiWebView
 
 from .collection_manager import NameId
+from .web import get_previewer_css_relpath, get_previewer_html
 
 WIDGET_HEIGHT = 29
 
@@ -66,7 +67,7 @@ class DeckCombo(ComboBox):
 class SearchResultLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
 
     def set_count(self, found: int, displayed: int):
         if found == 0:
@@ -119,6 +120,8 @@ class StatusBar(QHBoxLayout):
 
 
 class ItemBox(QWidget):
+    """Displays tag-like labels with × icons. Pressing on the × deletes the tag."""
+
     class ItemButton(QPushButton):
         _close_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), 'img', 'close.png')))
 
@@ -175,46 +178,67 @@ class ItemBox(QWidget):
             edit.setText('')
 
 
-class AudioButtonList(QWidget):
-    """Displays play buttons."""
-    _play_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), 'img', 'play-button.svg')))
+class NotePreviewer(AnkiWebView):
+    """Previews a note in a Form Layout using a webview."""
+    _media_tag_regex = re.compile(r'\[sound:([^\[\]]+?\.[^\[\]]+?)]')
+    _image_tag_regex = re.compile(r'<img [^<>]*src="([^"<>]+)"[^<>]*>')
 
-    def __init__(self, video_tags: list[SoundOrVideoTag], *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setLayout(layout := QHBoxLayout())
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(4)
-        for tag in video_tags:
-            layout.addWidget(button := QPushButton())
-            qconnect(button.clicked, functools.partial(sound.av_player.play_tags, [tag, ]), )
-            button.setIcon(QIcon(self._play_icon))
-            button.setIconSize(QSize(16, 16))
-            button.setFixedSize(QSize(32, 32))
-            button.setStyleSheet('''
-                QPushButton {
-                    background-color: #eef0f2;
-                    color: #292c31;
-                    border-radius: 16px;
-                    padding: 8px 7px 8px 9px;
-                    border: 0px;
-                    outline: 0px;
-                }
-                QPushButton:pressed {
-                    background-color: #ced0d2;
-                }
-            ''')
-        layout.addStretch()
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self._note_media_dir: Optional[str] = None
+        self.set_title("Note previewer")
+        self.disable_zoom()
+        self.setProperty("url", QUrl("about:blank"))
+        self.setMinimumSize(320, 320)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+    def clear_all(self):
+        pass
+
+    def load_note(self, note: Note, note_media_dir: str):
+        self._note_media_dir = note_media_dir
+        rows: list[str] = []
+        for field_name, field_content in note.items():
+            rows.append((
+                f'<div class="name">{field_name}</div>'
+                f'<div class="content">{self._create_html_row_for_field(field_content)}</div>'
+            ))
+        self.stdHtml(
+            get_previewer_html().replace('<!--CONTENT-->', ''.join(rows)),
+            js=[],
+            css=[get_previewer_css_relpath(), ]
+        )
+
+    def _create_html_row_for_field(self, field_content: str):
+        """Creates a row for the previewer showing the current note's field."""
+        if audio_files := re.findall(self._media_tag_regex, field_content):
+            def make_buttons() -> str:
+                return ''.join(
+                    """
+                    <button class="cropro__play_button" title="{}" onclick='pycmd("cropro__play_file:{}");'></button>
+                    """.format(_(f"Play file: {f}"), os.path.join(self._note_media_dir, f), )
+                    for f in audio_files
+                )
+
+            return f'<div class="cropro__button_list">{make_buttons()}</div>'
+        elif image_files := re.findall(self._image_tag_regex, field_content):
+            return ''.join([
+                f'<img alt="image" src="{os.path.join(self._note_media_dir, f)}">'
+                for f in image_files
+            ])
+        else:
+            return f'<span class="text_item">{html_to_text_line(field_content)}</span>'
 
 
 class NoteList(QWidget):
     """Lists notes and previews them."""
     _role = Qt.ItemDataRole.UserRole
-    _media_tag_regex = re.compile(r'\[sound:([^\[\]]+?\.[^\[\]]+?)]')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._note_list = QListWidget()
-        self._previewer = QTableWidget()
+        self._note_list = QListWidget(self)
+        self._previewer = NotePreviewer(self)
         self._other_media_dir = None
         self._enable_previewer = True
         self._setup_ui()
@@ -223,52 +247,28 @@ class NoteList(QWidget):
 
     def _setup_ui(self):
         self.setLayout(layout := QHBoxLayout())
-        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 
         layout.addWidget(splitter := QSplitter(Qt.Horizontal))
         splitter.addWidget(self._note_list)
         splitter.addWidget(self._previewer)
         splitter.setCollapsible(0, False)
         splitter.setCollapsible(1, True)
+        splitter.setSizes([200, 100])
 
         self._note_list.setAlternatingRowColors(True)
         self._note_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-        self._previewer.horizontalHeader().setStretchLastSection(True)
-        self._previewer.horizontalHeader().hide()
-        # don't stretch rows with the mouse
-        self._previewer.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self._previewer.setHidden(True)
 
     def _on_current_item_changed(self, current: QListWidgetItem, _previous: QListWidgetItem):
+        self._previewer.clear_all()
+
         if current is None or self._enable_previewer is False:
-            self._previewer.setRowCount(0)
             self._previewer.setHidden(True)
         else:
             self._previewer.setHidden(False)
-            self._preview_note(current.data(self._role))
-
-    def _preview_note(self, note: Note):
-        self._previewer.setRowCount(len(note.keys()))
-        self._previewer.setColumnCount(1)
-
-        for row, field_content in enumerate(note.values()):
-            self._add_field(row, field_content)
-
-        self._previewer.setVerticalHeaderLabels(list(note.keys()))
-        self._previewer.resizeRowsToContents()
-        self._previewer.resizeColumnsToContents()
-
-    def _add_field(self, row: int, field_text: str):
-        self._previewer.removeCellWidget(row, 0)
-
-        if audio_files := re.findall(self._media_tag_regex, field_text):
-            tags = [SoundOrVideoTag(filename=os.path.join(self._other_media_dir, f)) for f in audio_files]
-            self._previewer.setCellWidget(row, 0, AudioButtonList(tags))
-        else:
-            table_item = QTableWidgetItem(field_text)
-            table_item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
-            self._previewer.setItem(row, 0, table_item)
+            self._previewer.load_note(current.data(self._role), self._other_media_dir)
 
     def selected_notes(self) -> Collection[Note]:
         return [item.data(self._role) for item in self._note_list.selectedItems()]

@@ -70,8 +70,8 @@ class MainDialogUI(QDialog):
         self.otherProfileNamesCombo = ComboBox()
         self.otherProfileDeckCombo = DeckCombo()
         self.filterButton = QPushButton('Filter')
-        self.noteList = NoteList()
-        self.settingsButton = PreferencesButton()
+        self.noteList = NoteList(self)
+        self.settingsButton = PreferencesButton(self)
         self.note_type_selection_combo = ComboBox()
         disable_help_button(self)
         self.initUI()
@@ -81,15 +81,14 @@ class MainDialogUI(QDialog):
         self.setLayout(self.makeMainLayout())
         self.setWindowTitle('Cross Profile Search and Import')
         self.setDefaults()
-        self.filterEdit.setFocus()
 
-    def makeFilterRow(self):
+    def makeFilterRow(self) -> QLayout:
         filter_row = QHBoxLayout()
         filter_row.addWidget(self.filterEdit)
         filter_row.addWidget(self.filterButton)
         return filter_row
 
-    def makeMainLayout(self):
+    def makeMainLayout(self) -> QLayout:
         main_vbox = QVBoxLayout()
         main_vbox.addLayout(self.makeOtherProfileSettingsBox())
         main_vbox.addLayout(self.makeFilterRow())
@@ -99,7 +98,7 @@ class MainDialogUI(QDialog):
         main_vbox.addLayout(self.makeInputRow())
         return main_vbox
 
-    def makeOtherProfileSettingsBox(self):
+    def makeOtherProfileSettingsBox(self) -> QLayout:
         other_profile_deck_row = QHBoxLayout()
         other_profile_deck_row.addWidget(QLabel('Import From Profile:'))
         other_profile_deck_row.addWidget(self.otherProfileNamesCombo)
@@ -107,7 +106,6 @@ class MainDialogUI(QDialog):
         other_profile_deck_row.addWidget(self.otherProfileDeckCombo)
         other_profile_deck_row.addStretch(1)
         other_profile_deck_row.addWidget(self.settingsButton)
-
         return other_profile_deck_row
 
     def setDefaults(self):
@@ -122,7 +120,7 @@ class MainDialogUI(QDialog):
         ):
             combo.setMinimumWidth(combo_min_width)
 
-    def makeInputRow(self):
+    def makeInputRow(self) -> QLayout:
         import_row = QHBoxLayout()
 
         import_row.addWidget(QLabel('Into Profile:'))
@@ -181,8 +179,8 @@ class WindowState:
 
 
 class MainDialog(MainDialogUI):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
         self.connectElements()
@@ -213,6 +211,8 @@ class MainDialog(MainDialogUI):
     def show(self):
         super().show()
         self.populate_ui()
+        self.settingsButton.clearFocus()
+        self.filterEdit.setFocus()
 
     def populate_ui(self):
         self.status_bar.hide()
@@ -264,6 +264,7 @@ class MainDialog(MainDialogUI):
         ])
 
     def updateNotesList(self):
+        self.filterEdit.setFocus()
         self.search_result_label.hide()
         self.open_other_col()
 
