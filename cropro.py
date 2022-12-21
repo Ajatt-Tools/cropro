@@ -142,7 +142,7 @@ class MainDialogUI(QDialog):
 class WindowState:
     def __init__(self, window: MainDialogUI):
         self._window = window
-        self._json_filepath = os.path.join(os.path.dirname(__file__), 'window_state.json')
+        self._json_filepath = os.path.join(os.path.dirname(__file__), 'user_files', 'window_state.json')
         self._map = {
             "from_profile": self._window.otherProfileNamesCombo,
             "from_deck": self._window.otherProfileDeckCombo,
