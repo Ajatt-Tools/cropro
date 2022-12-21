@@ -26,6 +26,8 @@ def handle_js_messages(handled: tuple[bool, Any], message: str, _context: Any) -
         file_path = message.split(':', maxsplit=1)[-1]
         sound.av_player.play_tags([SoundOrVideoTag(file_path), ])
         return True, None
+    else:
+        return handled
 
 
 def init():
