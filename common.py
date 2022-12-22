@@ -24,6 +24,7 @@ class LogDebug:
         gui_hooks.profile_will_close.append(self.close)
 
     def write(self, msg: str) -> None:
+        print('CroPro debug:', str(msg))
         if not config['enable_debug_log']:
             return
         if not self._logfile:
@@ -32,7 +33,6 @@ class LogDebug:
             self._logfile = open(path, 'a')
         self._logfile.write(str(msg) + '\n')
         self._logfile.flush()
-        print('CroPro debug:', str(msg))
 
     def __call__(self, *args, **kwargs):
         return self.write(*args, **kwargs)
