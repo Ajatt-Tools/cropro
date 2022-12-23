@@ -8,7 +8,7 @@ from typing import NamedTuple, Iterable
 
 from anki.models import NoteType
 from anki.notes import Note
-from anki.utils import joinFields
+from anki.utils import join_fields
 from aqt import mw
 from aqt.qt import *
 
@@ -31,7 +31,7 @@ def files_in_note(note: Note) -> Iterable[FileInfo]:
     Returns FileInfo for every file referenced by the note.
     Skips missing files.
     """
-    for file_ref in note.col.media.filesInStr(note.mid, joinFields(note.fields)):
+    for file_ref in note.col.media.files_in_str(note.mid, join_fields(note.fields)):
         if os.path.exists(file_path := os.path.join(note.col.media.dir(), file_ref)):
             yield FileInfo(file_ref, file_path)
 

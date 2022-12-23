@@ -236,7 +236,7 @@ class NoteList(QWidget):
         self.setLayout(layout := QHBoxLayout())
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 
-        layout.addWidget(splitter := QSplitter(Qt.Horizontal))
+        layout.addWidget(splitter := QSplitter(Qt.Orientation.Horizontal))
         splitter.addWidget(self._note_list)
         splitter.addWidget(self._previewer)
         splitter.setCollapsible(0, False)
@@ -244,7 +244,7 @@ class NoteList(QWidget):
         splitter.setSizes([200, 100])
 
         self._note_list.setAlternatingRowColors(True)
-        self._note_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self._note_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
 
         self._previewer.setHidden(True)
 

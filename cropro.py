@@ -104,7 +104,7 @@ class MainDialogUI(QDialog):
                 self.note_type_selection_combo,
         ):
             combo.setMinimumWidth(combo_min_width)
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def make_input_row(self) -> QLayout:
         import_row = QHBoxLayout()
