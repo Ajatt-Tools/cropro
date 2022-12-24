@@ -1,5 +1,18 @@
 :root {
     --elem-pad: 3px;
+    --body-bg: hsl(0, 0%, 70%);
+    --name-bg: hsl(0, 0%, 88%);
+    --content-bg: hsl(0, 0%, 97%);
+    --name-color: hsl(0, 0%, 25%);
+    --content-color: hsl(0, 0%, 1%);
+}
+
+:root[class*=night-mode] {
+    --body-bg: hsl(0, 0%, 30%);
+    --name-bg: hsl(0, 0%, 12%);
+    --content-bg: hsl(0, 0%, 3%);
+    --name-color: hsl(0, 0%, 75%);
+    --content-color: hsl(0, 0%, 90%);
 }
 
 *,
@@ -29,7 +42,7 @@ main {
 body {
     margin: 0 !important;
     padding: 0 !important;
-    background-color: hsl(0, 0%, 70%);
+    background-color: var(--body-bg);
 }
 
 main {
@@ -45,12 +58,13 @@ main>* {
 
 .name {
     font-weight: bold;
-    background-color: hsl(0, 0%, 88%);
-    color: hsl(0, 0%, 25%);
+    background-color: var(--name-bg);
+    color: var(--name-color);
 }
 
 .content {
-    background-color: hsl(0, 0%, 97%);
+    background-color: var(--content-bg);
+    color: var(--content-color);
 }
 
 .cropro__button_list {
