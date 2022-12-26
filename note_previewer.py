@@ -67,12 +67,14 @@ class NotePreviewer(AnkiWebView):
 
     def _create_html_row_for_field(self, field_content: str) -> str:
         """Creates a row for the previewer showing the current note's field."""
+        markup = []
         if audio_files := re.findall(self._media_tag_regex, field_content):
-            return f'<div class="cropro__button_list">{self._make_play_buttons(audio_files)}</div>'
-        elif image_files := re.findall(self._image_tag_regex, field_content):
-            return f'<div class="cropro__image_list">{self._make_images(image_files)}</div>'
-        else:
-            return f'<span class="cropro__text_item">{html_to_text_line(field_content)}</span>'
+            markup.append(f'<div class="cropro__audio_list">{self._make_play_buttons(audio_files)}</div>')
+        if image_files := re.findall(self._image_tag_regex, field_content):
+            markup.append(f'<div class="cropro__image_list">{self._make_images(image_files)}</div>')
+        if text := html_to_text_line(field_content):
+            markup.append(f'<div class="cropro__text_item">{text}</div>')
+        return ''.join(markup)
 
     @staticmethod
     def _make_play_buttons(audio_files: Iterable[str]) -> str:
