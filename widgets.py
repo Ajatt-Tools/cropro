@@ -191,6 +191,7 @@ class NoteList(QWidget):
 
         self._note_list.setAlternatingRowColors(True)
         self._note_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self._note_list.setContentsMargins(0, 0, 0, 0)
 
         self._previewer.setHidden(True)
 
