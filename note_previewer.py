@@ -3,7 +3,6 @@
 
 import base64
 import os.path
-import re
 from gettext import gettext as _
 from typing import Iterable
 from typing import Optional
@@ -15,6 +14,8 @@ from aqt import mw
 from aqt import sound
 from aqt.qt import *
 from aqt.webview import AnkiWebView
+
+from .ajt_common.media import find_sounds, find_images
 
 WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
 
@@ -34,8 +35,6 @@ def filetype(file: str):
 
 class NotePreviewer(AnkiWebView):
     """Previews a note in a Form Layout using a webview."""
-    _media_tag_regex = re.compile(r'\[sound:([^\[\]]+?\.[^\[\]]+?)]')
-    _image_tag_regex = re.compile(r'<img [^<>]*src="([^"<>]+)"[^<>]*>')
     _css_relpath = f"/_addons/{mw.addonManager.addonFromModule(__name__)}/web/previewer.css"
 
     mw.addonManager.setWebExports(__name__, r"(img|web)/.*\.(js|css|html|png|svg)")
@@ -68,9 +67,9 @@ class NotePreviewer(AnkiWebView):
     def _create_html_row_for_field(self, field_content: str) -> str:
         """Creates a row for the previewer showing the current note's field."""
         markup = []
-        if audio_files := re.findall(self._media_tag_regex, field_content):
+        if audio_files := find_sounds(field_content):
             markup.append(f'<div class="cropro__audio_list">{self._make_play_buttons(audio_files)}</div>')
-        if image_files := re.findall(self._image_tag_regex, field_content):
+        if image_files := find_images(field_content):
             markup.append(f'<div class="cropro__image_list">{self._make_images(image_files)}</div>')
         if text := html_to_text_line(field_content):
             markup.append(f'<div class="cropro__text_item">{text}</div>')
