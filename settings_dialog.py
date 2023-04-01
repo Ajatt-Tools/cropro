@@ -78,9 +78,9 @@ class CroProSettingsDialog(QDialog):
             "Press space or comma to commit."
         )
 
-    def finished(self, result: int) -> None:
+    def done(self, result: int) -> None:
         saveGeom(self, self.name)
-        return super().finished(result)
+        return super().done(result)
 
     def accept(self) -> None:
         config['max_displayed_notes'] = self.max_notes_edit.value()
