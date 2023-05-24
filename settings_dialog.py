@@ -1,26 +1,18 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import Iterable
-
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
 from .ajt_common.about_menu import tweak_window, menu_root_entry
 from .common import ADDON_NAME
-from .config import config, write_config
+from .config import config
 from .widgets import ItemBox, SpinBox
 
 
-def fetch_toggleables() -> Iterable[str]:
-    for key, value in config.items():
-        if type(value) == bool:
-            yield key
-
-
 def make_checkboxes() -> dict[str, QCheckBox]:
-    return {key: QCheckBox(key.replace('_', ' ').capitalize()) for key in fetch_toggleables()}
+    return {key: QCheckBox(key.replace('_', ' ').capitalize()) for key in config.bool_keys()}
 
 
 class CroProSettingsDialog(QDialog):
@@ -88,7 +80,7 @@ class CroProSettingsDialog(QDialog):
         config['hidden_fields'] = self.hidden_fields_box.values()
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
-        write_config()
+        config.write_config()
         return super().accept()
 
 
