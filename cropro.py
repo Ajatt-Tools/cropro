@@ -277,7 +277,7 @@ class MainDialog(MainDialogUI):
         self.status_bar.set_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
         mw.reset()
 
-    def done(self, result_code):
+    def done(self, result_code: int):
         self.window_state.save()
         self.other_col.close_all()
         return super().done(result_code)
