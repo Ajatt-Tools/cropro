@@ -6,6 +6,7 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import NamedTuple, Iterable
 
+from anki.cards import Card
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import join_fields
@@ -62,6 +63,29 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
         return matching_model
 
 
+def import_card_info(new_note: Note, other_note: Note):
+    """
+    For all cards in the new note,
+    copy some scheduling info from the old card to the newly imported one.
+    """
+    for new_card, other_card in zip(new_note.cards(), other_note.cards()):
+        # If the note types are similar, this loop will iterate over identical cards.
+        # Otherwise, some cards might be skipped (lost scheduling info).
+
+        # https://github.com/ankidroid/Anki-Android/wiki/Database-Structure
+        new_card: Card
+        new_card.mod = other_card.mod
+        new_card.type = other_card.type
+        new_card.queue = other_card.queue
+        new_card.due = other_card.due
+        new_card.odue = other_card.odue
+        new_card.ivl = other_card.ivl
+        new_card.factor = other_card.factor
+        new_card.reps = other_card.reps
+        new_card.left = other_card.left
+        new_card.flush()
+
+
 def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
     matching_model = get_matching_model(model_id, other_note.note_type())
     new_note = Note(mw.col, matching_model)
@@ -82,7 +106,8 @@ def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
     # check if note is dupe of existing one
     if config.get('skip_duplicates') and new_note.dupeOrEmpty():
         return ImportResult.dupe
-    else:
-        copy_media_files(new_note, other_note)
-        mw.col.addNote(new_note)
-        return ImportResult.success
+
+    copy_media_files(new_note, other_note)
+    mw.col.addNote(new_note)  # new_note has changed its id
+    import_card_info(new_note, other_note)
+    return ImportResult.success
