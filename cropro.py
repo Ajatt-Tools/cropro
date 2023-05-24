@@ -194,6 +194,9 @@ class MainDialog(MainDialogUI):
         self.into_profile_label.setText(mw.pm.name or 'Unknown')
         self.window_state.restore()
 
+    def clear_other_profiles_list(self):
+        return self.other_profile_names_combo.clear()
+
     def populate_other_profile_names(self):
         logDebug("populating other profiles.")
 
@@ -298,5 +301,6 @@ def init():
     qconnect(action.triggered, d.show)
     # and add it to the tools menu
     root_menu.addAction(action)
-    # hook to close
+    # react to anki's state changes
     gui_hooks.profile_will_close.append(d.close)
+    gui_hooks.profile_did_open.append(d.clear_other_profiles_list)
