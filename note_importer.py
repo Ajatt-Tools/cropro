@@ -109,5 +109,6 @@ def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
 
     copy_media_files(new_note, other_note)
     mw.col.addNote(new_note)  # new_note has changed its id
-    import_card_info(new_note, other_note)
+    if config['copy_card_data']:
+        import_card_info(new_note, other_note)
     return ImportResult.success

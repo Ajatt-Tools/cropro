@@ -11,5 +11,6 @@
   "skip_duplicates": true,
   "copy_tags": true,
   "allow_empty_search": false,
-  "preview_on_right_side": true
+  "preview_on_right_side": true,
+  "copy_card_data": false
 }

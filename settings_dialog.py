@@ -69,6 +69,10 @@ class CroProSettingsDialog(QDialog):
             "Hide fields whose names contain these words.\n"
             "Press space or comma to commit."
         )
+        self.checkboxes['copy_card_data'].setToolTip(
+            "Copy scheduling information of cards created from imported notes,\n"
+            "such as due date, interval, queue, type, etc."
+        )
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)
