@@ -4,7 +4,7 @@
 import base64
 import os.path
 from gettext import gettext as _
-from typing import Iterable
+from collections.abc import Iterable
 from typing import Optional
 
 from anki.notes import Note

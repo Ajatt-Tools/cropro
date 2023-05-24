@@ -42,7 +42,7 @@ class CollectionManager:
         return self._current_name
 
     @property
-    def col(self):
+    def col(self) -> Collection:
         return self._opened_cols[self.name]
 
     @property

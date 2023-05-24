@@ -1,12 +1,15 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import math
 import os.path
 from copy import deepcopy
 from enum import Enum, auto
-from typing import NamedTuple, Iterable
+from typing import NamedTuple
+from collections.abc import Iterable
 
 from anki.cards import Card
+from anki.collection import Collection
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import join_fields
@@ -63,7 +66,15 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
         return matching_model
 
 
-def import_card_info(new_note: Note, other_note: Note):
+def col_diff(col: Collection, other_col: Collection) -> int:
+    """
+    Because of difference in collection creation times,
+    due numbers which are relative to the collection's creation time need to be adjusted by it.
+    """
+    return math.ceil((other_col.crt - col.crt) / (60 * 60 * 24))
+
+
+def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
     """
     For all cards in the new note,
     copy some scheduling info from the old card to the newly imported one.
@@ -83,10 +94,14 @@ def import_card_info(new_note: Note, other_note: Note):
         new_card.factor = other_card.factor
         new_card.reps = other_card.reps
         new_card.left = other_card.left
+
+        if new_card.type == 2:
+            new_card.due += col_diff(mw.col, other_col)
+
         new_card.flush()
 
 
-def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
+def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id: int) -> ImportResult:
     matching_model = get_matching_model(model_id, other_note.note_type())
     new_note = Note(mw.col, matching_model)
     new_note.note_type()['did'] = deck_id
@@ -110,5 +125,5 @@ def import_note(other_note: Note, model_id: int, deck_id: int) -> ImportResult:
     copy_media_files(new_note, other_note)
     mw.col.addNote(new_note)  # new_note has changed its id
     if config['copy_card_data']:
-        import_card_info(new_note, other_note)
+        import_card_info(new_note, other_note, other_col)
     return ImportResult.success

@@ -273,6 +273,7 @@ class MainDialog(MainDialogUI):
         for note in notes:
             results.append(import_note(
                 other_note=note,
+                other_col=self.other_col.col,
                 model_id=self.note_type_selection_combo.currentData(),
                 deck_id=self.current_profile_deck_combo.currentData(),
             ))
