@@ -7,7 +7,7 @@ and then use this add-on to search for and import cards with certain words into 
 This helps keep your main profile uncluttered and free of large amounts of unneeded media.
 
 GNU AGPL
-Copyright (c) 2021 Ren Tatsumoto
+Copyright (c) 2021-2023 Ren Tatsumoto
 Copyright (c) 2018 Russel Simmons
 Original concept by CalculusAce, with help from Matt VS Japan (@mattvsjapan)
 
