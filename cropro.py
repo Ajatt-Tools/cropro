@@ -21,7 +21,7 @@ import json
 import os.path
 from collections import defaultdict
 
-from aqt import mw, gui_hooks
+from aqt import mw, gui_hooks, addcards
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
 
@@ -29,7 +29,7 @@ from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .common import ADDON_NAME, LogDebug
 from .config import config
-from .note_importer import import_note, ImportResult
+from .note_importer import import_note, ImportResult, copy_media_files, import_card_info
 from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
 
 logDebug = LogDebug()
@@ -49,6 +49,7 @@ class MainDialogUI(QDialog):
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
         self.current_profile_deck_combo = DeckCombo()
+        self.edit_button = QPushButton('Edit')
         self.import_button = QPushButton('Import')
         self.search_term_edit = QLineEdit()
         self.other_profile_names_combo = ComboBox()
@@ -90,8 +91,9 @@ class MainDialogUI(QDialog):
 
     def set_default_sizes(self):
         combo_min_width = 120
-        self.setMinimumSize(640, 480)
+        self.setMinimumSize(680, 500)
         for w in (
+                self.edit_button,
                 self.import_button,
                 self.filter_button,
                 self.search_term_edit,
@@ -115,6 +117,7 @@ class MainDialogUI(QDialog):
         import_row.addWidget(QLabel('Map to Note Type:'))
         import_row.addWidget(self.note_type_selection_combo)
         import_row.addStretch(1)
+        import_row.addWidget(self.edit_button)
         import_row.addWidget(self.import_button)
         return import_row
 
@@ -172,6 +175,7 @@ class MainDialog(MainDialogUI):
 
     def connect_elements(self):
         qconnect(self.other_profile_deck_combo.currentIndexChanged, self.update_notes_list)
+        qconnect(self.edit_button.clicked, self.open_add_cards)
         qconnect(self.import_button.clicked, self.do_import)
         qconnect(self.filter_button.clicked, self.update_notes_list)
         qconnect(self.search_term_edit.editingFinished, self.update_notes_list)
@@ -256,6 +260,31 @@ class MainDialog(MainDialogUI):
         )
 
         self.search_result_label.set_count(len(note_ids), len(limited_note_ids))
+
+    def open_add_cards(self):  # TODO Load Media with Init, delete with closed but not added
+        corr_win = False
+        selected_card = None
+
+        def do_add_import(p, note):
+            if corr_win:
+                copy_media_files(note, selected_card)
+
+                if config['copy_card_data']:
+                    import_card_info(note, selected_card, self.other_col.col)
+
+        def correct_win_check():
+            nonlocal corr_win
+            corr_win = True
+
+        if len(self.note_list.selected_notes()) > 0:
+            # Open a new add-window
+            add_window = addcards.AddCards(mw)
+            # Update it with the current note data (only the first of the selected)
+            add_window.set_note(self.note_list.selected_notes()[0], self.current_profile_deck_combo.currentData())
+            selected_card = self.note_list.selected_notes()[0]
+            # Add a listener for the add window
+            qconnect(add_window.addButton.clicked, correct_win_check)
+            gui_hooks.add_cards_will_add_note.append(do_add_import)
 
     def do_import(self):
         logDebug('beginning import')

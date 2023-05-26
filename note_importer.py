@@ -13,7 +13,9 @@ from anki.collection import Collection
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import join_fields
+from anki import hooks
 from aqt import mw
+from aqt import gui_hooks
 from aqt.qt import *
 
 from .collection_manager import NameId
@@ -43,7 +45,7 @@ def files_in_note(note: Note) -> Iterable[FileInfo]:
 def copy_media_files(new_note: Note, other_note: Note) -> None:
     # check if there are any media files referenced by the note
     for file in files_in_note(other_note):
-        new_filename = new_note.col.media.addFile(file.path)
+        new_filename = new_note.col.media.add_file(file.path)
         # NOTE: this_col_filename may differ from original filename (name conflict, different contents),
         # in which case we need to update the note.
         if new_filename != file.name:
@@ -123,7 +125,12 @@ def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id:
         return ImportResult.dupe
 
     copy_media_files(new_note, other_note)
+    hooks.note_will_be_added(mw.col, new_note, deck_id)
     mw.col.addNote(new_note)  # new_note has changed its id
+
     if config['copy_card_data']:
         import_card_info(new_note, other_note, other_col)
+
+    gui_hooks.add_cards_did_add_note(new_note)
+
     return ImportResult.success
