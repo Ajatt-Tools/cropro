@@ -304,8 +304,8 @@ class EditWindow:
         super().__init__(*args, **kwargs)
         self.correct_win = False
         self.selected_note = None
-        self.cur_media = None
         self.cropro_win = None
+        self.cur_media = None
         self.add_window = None
 
     def open(self, cropro_win: MainDialog):
@@ -325,19 +325,21 @@ class EditWindow:
             transfer_note = self.selected_note
             transfer_note.NotetypeId = get_matching_model(self.cropro_win.note_type_selection_combo.currentData(),
                                                           self.selected_note.note_type())
-
             if not config.get('copy_tags'):
                 transfer_note.tags = []
 
-            # Update it with the current note data (only the first of the selected)
-            self.add_window.set_note(transfer_note, self.cropro_win.current_profile_deck_combo.currentData())
             # Overwriting the collection for media to load
             # Overwrites mw.col.media as well so saves a copy of that
             self.cur_media = mw.col.media
-            self.add_window.col.media = self.cropro_win.other_col.col.media
+            self.set_media(self.add_window)
+            # Update it with the current note data (only the first of the selected)
+            self.add_window.set_note(transfer_note, self.cropro_win.current_profile_deck_combo.currentData())
 
             # Add a listeners for the add window
             # Two times as add because a note can't be shared without/before the hook
+            self.add_window.leaveEvent = self.reset_media
+            self.add_window.enterEvent = self.set_media
+
             qconnect(self.add_window.addButton.clicked, self.add_from_our_window)
             qconnect(self.add_window.windowHandle().visibilityChanged, self.on_close)
             gui_hooks.add_cards_will_add_note.append(self.do_add_import)
@@ -360,13 +362,27 @@ class EditWindow:
             mw.reset()
             self.add_window.ifCanClose(self.add_window.close)
 
+    def set_media(self, add_window: addcards.AddCards):
+        try: add_window.col
+        except AttributeError:
+            add_window = self.add_window
+        add_window.col.media = self.cropro_win.other_col.col.media
+        mw.reset()
+
+    def reset_media(self, add_window: addcards.AddCards):
+        try: add_window.col
+        except AttributeError:
+            add_window = self.add_window
+        add_window.col.media = self.cur_media
+        mw.reset()
+
     def add_from_our_window(self):
-        self.add_window.col.media = self.cur_media
+        self.reset_media(self.add_window)
         self.correct_win = True
 
     def on_close(self):
         self.correct_win = False
-        self.add_window.col.media = self.cur_media
+        self.reset_media(self.add_window)
         mw.reset()
 
 

@@ -45,7 +45,7 @@ def files_in_note(note: Note) -> Iterable[FileInfo]:
 def copy_media_files(new_note: Note, other_note: Note) -> None:
     # check if there are any media files referenced by the note
     for file in files_in_note(other_note):
-        new_filename = new_note.col.media.add_file(file.path)
+        new_filename = new_note.col.media.addFile(file.path)
         # NOTE: this_col_filename may differ from original filename (name conflict, different contents),
         # in which case we need to update the note.
         if new_filename != file.name:
