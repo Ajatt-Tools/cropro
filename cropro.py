@@ -23,7 +23,7 @@ from collections import defaultdict
 
 from aqt import mw, gui_hooks
 from aqt.qt import *
-from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp
+from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip
 
 from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
@@ -291,8 +291,10 @@ class MainDialog(MainDialogUI):
         mw.reset()
 
     def new_edit_win(self):
-        if len(self.note_list.selected_notes()) > 0:
-            AddWindow(self).create_window(self.note_list.selected_notes()[-1])
+        if len(selected_notes := self.note_list.selected_notes()) > 0:
+            AddWindow(self).create_window(selected_notes[-1])
+        else:
+            tooltip("No note selected.", period=1000, parent=self)
 
     def done(self, result_code: int):
         self.window_state.save()
