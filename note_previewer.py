@@ -34,7 +34,7 @@ def filetype(file: str):
 
 
 class NotePreviewer(AnkiWebView):
-    """Previews a other_note in a Form Layout using a webview."""
+    """Previews a note in a Form Layout using a webview."""
     _css_relpath = f"/_addons/{mw.addonManager.addonFromModule(__name__)}/web/previewer.css"
 
     mw.addonManager.setWebExports(__name__, r"(img|web)/.*\.(js|css|html|png|svg)")
@@ -65,7 +65,7 @@ class NotePreviewer(AnkiWebView):
         )
 
     def _create_html_row_for_field(self, field_content: str) -> str:
-        """Creates a row for the previewer showing the current other_note's field."""
+        """Creates a row for the previewer showing the current note's field."""
         markup = []
         if audio_files := find_sounds(field_content):
             markup.append(f'<div class="cropro__audio_list">{self._make_play_buttons(audio_files)}</div>')
