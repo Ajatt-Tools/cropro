@@ -21,17 +21,17 @@ import json
 import os.path
 from collections import defaultdict
 
-import anki.notes
-from aqt import mw, gui_hooks, addcards
+from aqt import mw, gui_hooks
 from aqt.qt import *
-from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
+from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp
 
 from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .common import ADDON_NAME, LogDebug
 from .config import config
-from .note_importer import import_note, ImportResult, copy_media_files, import_card_info, get_matching_model
+from .note_importer import import_note, ImportResult
 from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
+from .edit_window import AddWindow
 
 logDebug = LogDebug()
 
@@ -56,6 +56,7 @@ class MainDialogUI(QDialog):
         self.other_profile_names_combo = ComboBox()
         self.other_profile_deck_combo = DeckCombo()
         self.filter_button = QPushButton('Filter')
+        self.help_button = QPushButton('Help')
         self.note_list = NoteList()
         self.note_type_selection_combo = ComboBox()
         self.init_ui()
@@ -70,6 +71,7 @@ class MainDialogUI(QDialog):
         filter_row = QHBoxLayout()
         filter_row.addWidget(self.search_term_edit)
         filter_row.addWidget(self.filter_button)
+        filter_row.addWidget(self.help_button)
         return filter_row
 
     def make_main_layout(self) -> QLayout:
@@ -97,6 +99,7 @@ class MainDialogUI(QDialog):
                 self.edit_button,
                 self.import_button,
                 self.filter_button,
+                self.help_button,
                 self.search_term_edit,
         ):
             w.setMinimumHeight(WIDGET_HEIGHT)
@@ -179,6 +182,7 @@ class MainDialog(MainDialogUI):
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
         qconnect(self.filter_button.clicked, self.update_notes_list)
+        qconnect(self.help_button.clicked, lambda: openHelp("searching"))
         qconnect(self.search_term_edit.editingFinished, self.update_notes_list)
         qconnect(self.other_profile_names_combo.currentIndexChanged, self.open_other_col)
 
@@ -287,103 +291,13 @@ class MainDialog(MainDialogUI):
         mw.reset()
 
     def new_edit_win(self):
-        EditWindow().open(self)
+        if len(self.note_list.selected_notes()) > 0:
+            AddWindow(self).create_window(self.note_list.selected_notes()[-1])
 
     def done(self, result_code: int):
         self.window_state.save()
         self.other_col.close_all()
         return super().done(result_code)
-
-
-#############################################################################
-# Edit Logic & UI
-#############################################################################
-
-class EditWindow:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.correct_win = False
-        self.selected_note = None
-        self.cropro_win = None
-        self.cur_media = None
-        self.add_window = None
-
-    def open(self, cropro_win: MainDialog):
-        if len(cropro_win.note_list.selected_notes()) > 0:
-            self.cropro_win = cropro_win
-
-            logDebug("Preparing add window")
-            # Open a new add-window and update it
-            self.add_window = addcards.AddCards(mw)
-            self.add_window.addButton.setText('Import')
-            self.add_window.historyButton.hide()
-            self.add_window.helpButton.setText('Anki Help')
-
-            # Save the note for selection change case
-            self.selected_note = self.cropro_win.note_list.selected_notes()[0]
-            # Copy so no overwrite to original note
-            transfer_note = self.selected_note
-            transfer_note.NotetypeId = get_matching_model(self.cropro_win.note_type_selection_combo.currentData(),
-                                                          self.selected_note.note_type())
-            if not config.get('copy_tags'):
-                transfer_note.tags = []
-
-            # Overwriting the collection for media to load
-            # Overwrites mw.col.media as well so saves a copy of that
-            self.cur_media = mw.col.media
-            self.set_media(self.add_window)
-            # Update it with the current note data (only the first of the selected)
-            self.add_window.set_note(transfer_note, self.cropro_win.current_profile_deck_combo.currentData())
-
-            # Add a listeners for the add window
-            # Two times as add because a note can't be shared without/before the hook
-            self.add_window.leaveEvent = self.reset_media
-            self.add_window.enterEvent = self.set_media
-
-            qconnect(self.add_window.addButton.clicked, self.add_from_our_window)
-            qconnect(self.add_window.windowHandle().visibilityChanged, self.on_close)
-            gui_hooks.add_cards_will_add_note.append(self.do_add_import)
-
-    def do_add_import(self, problem, note: anki.notes.Note):
-        if self.correct_win and self.add_window:
-            logDebug("Importing note")
-            note.col.media = self.cur_media
-            copy_media_files(note, self.selected_note)
-
-            if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
-                self.selected_note.add_tag(tag)
-
-            if config['copy_card_data']:
-                import_card_info(note, self.selected_note, self.cropro_win.other_col.col)
-
-            self.correct_win = False
-            self.cropro_win.note_list.clear_selection()
-            self.cropro_win.status_bar.set_status(1, 0)
-            mw.reset()
-            self.add_window.ifCanClose(self.add_window.close)
-
-    def set_media(self, add_window: addcards.AddCards):
-        try: add_window.col
-        except AttributeError:
-            add_window = self.add_window
-        add_window.col.media = self.cropro_win.other_col.col.media
-        mw.reset()
-
-    def reset_media(self, add_window: addcards.AddCards):
-        try: add_window.col
-        except AttributeError:
-            add_window = self.add_window
-        add_window.col.media = self.cur_media
-        mw.reset()
-
-    def add_from_our_window(self):
-        self.reset_media(self.add_window)
-        self.correct_win = True
-
-    def on_close(self):
-        self.correct_win = False
-        self.reset_media(self.add_window)
-        mw.reset()
 
 
 ######################################################################

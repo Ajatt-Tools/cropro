@@ -11,6 +11,8 @@ Log location: `~/.local/share/Anki2/cropro.log` (GNU systems).
 so that you could easily find and delete them later.
 * `hidden_fields` - contents of fields that contain these keywords won't be shown.
 * `allow_empty_search` - Search notes even if the search field is emtpy. May be slow.
+* `call_add_cards_hook` - Calls the `add_cards_did_add_note` hook as soon as a note 
+is imported through the main CroPro window.<br>For addon evaluation purposes.
 
 ---
 

@@ -12,5 +12,6 @@
   "copy_tags": true,
   "allow_empty_search": false,
   "preview_on_right_side": true,
-  "copy_card_data": false
+  "copy_card_data": false,
+  "call_add_cards_hook": false
 }
