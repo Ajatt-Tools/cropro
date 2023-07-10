@@ -1,8 +1,7 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from collections.abc import Iterable, Collection
-from typing import Sequence
+from collections.abc import Iterable, Sequence
 
 from anki.notes import Note
 from anki.utils import html_to_text_line

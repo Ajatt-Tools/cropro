@@ -1,41 +1,40 @@
 import anki.notes
 import aqt
+from anki.notes import Note
 from aqt import mw, gui_hooks
 from aqt.qt import *
 
+from .common import LogDebug
 from .config import config
 from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
-from .common import LogDebug
 
 logDebug = LogDebug()
 
 
 class AddWindow:
     def __init__(self, cropro_self):
-        super(AddWindow, self).__init__()
+        super().__init__()
         self.add_window = None
         self.cropro = cropro_self
         self.new_note = None
         self.other_note = None
 
-    def create_window(self, other_note=None):
+    def create_window(self, other_note: Note = None):
         if other_note is not None:
             self.other_note = other_note
             logDebug("Preparing add window")
 
-            collection = mw.col
-
             if self.cropro.current_profile_deck_combo.currentData() is None:
-                raise Exception('deck was not found: {}'.format(self.cropro.current_profile_deck_combo.currentData()))
+                raise Exception(f'deck was not found: {self.cropro.current_profile_deck_combo.currentData()}')
 
-            collection.decks.select(self.cropro.current_profile_deck_combo.currentData())
+            mw.col.decks.select(self.cropro.current_profile_deck_combo.currentData())
 
             model = get_matching_model(self.cropro.note_type_selection_combo.currentData(), other_note.note_type())
 
-            collection.models.setCurrent(model)
-            collection.models.update(model)
+            mw.col.models.setCurrent(model)
+            mw.col.models.update(model)
 
-            self.new_note = anki.notes.Note(collection, model)
+            self.new_note = anki.notes.Note(mw.col, model)
 
             # fill out card beforehand, so we can be sure of other_note's id
             for key in self.new_note.keys():
@@ -74,8 +73,12 @@ class AddWindow:
             else:
                 open_window()
 
+            def on_visibility_changed():
+                if not hasattr(self, 'block_close_cb') and self.new_note:
+                    return remove_media_files(self.new_note)
+
             # Remove Media on close if not in saving progress
-            qconnect(self.add_window.windowHandle().visibilityChanged, lambda: remove_media_files(self.new_note) if not hasattr(self, 'block_close_cb') and self.new_note else 0)
+            qconnect(self.add_window.windowHandle().visibilityChanged, on_visibility_changed)
             qconnect(self.add_window.addButton.clicked, self.add_import)
 
             return self.new_note.id
@@ -87,7 +90,7 @@ class AddWindow:
             return self.add_window.editor.note.id
 
     def add_import(self):
-        def do_add_import(problem, note: anki.notes.Note):
+        def do_add_import(problem: str | None, note: Note):
             logDebug("Importing edited note")
 
             if config['copy_card_data']:
@@ -99,6 +102,6 @@ class AddWindow:
 
             self.block_close_cb = True  # Block media removal
             self.add_window.ifCanClose(self.add_window.close)
+            return problem
 
         gui_hooks.add_cards_will_add_note.append(do_add_import)
-
