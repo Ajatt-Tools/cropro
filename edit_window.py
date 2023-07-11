@@ -1,77 +1,93 @@
+from typing import Protocol, Optional
+
 import anki.notes
 import aqt
-from anki.notes import Note
-from aqt import mw, gui_hooks
+from anki.notes import Note, NoteId
+from aqt import mw, gui_hooks, addcards
 from aqt.qt import *
 
+from .collection_manager import CollectionManager
 from .common import LogDebug
 from .config import config
 from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
+from .widgets import DeckCombo, ComboBox, NoteList, StatusBar
 
 logDebug = LogDebug()
 
 
+class CropProWindow(Protocol):
+    current_profile_deck_combo: DeckCombo
+    note_type_selection_combo: ComboBox
+    other_col: CollectionManager
+    note_list: NoteList
+    status_bar: StatusBar
+
+
 class AddWindow:
-    def __init__(self, cropro_self):
+    def __init__(self, cropro: CropProWindow):
         super().__init__()
-        self.add_window = None
-        self.cropro = cropro_self
-        self.new_note = None
-        self.other_note = None
+        self.cropro = cropro
+        self.add_window: Optional[addcards.AddCards] = None
+        self.new_note: Optional[Note] = None
+        self.other_note: Optional[Note] = None
 
-    def create_window(self, other_note: Note = None):
-        if other_note is not None:
-            self.other_note = other_note
-            logDebug("Preparing add window")
+    def create_window(self, other_note: Note = None) -> NoteId:
+        if other_note is None:
+            self.add_window = aqt.dialogs.open('AddCards', mw)
+            self.add_window.activateWindow()
+            return self.add_window.editor.note.id
 
-            if self.cropro.current_profile_deck_combo.currentData() is None:
-                raise Exception(f'deck was not found: {self.cropro.current_profile_deck_combo.currentData()}')
+        self.other_note = other_note
+        logDebug("Preparing add window")
 
-            mw.col.decks.select(self.cropro.current_profile_deck_combo.currentData())
+        if self.cropro.current_profile_deck_combo.currentData() is None:
+            raise Exception(f'deck was not found: {self.cropro.current_profile_deck_combo.currentData()}')
 
-            model = get_matching_model(self.cropro.note_type_selection_combo.currentData(), other_note.note_type())
+        mw.col.decks.select(self.cropro.current_profile_deck_combo.currentData())
 
-            mw.col.models.setCurrent(model)
-            mw.col.models.update(model)
+        model = get_matching_model(self.cropro.note_type_selection_combo.currentData(), other_note.note_type())
 
-            self.new_note = anki.notes.Note(mw.col, model)
+        mw.col.models.setCurrent(model)
+        mw.col.models.update(model)
 
-            # fill out card beforehand, so we can be sure of other_note's id
-            for key in self.new_note.keys():
-                if key in other_note:
-                    self.new_note[key] = str(other_note[key])
+        self.new_note = anki.notes.Note(mw.col, model)
 
-            # Copy media just yet, so it can still be deleted later but causes no unwanted behaviour
-            copy_media_files(self.new_note, other_note)
+        # fill out card beforehand, so we can be sure of other_note's id
+        for key in self.new_note.keys():
+            if key in other_note:
+                self.new_note[key] = str(other_note[key])
 
-            if 'tags' in other_note and config.get('copy_tags'):
-                self.new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
+        # Copy media just yet, so it can still be deleted later but causes no unwanted behaviour
+        copy_media_files(self.new_note, other_note)
 
-            if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
-                other_note.add_tag(tag)
-                other_note.flush()
+        if 'tags' in other_note and config.get('copy_tags'):
+            self.new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
-            def open_window():
-                self.add_window = aqt.dialogs.open('AddCards', mw)
+        if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
+            other_note.add_tag(tag)
+            other_note.flush()
 
-                self.add_window.editor.set_note(self.new_note)
+        def open_window():
+            self.add_window = aqt.dialogs.open('AddCards', mw)
 
-                self.add_window.activateWindow()
-                # Modify Bottom Button Bar against confusion
-                self.add_window.addButton.setText('Import')
-                self.add_window.historyButton.hide()
-                self.add_window.helpButton.setText('Anki Help')
+            self.add_window.editor.set_note(self.new_note)
 
-                aqt.dialogs.open('AddCards', mw)
+            self.add_window.activateWindow()
+            # Modify Bottom Button Bar against confusion
+            self.add_window.addButton.setText('Import')
+            self.add_window.historyButton.hide()
+            self.add_window.helpButton.setText('Anki Help')
 
-                self.add_window.setAndFocusNote(self.add_window.editor.note)
+            aqt.dialogs.open('AddCards', mw)
 
-            current_window = aqt.dialogs._dialogs['AddCards'][1]
+            self.add_window.setAndFocusNote(self.add_window.editor.note)
 
-            if current_window is not None:
-                current_window.closeWithCallback(open_window)
-            else:
-                open_window()
+        current_window = aqt.dialogs._dialogs['AddCards'][1]
+
+        if current_window is not None:
+            current_window.closeWithCallback(open_window)
+        else:
+            open_window()
 
             def on_visibility_changed():
                 if not hasattr(self, 'block_close_cb') and self.new_note:
@@ -81,13 +97,7 @@ class AddWindow:
             qconnect(self.add_window.windowHandle().visibilityChanged, on_visibility_changed)
             qconnect(self.add_window.addButton.clicked, self.add_import)
 
-            return self.new_note.id
-
-        else:
-            self.add_window = aqt.dialogs.open('AddCards', mw)
-            self.add_window.activateWindow()
-
-            return self.add_window.editor.note.id
+        return self.new_note.id
 
     def add_import(self):
         def do_add_import(problem: str | None, note: Note):
