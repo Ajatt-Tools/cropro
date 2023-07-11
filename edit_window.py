@@ -23,6 +23,10 @@ class CropProWindow(Protocol):
     status_bar: StatusBar
 
 
+def current_add_dialog() -> Optional[addcards.AddCards]:
+    return aqt.dialogs._dialogs['AddCards'][1]
+
+
 class AddWindow:
     def __init__(self, cropro: CropProWindow):
         super().__init__()
@@ -82,10 +86,8 @@ class AddWindow:
 
             self.add_window.setAndFocusNote(self.add_window.editor.note)
 
-        current_window = aqt.dialogs._dialogs['AddCards'][1]
-
-        if current_window is not None:
-            current_window.closeWithCallback(open_window)
+        if current_add_dialog() is not None:
+            current_add_dialog().closeWithCallback(open_window)
         else:
             open_window()
 
