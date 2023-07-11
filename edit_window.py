@@ -91,6 +91,7 @@ class AddWindow:
 
     def add_import(self):
         def do_add_import(problem: str | None, note: Note):
+            gui_hooks.add_cards_will_add_note.remove(do_add_import)
             logDebug("Importing edited note")
 
             if config['copy_card_data']:
