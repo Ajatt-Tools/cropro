@@ -174,6 +174,7 @@ class MainDialog(MainDialogUI):
         super().__init__(*args, **kwargs)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
+        self._add_window_mgr = AddWindow(self)
         self.connect_elements()
         disable_help_button(self)
 
@@ -292,7 +293,7 @@ class MainDialog(MainDialogUI):
 
     def new_edit_win(self):
         if len(selected_notes := self.note_list.selected_notes()) > 0:
-            AddWindow(self).create_window(selected_notes[-1])
+            self._add_window_mgr.create_window(selected_notes[-1])
         else:
             tooltip("No note selected.", period=1000, parent=self)
 
