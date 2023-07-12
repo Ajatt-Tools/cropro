@@ -3,19 +3,18 @@
 
 import math
 import os.path
+from collections.abc import Iterable
 from copy import deepcopy
 from enum import Enum, auto
 from typing import NamedTuple
-from collections.abc import Iterable
 
 from anki.cards import Card
 from anki.collection import Collection
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import join_fields
-from anki import hooks
-from aqt import mw
 from aqt import gui_hooks
+from aqt import mw
 from aqt.qt import *
 
 from .collection_manager import NameId
@@ -53,10 +52,16 @@ def copy_media_files(new_note: Note, other_note: Note) -> None:
 
 
 def remove_media_files(new_note: Note) -> None:
-    for file in files_in_note(new_note):
-        # As there still could be a card in the collection with this file, it shouldn't be deleted if that's the case
-        if not mw.col.find_cards(file.name):
-            new_note.col.media.trash_files([file.name])
+    """
+    If the user pressed the Edit button, but then canceled the import operation,
+    the collection will contain unused files that need to be trashed.
+    But if the same file(s) are referenced by another note, they shouldn't be trashed.
+    """
+    new_note.col.media.trash_files([
+        file.name
+        for file in files_in_note(new_note)
+        if not mw.col.find_cards(file.name)
+    ])
 
 
 def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
