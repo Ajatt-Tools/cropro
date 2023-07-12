@@ -1,7 +1,7 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from collections.abc import Iterable, Collection
+from collections.abc import Iterable, Sequence
 
 from anki.notes import Note
 from anki.utils import html_to_text_line
@@ -202,7 +202,7 @@ class NoteList(QWidget):
             self._previewer.setHidden(False)
             self._previewer.load_note(current.data(self._role), self._other_media_dir)
 
-    def selected_notes(self) -> Collection[Note]:
+    def selected_notes(self) -> Sequence[Note]:
         return [item.data(self._role) for item in self._note_list.selectedItems()]
 
     def clear_selection(self):

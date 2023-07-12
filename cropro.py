@@ -23,7 +23,7 @@ from collections import defaultdict
 
 from aqt import mw, gui_hooks
 from aqt.qt import *
-from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom
+from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip
 
 from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
@@ -31,6 +31,7 @@ from .common import ADDON_NAME, LogDebug
 from .config import config
 from .note_importer import import_note, ImportResult
 from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
+from .edit_window import AddDialogLauncher
 
 logDebug = LogDebug()
 
@@ -49,11 +50,13 @@ class MainDialogUI(QDialog):
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
         self.current_profile_deck_combo = DeckCombo()
+        self.edit_button = QPushButton('Edit')
         self.import_button = QPushButton('Import')
         self.search_term_edit = QLineEdit()
         self.other_profile_names_combo = ComboBox()
         self.other_profile_deck_combo = DeckCombo()
         self.filter_button = QPushButton('Filter')
+        self.help_button = QPushButton('Help')
         self.note_list = NoteList()
         self.note_type_selection_combo = ComboBox()
         self.init_ui()
@@ -68,6 +71,7 @@ class MainDialogUI(QDialog):
         filter_row = QHBoxLayout()
         filter_row.addWidget(self.search_term_edit)
         filter_row.addWidget(self.filter_button)
+        filter_row.addWidget(self.help_button)
         return filter_row
 
     def make_main_layout(self) -> QLayout:
@@ -90,10 +94,12 @@ class MainDialogUI(QDialog):
 
     def set_default_sizes(self):
         combo_min_width = 120
-        self.setMinimumSize(640, 480)
+        self.setMinimumSize(680, 500)
         for w in (
+                self.edit_button,
                 self.import_button,
                 self.filter_button,
+                self.help_button,
                 self.search_term_edit,
         ):
             w.setMinimumHeight(WIDGET_HEIGHT)
@@ -115,6 +121,7 @@ class MainDialogUI(QDialog):
         import_row.addWidget(QLabel('Map to Note Type:'))
         import_row.addWidget(self.note_type_selection_combo)
         import_row.addStretch(1)
+        import_row.addWidget(self.edit_button)
         import_row.addWidget(self.import_button)
         return import_row
 
@@ -167,13 +174,16 @@ class MainDialog(MainDialogUI):
         super().__init__(*args, **kwargs)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
+        self._add_window_mgr = AddDialogLauncher(self)
         self.connect_elements()
         disable_help_button(self)
 
     def connect_elements(self):
         qconnect(self.other_profile_deck_combo.currentIndexChanged, self.update_notes_list)
+        qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
         qconnect(self.filter_button.clicked, self.update_notes_list)
+        qconnect(self.help_button.clicked, lambda: openHelp("searching"))
         qconnect(self.search_term_edit.editingFinished, self.update_notes_list)
         qconnect(self.other_profile_names_combo.currentIndexChanged, self.open_other_col)
 
@@ -280,6 +290,12 @@ class MainDialog(MainDialogUI):
 
         self.status_bar.set_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
         mw.reset()
+
+    def new_edit_win(self):
+        if len(selected_notes := self.note_list.selected_notes()) > 0:
+            self._add_window_mgr.create_window(selected_notes[-1])
+        else:
+            tooltip("No note selected.", period=1000, parent=self)
 
     def done(self, result_code: int):
         self.window_state.save()

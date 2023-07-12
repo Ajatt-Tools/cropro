@@ -3,16 +3,17 @@
 
 import math
 import os.path
+from collections.abc import Iterable
 from copy import deepcopy
 from enum import Enum, auto
 from typing import NamedTuple
-from collections.abc import Iterable
 
 from anki.cards import Card
 from anki.collection import Collection
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import join_fields
+from aqt import gui_hooks
 from aqt import mw
 from aqt.qt import *
 
@@ -32,7 +33,7 @@ class FileInfo(NamedTuple):
 
 def files_in_note(note: Note) -> Iterable[FileInfo]:
     """
-    Returns FileInfo for every file referenced by the note.
+    Returns FileInfo for every file referenced by other_note.
     Skips missing files.
     """
     for file_ref in note.col.media.files_in_str(note.mid, join_fields(note.fields)):
@@ -41,13 +42,27 @@ def files_in_note(note: Note) -> Iterable[FileInfo]:
 
 
 def copy_media_files(new_note: Note, other_note: Note) -> None:
-    # check if there are any media files referenced by the note
+    # check if there are any media files referenced by other_note
     for file in files_in_note(other_note):
         new_filename = new_note.col.media.addFile(file.path)
         # NOTE: this_col_filename may differ from original filename (name conflict, different contents),
         # in which case we need to update the note.
         if new_filename != file.name:
             new_note.fields = [field.replace(file.name, new_filename) for field in new_note.fields]
+
+
+def remove_media_files(new_note: Note) -> None:
+    """
+    If the user pressed the Edit button, but then canceled the import operation,
+    the collection will contain unused files that need to be trashed.
+    But if the same file(s) are referenced by another note, they shouldn't be trashed.
+    """
+    assert (new_note.col == mw.col.weakref())
+    new_note.col.media.trash_files([
+        file.name
+        for file in files_in_note(new_note)
+        if not new_note.col.find_cards(file.name)
+    ])
 
 
 def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
@@ -110,7 +125,7 @@ def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id:
         if key in other_note:
             new_note[key] = str(other_note[key])
 
-    # copy field tags into new note object
+    # copy field tags into new other_note object
     if config.get('copy_tags'):
         new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
@@ -124,6 +139,11 @@ def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id:
 
     copy_media_files(new_note, other_note)
     mw.col.addNote(new_note)  # new_note has changed its id
+
     if config['copy_card_data']:
         import_card_info(new_note, other_note, other_col)
+
+    if config['call_add_cards_hook']:
+        gui_hooks.add_cards_did_add_note(new_note)
+
     return ImportResult.success
