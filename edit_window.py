@@ -27,7 +27,7 @@ def current_add_dialog() -> Optional[addcards.AddCards]:
     return aqt.dialogs._dialogs['AddCards'][1]
 
 
-class AddWindow:
+class AddDialogLauncher:
     def __init__(self, cropro: CropProWindow):
         super().__init__()
         self.cropro = cropro

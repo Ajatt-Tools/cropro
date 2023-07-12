@@ -31,7 +31,7 @@ from .common import ADDON_NAME, LogDebug
 from .config import config
 from .note_importer import import_note, ImportResult
 from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
-from .edit_window import AddWindow
+from .edit_window import AddDialogLauncher
 
 logDebug = LogDebug()
 
@@ -174,7 +174,7 @@ class MainDialog(MainDialogUI):
         super().__init__(*args, **kwargs)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
-        self._add_window_mgr = AddWindow(self)
+        self._add_window_mgr = AddDialogLauncher(self)
         self.connect_elements()
         disable_help_button(self)
 
