@@ -57,10 +57,11 @@ def remove_media_files(new_note: Note) -> None:
     the collection will contain unused files that need to be trashed.
     But if the same file(s) are referenced by another note, they shouldn't be trashed.
     """
+    assert (new_note.col == mw.col.weakref())
     new_note.col.media.trash_files([
         file.name
         for file in files_in_note(new_note)
-        if not mw.col.find_cards(file.name)
+        if not new_note.col.find_cards(file.name)
     ])
 
 
