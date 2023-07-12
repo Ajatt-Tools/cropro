@@ -34,6 +34,8 @@ class AddWindow:
         self.add_window: Optional[addcards.AddCards] = None
         self.new_note: Optional[Note] = None
         self.other_note: Optional[Note] = None
+        self.block_close_cb: bool = False
+        gui_hooks.add_cards_will_add_note.append(self.on_add_import)
 
     def create_window(self, other_note: Note = None) -> NoteId:
         if other_note is None:
@@ -92,29 +94,24 @@ class AddWindow:
             open_window()
 
             def on_visibility_changed():
-                if not hasattr(self, 'block_close_cb') and self.new_note:
+                if not self.block_close_cb and self.new_note:
                     return remove_media_files(self.new_note)
 
             # Remove Media on close if not in saving progress
             qconnect(self.add_window.windowHandle().visibilityChanged, on_visibility_changed)
-            qconnect(self.add_window.addButton.clicked, self.add_import)
 
         return self.new_note.id
 
-    def add_import(self):
-        def do_add_import(problem: str | None, note: Note):
-            gui_hooks.add_cards_will_add_note.remove(do_add_import)
+    def on_add_import(self, problem: str | None, note: Note) -> str:
+        if self.other_note and current_add_dialog() and current_add_dialog() is self.add_window:
             logDebug("Importing edited note")
-
             if config['copy_card_data']:
                 import_card_info(note, self.other_note, self.cropro.other_col.col)
-
             self.cropro.note_list.clear_selection()
             self.cropro.status_bar.set_status(1, 0)
             mw.reset()
-
             self.block_close_cb = True  # Block media removal
-            self.add_window.ifCanClose(self.add_window.close)
-            return problem
-
-        gui_hooks.add_cards_will_add_note.append(do_add_import)
+            self.add_window.close()
+        self.other_note = None
+        self.add_window = None
+        return problem
