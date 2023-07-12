@@ -102,7 +102,7 @@ class AddDialogLauncher:
 
         return self.new_note.id
 
-    def on_add_import(self, problem: str | None, note: Note) -> str:
+    def on_add_import(self, problem: Optional[str], note: Note) -> str:
         if self.other_note and current_add_dialog() and current_add_dialog() is self.add_window:
             logDebug("Importing edited note")
             if config['copy_card_data']:
