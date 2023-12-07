@@ -189,9 +189,8 @@ class MainDialog(MainDialogUI):
         qconnect(self.note_fields_button.clicked,
                  lambda: showInfo("Current's note type's fields:\n\n" +
                                   '\n'.join(
-                                      list(
-                                          map(lambda x: x['name'],
-                                              mw.col.models.get(self.note_type_selection_combo.currentData())['flds'])))))
+                                      mw.col.models.field_names(
+                                          mw.col.models.get(self.note_type_selection_combo.currentData())))))
         qconnect(self.note_type_selection_combo.currentTextChanged, lambda: self.note_fields_button.hide() if self.note_type_selection_combo.currentData() == NameId.none_type().id
                                                                             else self.note_fields_button.show())
         qconnect(self.import_button.clicked, self.do_import)
