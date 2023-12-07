@@ -24,6 +24,7 @@ from collections import defaultdict
 from aqt import mw, gui_hooks
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip
+from aqt.operations import QueryOp
 
 from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
@@ -59,6 +60,7 @@ class MainDialogUI(QDialog):
         self.help_button = QPushButton('Help')
         self.note_list = NoteList()
         self.note_type_selection_combo = ComboBox()
+        self.note_fields_button = QPushButton("🛈")
         self.init_ui()
 
     def init_ui(self):
@@ -98,6 +100,7 @@ class MainDialogUI(QDialog):
         for w in (
                 self.edit_button,
                 self.import_button,
+                self.note_fields_button,
                 self.filter_button,
                 self.help_button,
                 self.search_term_edit,
@@ -120,9 +123,10 @@ class MainDialogUI(QDialog):
         import_row.addWidget(self.current_profile_deck_combo)
         import_row.addWidget(QLabel('Map to Note Type:'))
         import_row.addWidget(self.note_type_selection_combo)
-        import_row.addStretch(1)
+        import_row.addWidget(self.note_fields_button)
         import_row.addWidget(self.edit_button)
         import_row.addWidget(self.import_button)
+        import_row.setStretchFactor(import_row, 1)
         return import_row
 
 
@@ -175,12 +179,19 @@ class MainDialog(MainDialogUI):
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
         self._add_window_mgr = AddDialogLauncher(self)
+        self.search_block = False
         self.connect_elements()
         disable_help_button(self)
 
     def connect_elements(self):
         qconnect(self.other_profile_deck_combo.currentIndexChanged, self.update_notes_list)
         qconnect(self.edit_button.clicked, self.new_edit_win)
+        qconnect(self.note_fields_button.clicked,
+                 lambda: showInfo("Current's note type's fields:\n" +
+                                  '\n'.join(
+                                      list(
+                                          map(lambda x: x['name'],
+                                              mw.col.models.get(self.note_type_selection_combo.currentData())['flds'])))))
         qconnect(self.import_button.clicked, self.do_import)
         qconnect(self.filter_button.clicked, self.update_notes_list)
         qconnect(self.help_button.clicked, lambda: openHelp("searching"))
@@ -255,19 +266,34 @@ class MainDialog(MainDialogUI):
         if self.other_profile_deck_combo.count() < 1:
             return
 
-        note_ids = self.other_col.find_notes(self.other_profile_deck_combo.current_deck(), self.search_term_edit.text())
-        limited_note_ids = note_ids[:config['max_displayed_notes']]
+        # measure against double search caused by editing finished and filter click
+        if self.search_block:
+            return
+        self.search_block = True
 
-        self.note_list.set_notes(
-            map(self.other_col.get_note, limited_note_ids),
-            hide_fields=config['hidden_fields'],
-            media_dir=self.other_col.media_dir,
-            previewer=config['preview_on_right_side'],
-        )
+        def get_notes(cur_self):
+            note_ids = cur_self.other_col.find_notes(cur_self.other_profile_deck_combo.current_deck(), cur_self.search_term_edit.text())
+            limited_note_ids = note_ids[:config['max_displayed_notes']]
 
-        self.search_result_label.set_count(len(note_ids), len(limited_note_ids))
+            self.note_list.set_notes(
+                map(cur_self.other_col.get_note, limited_note_ids),
+                hide_fields=config['hidden_fields'],
+                media_dir=cur_self.other_col.media_dir,
+                previewer=config['preview_on_right_side'],
+            )
+            self.search_result_label.set_count(len(note_ids), len(limited_note_ids))
+            self.search_block = False
+
+        QueryOp(
+            parent=self,
+            op=lambda c: get_notes(self),
+            success=lambda: 0
+        ).with_progress().run_in_background()
 
     def do_import(self):
+        if len(self.note_list.selected_notes()) < 1:
+            return self.status_bar.set_status(custom_text="No notes selected.")
+
         logDebug('beginning import')
 
         # get selected notes
@@ -278,24 +304,30 @@ class MainDialog(MainDialogUI):
 
         logDebug(f'importing {len(notes)} notes')
 
-        results = []
+        def start_import(cur_self, notes):
+            results = []
 
-        for note in notes:
-            results.append(import_note(
-                other_note=note,
-                other_col=self.other_col.col,
-                model_id=self.note_type_selection_combo.currentData(),
-                deck_id=self.current_profile_deck_combo.currentData(),
-            ))
+            for note in notes:
+                results.append(import_note(
+                    other_note=note,
+                    other_col=cur_self.other_col.col,
+                    model_id=cur_self.note_type_selection_combo.currentData(),
+                    deck_id=cur_self.current_profile_deck_combo.currentData(),
+                ))
 
-        self.status_bar.set_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
-        mw.reset()
+            cur_self.status_bar.set_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
+
+        QueryOp(
+            parent=self,
+            op=lambda c: start_import(self, notes),
+            success=lambda: mw.reset()
+        ).with_progress().run_in_background()
 
     def new_edit_win(self):
         if len(selected_notes := self.note_list.selected_notes()) > 0:
             self._add_window_mgr.create_window(selected_notes[-1])
         else:
-            tooltip("No note selected.", period=1000, parent=self)
+            self.status_bar.set_status(custom_text="No notes selected.")
 
     def done(self, result_code: int):
         self.window_state.save()

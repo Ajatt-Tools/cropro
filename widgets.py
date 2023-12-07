@@ -91,7 +91,7 @@ class StatusBar(QHBoxLayout):
         self._dupes_label.hide()
         self._success_label.hide()
 
-    def set_status(self, successes: int, dupes: int):
+    def set_status(self, successes: int = 0, dupes: int = 0, custom_text: str = ''):
         if successes:
             self._success_label.setText(f'{successes} notes successfully imported.')
             self._success_label.show()
@@ -100,6 +100,9 @@ class StatusBar(QHBoxLayout):
 
         if dupes:
             self._dupes_label.setText(f'{dupes} notes were duplicates, and skipped.')
+            self._dupes_label.show()
+        elif not dupes and custom_text:
+            self._dupes_label.setText(custom_text)
             self._dupes_label.show()
         else:
             self._dupes_label.hide()
@@ -206,6 +209,7 @@ class NoteList(QWidget):
         return [item.data(self._role) for item in self._note_list.selectedItems()]
 
     def clear_selection(self):
+        self._previewer.setHidden(True)
         return self._note_list.clearSelection()
 
     def clear(self):

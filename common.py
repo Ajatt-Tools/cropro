@@ -30,6 +30,8 @@ class LogDebug:
         if not self._logfile:
             path = os.path.join(mw.pm.base, 'cropro.log')
             print(f'CroPro debug: opening log file "{path}"')
+            # clear before writing to not have a large file somewhen
+            open(path, 'w').close()
             self._logfile = open(path, 'a')
         self._logfile.write(str(msg) + '\n')
         self._logfile.flush()

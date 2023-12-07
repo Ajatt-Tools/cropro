@@ -58,6 +58,12 @@ class NotePreviewer(AnkiWebView):
                 f'<div class="name">{field_name}</div>'
                 f'<div class="content">{self._create_html_row_for_field(field_content)}</div>'
             )
+        if config['import_card_data']:
+            rows.append(
+                    f'<div class="name">Tags</div>'
+                    '<div class="content">' +
+                    self._create_html_row_for_field(note.string_tags())+'</div>'
+            )
         self.stdHtml(
             get_previewer_html().replace('<!--CONTENT-->', ''.join(rows)),
             js=[],
@@ -69,9 +75,9 @@ class NotePreviewer(AnkiWebView):
         markup = []
         if audio_files := find_sounds(field_content):
             markup.append(f'<div class="cropro__audio_list">{self._make_play_buttons(audio_files)}</div>')
-        if image_files := find_images(field_content):
+        elif image_files := find_images(field_content):
             markup.append(f'<div class="cropro__image_list">{self._make_images(image_files)}</div>')
-        if text := html_to_text_line(field_content):
+        elif text := html_to_text_line(field_content):
             markup.append(f'<div class="cropro__text_item">{text}</div>')
         return ''.join(markup)
 
