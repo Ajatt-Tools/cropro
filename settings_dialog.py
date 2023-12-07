@@ -3,7 +3,7 @@
 
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom, disable_help_button
+from aqt.utils import restoreGeom, saveGeom, disable_help_button, showInfo
 
 from .ajt_common.about_menu import tweak_window, menu_root_entry
 from .common import ADDON_NAME
@@ -34,10 +34,16 @@ class CroProSettingsDialog(QDialog):
 
     def _make_layout(self) -> QLayout:
         self.hidden_fields_box = ItemBox(parent=self, initial_values=config['hidden_fields'])
-        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Help | QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.checkboxes = make_checkboxes()
 
         layout = QVBoxLayout()
+
+        restart_label = QLabel("After changing, restarting Anki is required.")
+        restart_label.setStyleSheet(
+            "QLabel { width: 100vw; font-weight: bold; font-size: larger; margin: 5px 5px 10px 5px; }")
+        layout.addWidget(restart_label)
+
         layout.addLayout(self._make_form())
         layout.addWidget(self.hidden_fields_box)
         for key, checkbox in self.checkboxes.items():
@@ -62,6 +68,7 @@ class CroProSettingsDialog(QDialog):
     def connect_widgets(self):
         qconnect(self.button_box.accepted, self.accept)
         qconnect(self.button_box.rejected, self.reject)
+        qconnect(self.button_box.helpRequested, self.show_help)
         qconnect(self.hidden_fields_edit.textChanged, lambda: self.hidden_fields_box.new_item(self.hidden_fields_edit))
 
     def add_tooltips(self) -> None:
@@ -73,6 +80,11 @@ class CroProSettingsDialog(QDialog):
             "Copy scheduling information of cards created from imported notes,\n"
             "such as due date, interval, queue, type, etc."
         )
+
+    def show_help(self):
+        with open(os.path.join(os.path.dirname(__file__), 'config.md')) as c_help:
+            # Markdown is only supported since 23.10
+            showInfo(c_help.read(), title=ADDON_NAME+" Settings Help", textFormat="markdown")
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)

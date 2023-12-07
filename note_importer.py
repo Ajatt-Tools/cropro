@@ -74,7 +74,8 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
         # create a new note type (clone) if needed.
         matching_model = mw.col.models.by_name(reference_model.get('name'))
 
-        if not matching_model or matching_model.keys() != reference_model.keys():
+        # match for field names, regardless of order
+        if not matching_model or sorted(mw.col.models.field_names(matching_model)) != sorted(mw.col.models.field_names(reference_model)):
             matching_model = deepcopy(reference_model)
             matching_model['id'] = 0
             mw.col.models.add(matching_model)
@@ -126,15 +127,15 @@ def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id:
             new_note[key] = str(other_note[key])
 
     # copy field tags into new other_note object
-    if config.get('copy_tags'):
+    if config['copy_tags']:
         new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
-    if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
+    if config['tag_exported_cards'] and (tag := config.get('exported_tag')):
         other_note.add_tag(tag)
         other_note.flush()
 
     # check if note is dupe of existing one
-    if config.get('skip_duplicates') and new_note.dupeOrEmpty():
+    if config['skip_duplicates'] and new_note.dupeOrEmpty():
         return ImportResult.dupe
 
     copy_media_files(new_note, other_note)

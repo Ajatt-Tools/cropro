@@ -7,11 +7,11 @@ readonly manifest=manifest.json
 readonly root_dir=$(git rev-parse --show-toplevel)
 readonly branch=$(git branch --show-current)
 readonly zip_name=${addon_name}_${branch}.ankiaddon
-readonly target=${1:-ankiweb}
+read -p "Target (ankiweb/aw/OTHER): " target
 export root_dir branch
 
 git_archive() {
-	if [[ $target != ankiweb ]]; then
+	if [[ $target != ankiweb && $target != aw ]]; then
 		# https://addon-docs.ankiweb.net/sharing.html#sharing-outside-ankiweb
 		# If you wish to distribute .ankiaddon files outside of AnkiWeb,
 		# your add-on folder needs to contain a ‘manifest.json’ file.
