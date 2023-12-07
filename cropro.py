@@ -96,7 +96,7 @@ class MainDialogUI(QDialog):
 
     def set_default_sizes(self):
         combo_min_width = 120
-        self.setMinimumSize(680, 500)
+        self.setMinimumSize(800, 500)
         for w in (
                 self.edit_button,
                 self.import_button,
@@ -187,11 +187,13 @@ class MainDialog(MainDialogUI):
         qconnect(self.other_profile_deck_combo.currentIndexChanged, self.update_notes_list)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.note_fields_button.clicked,
-                 lambda: showInfo("Current's note type's fields:\n" +
+                 lambda: showInfo("Current's note type's fields:\n\n" +
                                   '\n'.join(
                                       list(
                                           map(lambda x: x['name'],
                                               mw.col.models.get(self.note_type_selection_combo.currentData())['flds'])))))
+        qconnect(self.note_type_selection_combo.currentTextChanged, lambda: self.note_fields_button.hide() if self.note_type_selection_combo.currentData() == NameId.none_type().id
+                                                                            else self.note_fields_button.show())
         qconnect(self.import_button.clicked, self.do_import)
         qconnect(self.filter_button.clicked, self.update_notes_list)
         qconnect(self.help_button.clicked, lambda: openHelp("searching"))
@@ -214,6 +216,7 @@ class MainDialog(MainDialogUI):
         self.open_other_col()
         self.into_profile_label.setText(mw.pm.name or 'Unknown')
         self.window_state.restore()
+        self.note_fields_button.hide() if self.note_type_selection_combo.currentData() == NameId.none_type().id else self.note_fields_button.show()
 
     def clear_other_profiles_list(self):
         return self.other_profile_names_combo.clear()
@@ -287,7 +290,7 @@ class MainDialog(MainDialogUI):
         QueryOp(
             parent=self,
             op=lambda c: get_notes(self),
-            success=lambda: 0
+            success=lambda r: 0
         ).with_progress().run_in_background()
 
     def do_import(self):
@@ -320,7 +323,7 @@ class MainDialog(MainDialogUI):
         QueryOp(
             parent=self,
             op=lambda c: start_import(self, notes),
-            success=lambda: mw.reset()
+            success=lambda r: mw.reset()
         ).with_progress().run_in_background()
 
     def new_edit_win(self):

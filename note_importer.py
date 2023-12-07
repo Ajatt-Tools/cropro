@@ -75,7 +75,7 @@ def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
         matching_model = mw.col.models.by_name(reference_model.get('name'))
 
         # match for field names, regardless of order
-        if not matching_model or sorted(matching_model['flds'].keys()) != sorted(reference_model['flds'].keys()):
+        if not matching_model or sorted(list(map(lambda x: x['name'], matching_model['flds']))) != sorted(list(map(lambda x: x['name'], reference_model['flds']))):
             matching_model = deepcopy(reference_model)
             matching_model['id'] = 0
             mw.col.models.add(matching_model)

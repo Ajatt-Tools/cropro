@@ -15,6 +15,7 @@ from aqt import sound
 from aqt.qt import *
 from aqt.webview import AnkiWebView
 
+from .config import config
 from .ajt_common.media import find_sounds, find_images
 
 WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
@@ -58,7 +59,7 @@ class NotePreviewer(AnkiWebView):
                 f'<div class="name">{field_name}</div>'
                 f'<div class="content">{self._create_html_row_for_field(field_content)}</div>'
             )
-        if config['import_card_data']:
+        if config['copy_tags']:
             rows.append(
                     f'<div class="name">Tags</div>'
                     '<div class="content">' +

@@ -3,7 +3,7 @@
 
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom, disable_help_button
+from aqt.utils import restoreGeom, saveGeom, disable_help_button, showInfo
 
 from .ajt_common.about_menu import tweak_window, menu_root_entry
 from .common import ADDON_NAME
