@@ -93,6 +93,19 @@ class CroProSettingsDialog(QDialog):
             "Copy tags from the original note to the imported note.\n"
             "When disabled, imported notes will contain no tags."
         )
+        self.checkboxes['call_add_cards_hook'].setToolTip(
+            "Call the `add_cards_did_add_note` hook after a note is imported.\n"
+            "Enable this for compatibility with other add-ons\n"
+            "that evaluate notes upon creation."
+        )
+        self.checkboxes['preview_on_right_side'].setToolTip(
+            "When a note is selected,\n"
+            "show a preview on the right side of the window."
+        )
+        self.checkboxes['allow_empty_search'].setToolTip(
+            "Show a list of notes from the other collection\n"
+            "even when the search bar is empty."
+        )
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)
