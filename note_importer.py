@@ -1,6 +1,6 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org> and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+import collections
 import math
 import os.path
 from collections.abc import Iterable
@@ -24,6 +24,16 @@ from .config import config
 class ImportResult(Enum):
     success = auto()
     dupe = auto()
+
+
+class ImportResultCounter(collections.Counter[ImportResult, int]):
+    @property
+    def successes(self) -> int:
+        return self[ImportResult.success]
+
+    @property
+    def duplicates(self) -> int:
+        return self[ImportResult.dupe]
 
 
 class FileInfo(NamedTuple):

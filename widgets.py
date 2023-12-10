@@ -8,6 +8,7 @@ from anki.utils import html_to_text_line
 from aqt.qt import *
 
 from .collection_manager import NameId
+from .note_importer import ImportResultCounter
 from .note_previewer import NotePreviewer
 
 WIDGET_HEIGHT = 29
@@ -91,15 +92,15 @@ class StatusBar(QHBoxLayout):
         self._dupes_label.hide()
         self._success_label.hide()
 
-    def set_import_status(self, successes: int, dupes: int):
-        if successes:
-            self._success_label.setText(f'{successes} notes successfully imported.')
+    def set_import_status(self, results: ImportResultCounter):
+        if results.successes:
+            self._success_label.setText(f'{results.successes} notes successfully imported.')
             self._success_label.show()
         else:
             self._success_label.hide()
 
-        if dupes:
-            self._dupes_label.setText(f'{dupes} notes were duplicates, and skipped.')
+        if results.duplicates:
+            self._dupes_label.setText(f'{results.duplicates} notes were duplicates, and skipped.')
             self._dupes_label.show()
         else:
             self._dupes_label.hide()

@@ -29,9 +29,9 @@ from .ajt_common.about_menu import menu_root_entry
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .common import ADDON_NAME, LogDebug
 from .config import config
-from .note_importer import import_note, ImportResult
-from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
 from .edit_window import AddDialogLauncher
+from .note_importer import import_note, ImportResultCounter
+from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
 
 logDebug = LogDebug()
 
@@ -278,17 +278,17 @@ class MainDialog(MainDialogUI):
 
         logDebug(f'importing {len(notes)} notes')
 
-        results = []
+        results = ImportResultCounter()
 
         for note in notes:
-            results.append(import_note(
+            results[import_note(
                 other_note=note,
                 other_col=self.other_col.col,
                 model_id=self.note_type_selection_combo.currentData(),
                 deck_id=self.current_profile_deck_combo.currentData(),
-            ))
+            )] += 1
 
-        self.status_bar.set_import_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
+        self.status_bar.set_import_status(results)
         mw.reset()
 
     def new_edit_win(self):
