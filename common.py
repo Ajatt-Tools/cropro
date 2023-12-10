@@ -9,6 +9,7 @@ from aqt import mw, gui_hooks
 from .config import config
 
 ADDON_NAME = 'Cross Profile Search and Import'
+DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, 'cropro.log')
 
 
 class LogDebug:
@@ -28,9 +29,8 @@ class LogDebug:
         if not config['enable_debug_log']:
             return
         if not self._logfile:
-            path = os.path.join(mw.pm.base, 'cropro.log')
-            print(f'CroPro debug: opening log file "{path}"')
-            self._logfile = open(path, 'a')
+            print(f'CroPro debug: opening log file "{DEBUG_LOG_FILE_PATH}"')
+            self._logfile = open(DEBUG_LOG_FILE_PATH, 'a')
         self._logfile.write(str(msg) + '\n')
         self._logfile.flush()
 
