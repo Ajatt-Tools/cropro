@@ -89,6 +89,10 @@ class CroProSettingsDialog(QDialog):
             "Don't import a note if turns out to be a duplicate,\n"
             "i.e. it is already present in the current collection."
         )
+        self.checkboxes['copy_tags'].setToolTip(
+            "Copy tags from the original note to the imported note.\n"
+            "When disabled, imported notes will contain no tags."
+        )
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)
