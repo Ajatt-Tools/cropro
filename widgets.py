@@ -8,7 +8,7 @@ from anki.utils import html_to_text_line
 from aqt.qt import *
 
 from .collection_manager import NameId
-from .note_importer import ImportResultCounter
+from .note_importer import ImportResultCounter, ImportResult
 from .note_previewer import NotePreviewer
 
 WIDGET_HEIGHT = 29
@@ -104,6 +104,12 @@ class StatusBar(QHBoxLayout):
             self._dupes_label.show()
         else:
             self._dupes_label.hide()
+
+    def set_import_count(self, success_count: int = 0, dupe_count: int = 0):
+        self.set_import_status(ImportResultCounter({
+            ImportResult.success: success_count,
+            ImportResult.dupe: dupe_count
+        }))
 
 
 class ItemBox(QWidget):

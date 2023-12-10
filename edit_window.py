@@ -9,7 +9,12 @@ from aqt.qt import *
 from .collection_manager import CollectionManager
 from .common import LogDebug
 from .config import config
-from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
+from .note_importer import (
+    copy_media_files,
+    remove_media_files,
+    import_card_info,
+    get_matching_model
+)
 from .widgets import DeckCombo, ComboBox, NoteList, StatusBar
 
 logDebug = LogDebug()
@@ -109,7 +114,7 @@ class AddDialogLauncher:
             if config['copy_card_data']:
                 import_card_info(note, self.other_note, self.cropro.other_col.col)
             self.cropro.note_list.clear_selection()
-            self.cropro.status_bar.set_import_status(1, 0)
+            self.cropro.status_bar.set_import_count(success_count=1)
             mw.reset()
             self.block_close_cb = True  # Block media removal
             self.add_window.close()
