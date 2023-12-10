@@ -11,7 +11,7 @@ readonly target=${1:-ankiweb}
 export root_dir branch
 
 git_archive() {
-	if [[ $target != ankiweb ]]; then
+	if [[ $target != ankiweb && $target != aw ]]; then
 		# https://addon-docs.ankiweb.net/sharing.html#sharing-outside-ankiweb
 		# If you wish to distribute .ankiaddon files outside of AnkiWeb,
 		# your add-on folder needs to contain a ‘manifest.json’ file.
