@@ -288,7 +288,7 @@ class MainDialog(MainDialogUI):
                 deck_id=self.current_profile_deck_combo.currentData(),
             ))
 
-        self.status_bar.set_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
+        self.status_bar.set_import_status(results.count(ImportResult.success), results.count(ImportResult.dupe))
         mw.reset()
 
     def new_edit_win(self):

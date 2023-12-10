@@ -91,7 +91,7 @@ class StatusBar(QHBoxLayout):
         self._dupes_label.hide()
         self._success_label.hide()
 
-    def set_status(self, successes: int, dupes: int):
+    def set_import_status(self, successes: int, dupes: int):
         if successes:
             self._success_label.setText(f'{successes} notes successfully imported.')
             self._success_label.show()
