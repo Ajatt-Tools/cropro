@@ -85,6 +85,10 @@ class CroProSettingsDialog(QDialog):
             f"The file can be found at: {DEBUG_LOG_FILE_PATH}\n"
             "Most users don't need to keep this option enabled."
         )
+        self.checkboxes['skip_duplicates'].setToolTip(
+            "Don't import a note if turns out to be a duplicate,\n"
+            "i.e. it is already present in the current collection."
+        )
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)
