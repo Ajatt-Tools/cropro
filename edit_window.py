@@ -24,6 +24,7 @@ class CropProWindow(Protocol):
 
 
 def current_add_dialog() -> Optional[addcards.AddCards]:
+    # noinspection PyProtectedMember
     return aqt.dialogs._dialogs['AddCards'][1]
 
 
