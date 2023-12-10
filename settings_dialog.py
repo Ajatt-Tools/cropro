@@ -73,6 +73,13 @@ class CroProSettingsDialog(QDialog):
             "Copy scheduling information of cards created from imported notes,\n"
             "such as due date, interval, queue, type, etc."
         )
+        self.checkboxes['tag_original_notes'].setToolTip(
+            "When importing notes to the current collection,\n"
+            "tag the original notes in the other collection\n"
+            "so that you could easily find and delete them later.\n"
+            "The tag that is added to the original notes can be changed\n"
+            "by editing the \"Tag original cards with\" field."
+        )
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)

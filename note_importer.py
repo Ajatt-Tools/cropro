@@ -129,7 +129,7 @@ def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id:
     if config.get('copy_tags'):
         new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
-    if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
+    if tag := config.tag_original_notes():
         other_note.add_tag(tag)
         other_note.flush()
 

@@ -69,7 +69,7 @@ class AddDialogLauncher:
         if 'tags' in other_note and config.get('copy_tags'):
             self.new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
-        if config.get('tag_exported_cards') and (tag := config.get('exported_tag')):
+        if tag := config.tag_original_notes():
             other_note.add_tag(tag)
             other_note.flush()
 
