@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Copyright: Ren Tatsumoto <tatsu at autistici.org>
+# Copyright: Ren Tatsumoto <tatsu at autistici.org> and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 readonly addon_name=ajt_cropro
