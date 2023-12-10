@@ -1,6 +1,5 @@
 {
   "max_displayed_notes": 500,
-  "enable_debug_log": true,
   "tag_original_notes": true,
   "exported_tag": "cropro_exported",
   "hidden_fields": [
@@ -13,5 +12,6 @@
   "allow_empty_search": false,
   "preview_on_right_side": true,
   "copy_card_data": false,
-  "call_add_cards_hook": false
+  "call_add_cards_hook": false,
+  "enable_debug_log": false
 }

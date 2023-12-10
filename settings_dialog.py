@@ -6,7 +6,7 @@ from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
 from .ajt_common.about_menu import tweak_window, menu_root_entry
-from .common import ADDON_NAME
+from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
 from .config import config
 from .widgets import ItemBox, SpinBox
 
@@ -79,6 +79,11 @@ class CroProSettingsDialog(QDialog):
             "so that you could easily find and delete them later.\n"
             "The tag that is added to the original notes can be changed\n"
             "by editing the \"Tag original cards with\" field."
+        )
+        self.checkboxes['enable_debug_log'].setToolTip(
+            "Write events related to this add-on to the log file.\n"
+            f"The file can be found at: {DEBUG_LOG_FILE_PATH}\n"
+            "Most users don't need to keep this option enabled."
         )
 
     def done(self, result: int) -> None:
