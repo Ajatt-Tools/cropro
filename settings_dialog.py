@@ -8,7 +8,8 @@ from aqt.utils import restoreGeom, saveGeom, disable_help_button
 from .ajt_common.about_menu import tweak_window
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
 from .config import config
-from .widgets import ItemBox, SpinBox
+from .widgets.item_box import ItemBox
+from .widgets.utils import SpinBox
 
 
 def make_checkboxes() -> dict[str, QCheckBox]:

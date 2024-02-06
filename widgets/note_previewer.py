@@ -15,7 +15,7 @@ from aqt import sound
 from aqt.qt import *
 from aqt.webview import AnkiWebView
 
-from .ajt_common.media import find_sounds, find_images
+from ..ajt_common.media import find_sounds, find_images
 
 WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
 

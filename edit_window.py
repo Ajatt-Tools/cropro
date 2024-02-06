@@ -1,3 +1,6 @@
+# Copyright: Ajatt-Tools and contributors
+# License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 from typing import Protocol, Optional
 
 import anki.notes
@@ -15,7 +18,9 @@ from .note_importer import (
     import_card_info,
     get_matching_model
 )
-from .widgets import DeckCombo, CroProComboBox, NoteList, StatusBar
+from .widgets.note_list import NoteList
+from .widgets.status_bar import StatusBar
+from .widgets.utils import DeckCombo, CroProComboBox
 
 logDebug = LogDebug()
 
