@@ -15,14 +15,14 @@ from .note_importer import (
     import_card_info,
     get_matching_model
 )
-from .widgets import DeckCombo, ComboBox, NoteList, StatusBar
+from .widgets import DeckCombo, CroProComboBox, NoteList, StatusBar
 
 logDebug = LogDebug()
 
 
 class CropProWindow(Protocol):
     current_profile_deck_combo: DeckCombo
-    note_type_selection_combo: ComboBox
+    note_type_selection_combo: CroProComboBox
     other_col: CollectionManager
     note_list: NoteList
     status_bar: StatusBar

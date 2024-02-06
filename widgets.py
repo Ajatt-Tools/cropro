@@ -13,7 +13,20 @@ from .collection_manager import NameId
 from .note_importer import ImportResultCounter, ImportResult
 from .note_previewer import NotePreviewer
 
-WIDGET_HEIGHT = 29
+WIDGET_MIN_HEIGHT = 29
+COMBO_MIN_WIDTH = 120
+
+
+class CroProPushButton(QPushButton):
+    def __init__(self, *__args):
+        super().__init__(*__args)
+        self.setMinimumHeight(WIDGET_MIN_HEIGHT)
+
+
+class CroProLineEdit(QLineEdit):
+    def __init__(self, *__args):
+        super().__init__(*__args)
+        self.setMinimumHeight(WIDGET_MIN_HEIGHT)
 
 
 class SpinBox(QSpinBox):
@@ -32,10 +45,12 @@ class ProfileNameLabel(QLabel):
         self.setFont(font)
 
 
-class ComboBox(QComboBox):
+class CroProComboBox(QComboBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setMaximumHeight(WIDGET_HEIGHT)
+        self.setMaximumHeight(WIDGET_MIN_HEIGHT)
+        self.setMinimumWidth(COMBO_MIN_WIDTH)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def all_items(self) -> Iterable[str]:
         """Returns an iterable of all items stored in the combo box."""
@@ -43,7 +58,7 @@ class ComboBox(QComboBox):
             yield self.itemText(i)
 
 
-class DeckCombo(ComboBox):
+class DeckCombo(CroProComboBox):
     def set_decks(self, decks: Iterable[NameId]):
         self.clear()
         for deck_name, deck_id in decks:

@@ -24,96 +24,144 @@ from typing import Optional
 
 from anki.models import NotetypeDict
 from aqt import mw, gui_hooks
-from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning
 
-from .settings_dialog import open_cropro_settings
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
-from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
+from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names
 from .common import ADDON_NAME, LogDebug
 from .config import config
 from .edit_window import AddDialogLauncher
-from .note_importer import import_note, ImportResultCounter
-from .widgets import SearchResultLabel, DeckCombo, ComboBox, ProfileNameLabel, StatusBar, NoteList, WIDGET_HEIGHT
+from .note_importer import import_note
+from .settings_dialog import open_cropro_settings
+from .widgets import *
 
 logDebug = LogDebug()
+
+
+class SearchBar(QWidget):
+    search_requested = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.other_profile_names_combo = CroProComboBox()
+        self.selected_profile_changed = self.other_profile_names_combo.currentIndexChanged
+        self.other_profile_deck_combo = DeckCombo()
+        self.search_term_edit = CroProLineEdit()
+        self.filter_button = CroProPushButton("Filter")
+        self._setup_layout()
+        self._connect_elements()
+
+    def search_text(self) -> str:
+        return self.search_term_edit.text()
+
+    def current_deck(self) -> NameId:
+        return self.other_profile_deck_combo.current_deck()
+
+    def decks_populated(self) -> bool:
+        return self.other_profile_deck_combo.count() > 0
+
+    def clear_profiles_list(self) -> None:
+        return self.other_profile_names_combo.clear()
+
+    def needs_to_repopulate_profile_names(self) -> bool:
+        """
+        The content of the profile name selector is outdated and the combo box needs to be repopulated.
+        1) If the combo box is empty, the window is opened for the first time.
+        2) If it happens to contain the current profile name, the user has switched profiles.
+        """
+        return (
+                self.other_profile_names_combo.count() == 0
+                or self.other_profile_names_combo.findText(mw.pm.name) != -1
+        )
+
+    def set_profile_names(self, other_profile_names: list[str]):
+        """
+        Populate profile selector with a list of profile names, excluding the current profile.
+        """
+        assert (mw.pm.name not in other_profile_names)
+        self.other_profile_names_combo.clear()
+        self.other_profile_names_combo.addItems(other_profile_names)
+
+    def selected_profile_name(self) -> str:
+        """
+        The name of the other collection to search notes in (and import notes from).
+        """
+        return self.other_profile_names_combo.currentText()
+
+    def set_decks(self, decks: Iterable[NameId]):
+        """
+        A list of decks to search in.
+        The user can limit search to a certain deck in the other collection.
+        """
+        return self.other_profile_deck_combo.set_decks(decks)
+
+    def focus(self):
+        self.search_term_edit.setFocus()
+
+    def _setup_layout(self) -> None:
+        self.setLayout(layout := QVBoxLayout())
+        layout.addLayout(self._make_other_profile_settings_box())
+        layout.addLayout(self._make_filter_row())
+        self.search_term_edit.setPlaceholderText('<text to filter by>')
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
+        self.focus()
+
+    def _make_other_profile_settings_box(self) -> QLayout:
+        layout = QHBoxLayout()
+        layout.addWidget(QLabel('Import From Profile:'))
+        layout.addWidget(self.other_profile_names_combo)
+        layout.addWidget(QLabel('Deck:'))
+        layout.addWidget(self.other_profile_deck_combo)
+        return layout
+
+    def _make_filter_row(self) -> QLayout:
+        layout = QHBoxLayout()
+        layout.addWidget(self.search_term_edit)
+        layout.addWidget(self.filter_button)
+        return layout
+
+    def _connect_elements(self):
+        qconnect(self.other_profile_deck_combo.currentIndexChanged, self.search_requested)
+        qconnect(self.filter_button.clicked, self.search_requested)
+        qconnect(self.search_term_edit.editingFinished, self.search_requested)
 
 
 #############################################################################
 # UI layout
 #############################################################################
 
-
 class MainDialogUI(QMainWindow):
     name = "cropro_dialog"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.search_bar = SearchBar()
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
         self.current_profile_deck_combo = DeckCombo()
-        self.edit_button = QPushButton('Edit')
-        self.import_button = QPushButton('Import')
-        self.search_term_edit = QLineEdit()
-        self.other_profile_names_combo = ComboBox()
-        self.other_profile_deck_combo = DeckCombo()
-        self.filter_button = QPushButton('Filter')
+        self.edit_button = CroProPushButton('Edit')
+        self.import_button = CroProPushButton('Import')
         self.note_list = NoteList()
-        self.note_type_selection_combo = ComboBox()
+        self.note_type_selection_combo = CroProComboBox()
         self.init_ui()
 
     def init_ui(self):
         central_widget = QWidget(self)
         central_widget.setLayout(self.make_main_layout())
         self.setWindowTitle(ADDON_NAME)
-        self.set_default_sizes()
         self.setCentralWidget(central_widget)
-        self.search_term_edit.setPlaceholderText('<text to filter by>')
-
-    def make_filter_row(self) -> QLayout:
-        filter_row = QHBoxLayout()
-        filter_row.addWidget(self.search_term_edit)
-        filter_row.addWidget(self.filter_button)
-        return filter_row
+        self.setMinimumSize(680, 500)
 
     def make_main_layout(self) -> QLayout:
         main_vbox = QVBoxLayout()
-        main_vbox.addLayout(self.make_other_profile_settings_box())
-        main_vbox.addLayout(self.make_filter_row())
+        main_vbox.addWidget(self.search_bar)
         main_vbox.addWidget(self.search_result_label)
         main_vbox.addWidget(self.note_list)
         main_vbox.addLayout(self.status_bar)
         main_vbox.addLayout(self.make_input_row())
         return main_vbox
-
-    def make_other_profile_settings_box(self) -> QLayout:
-        other_profile_deck_row = QHBoxLayout()
-        other_profile_deck_row.addWidget(QLabel('Import From Profile:'))
-        other_profile_deck_row.addWidget(self.other_profile_names_combo)
-        other_profile_deck_row.addWidget(QLabel('Deck:'))
-        other_profile_deck_row.addWidget(self.other_profile_deck_combo)
-        return other_profile_deck_row
-
-    def set_default_sizes(self):
-        combo_min_width = 120
-        self.setMinimumSize(680, 500)
-        for w in (
-                self.edit_button,
-                self.import_button,
-                self.filter_button,
-                self.search_term_edit,
-        ):
-            w.setMinimumHeight(WIDGET_HEIGHT)
-        for combo in (
-                self.other_profile_names_combo,
-                self.other_profile_deck_combo,
-                self.current_profile_deck_combo,
-                self.note_type_selection_combo,
-        ):
-            combo.setMinimumWidth(combo_min_width)
-            combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def make_input_row(self) -> QLayout:
         import_row = QHBoxLayout()
@@ -139,14 +187,15 @@ class WindowState:
         self._window = window
         self._json_filepath = os.path.join(os.path.dirname(__file__), 'user_files', 'window_state.json')
         self._map = {
-            "from_profile": self._window.other_profile_names_combo,
-            "from_deck": self._window.other_profile_deck_combo,
+            "from_profile": self._window.search_bar.other_profile_names_combo,
+            "from_deck": self._window.search_bar.other_profile_deck_combo,
             "to_deck": self._window.current_profile_deck_combo,
             "note_type": self._window.note_type_selection_combo,
         }
         self._state = defaultdict(dict)
 
     def save(self):
+        self._load()
         for key, widget in self._map.items():
             self._state[mw.pm.name][key] = widget.currentText()
         with open(self._json_filepath, 'w', encoding='utf8') as of:
@@ -167,7 +216,7 @@ class WindowState:
     def restore(self):
         if self._load() and (profile_settings := self._state.get(mw.pm.name)):
             for key, widget in self._map.items():
-                if (value := profile_settings[key]) in widget.all_items():
+                if (value := profile_settings.get(key)) in widget.all_items():
                     widget.setCurrentText(value)
         restoreGeom(self._window, self._window.name, adjustSize=True)
 
@@ -214,37 +263,30 @@ class MainDialog(MainDialogUI):
             return mw.col.models.get(selected_note_type_id)
 
     def connect_elements(self):
-        qconnect(self.other_profile_deck_combo.currentIndexChanged, self.update_notes_list)
+        qconnect(self.search_bar.selected_profile_changed, self.open_other_col)
+        qconnect(self.search_bar.search_requested, self.update_notes_list)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
-        qconnect(self.filter_button.clicked, self.update_notes_list)
-        qconnect(self.search_term_edit.editingFinished, self.update_notes_list)
-        qconnect(self.other_profile_names_combo.currentIndexChanged, self.open_other_col)
 
     def show(self):
         super().show()
         self.populate_ui()
-        self.search_term_edit.setFocus()
+        self.search_bar.focus()
 
     def populate_ui(self):
         self.status_bar.hide_counters()
         self.populate_note_type_selection_combo()
         self.populate_current_profile_decks()
-        # 1) If the combo box is emtpy the window is opened for the first time.
-        # 2) If it happens to contain the current profile name, the user has switched profiles.
-        if self.other_profile_names_combo.count() == 0 or self.other_profile_names_combo.findText(mw.pm.name) != -1:
+        if self.search_bar.needs_to_repopulate_profile_names():
             self.populate_other_profile_names()
         self.open_other_col()
         self.into_profile_label.setText(mw.pm.name or 'Unknown')
         self.window_state.restore()
 
-    def clear_other_profiles_list(self):
-        return self.other_profile_names_combo.clear()
-
     def populate_other_profile_names(self):
         logDebug("populating other profiles.")
 
-        other_profile_names = get_other_profile_names()
+        other_profile_names: list[str] = get_other_profile_names()
         if not other_profile_names:
             msg: str = 'This add-on only works if you have multiple profiles.'
             showInfo(msg)
@@ -252,8 +294,7 @@ class MainDialog(MainDialogUI):
             self.hide()
             return
 
-        self.other_profile_names_combo.clear()
-        self.other_profile_names_combo.addItems(other_profile_names)
+        self.search_bar.set_profile_names(other_profile_names)
 
     def populate_note_type_selection_combo(self):
         self.note_type_selection_combo.clear()
@@ -262,11 +303,11 @@ class MainDialog(MainDialogUI):
             self.note_type_selection_combo.addItem(note_type.name, note_type.id)
 
     def open_other_col(self):
-        col_name = self.other_profile_names_combo.currentText()
+        selected_profile_name = self.search_bar.selected_profile_name()
 
-        if not self.other_col.is_opened or col_name != self.other_col.name:
+        if not self.other_col.is_opened or selected_profile_name != self.other_col.name:
             self.reset_cropro_status()
-            self.other_col.open(col_name)
+            self.other_col.open(selected_profile_name)
             self.populate_other_profile_decks()
 
     def reset_cropro_status(self):
@@ -280,22 +321,20 @@ class MainDialog(MainDialogUI):
 
     def populate_other_profile_decks(self):
         logDebug("populating other profile decks...")
-        self.other_profile_deck_combo.set_decks([
-            self.other_col.col_name_and_id(), *self.other_col.deck_names_and_ids(),
-        ])
+        self.search_bar.set_decks([self.other_col.col_name_and_id(), *self.other_col.deck_names_and_ids(), ])
 
     def update_notes_list(self):
-        self.search_term_edit.setFocus()
+        self.search_bar.focus()
         self.reset_cropro_status()
         self.open_other_col()
 
-        if not self.search_term_edit.text() and not config['allow_empty_search']:
+        if not (self.search_bar.search_text() or config.allow_empty_search):
             return
 
-        if self.other_profile_deck_combo.count() < 1:
+        if not self.search_bar.decks_populated():
             return
 
-        note_ids = self.other_col.find_notes(self.other_profile_deck_combo.current_deck(), self.search_term_edit.text())
+        note_ids = self.other_col.find_notes(self.search_bar.current_deck(), self.search_bar.search_text())
         limited_note_ids = note_ids[:config['max_displayed_notes']]
 
         self.note_list.set_notes(
@@ -360,4 +399,4 @@ def init():
     root_menu.addAction(action)
     # react to anki's state changes
     gui_hooks.profile_will_close.append(d.close)
-    gui_hooks.profile_did_open.append(d.clear_other_profiles_list)
+    gui_hooks.profile_did_open.append(d.search_bar.clear_profiles_list)

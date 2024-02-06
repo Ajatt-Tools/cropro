@@ -1,5 +1,6 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org> and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 from typing import Optional
 
 from .ajt_common.addon_config import AddonConfigManager
@@ -13,6 +14,10 @@ class CroProConfig(AddonConfigManager):
         """
         if self['tag_original_notes'] and (tag := self['exported_tag']):
             return tag
+
+    @property
+    def allow_empty_search(self) -> bool:
+        return self["allow_empty_search"]
 
 
 config = CroProConfig()
