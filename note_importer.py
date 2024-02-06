@@ -10,6 +10,7 @@ from typing import NamedTuple
 
 from anki.cards import Card
 from anki.collection import Collection
+from anki.decks import DeckId
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import join_fields
@@ -126,7 +127,7 @@ def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
         new_card.flush()
 
 
-def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id: int) -> ImportResult:
+def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id: DeckId) -> ImportResult:
     matching_model = get_matching_model(model_id, other_note.note_type())
     new_note = Note(mw.col, matching_model)
     new_note.note_type()['did'] = deck_id
@@ -148,7 +149,7 @@ def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id:
         return ImportResult.dupe
 
     copy_media_files(new_note, other_note)
-    mw.col.addNote(new_note)  # new_note has changed its id
+    mw.col.add_note(new_note, deck_id)  # new_note has changed its id
 
     if config['copy_card_data']:
         import_card_info(new_note, other_note, other_col)
