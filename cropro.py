@@ -41,7 +41,7 @@ logDebug = LogDebug()
 #############################################################################
 
 
-class MainDialogUI(QDialog):
+class MainDialogUI(QMainWindow):
     name = "cropro_dialog"
 
     def __init__(self, *args, **kwargs):
@@ -62,10 +62,12 @@ class MainDialogUI(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        self.search_term_edit.setPlaceholderText('<text to filter by>')
-        self.setLayout(self.make_main_layout())
+        central_widget = QWidget(self)
+        central_widget.setLayout(self.make_main_layout())
         self.setWindowTitle(ADDON_NAME)
         self.set_default_sizes()
+        self.setCentralWidget(central_widget)
+        self.search_term_edit.setPlaceholderText('<text to filter by>')
 
     def make_filter_row(self) -> QLayout:
         filter_row = QHBoxLayout()
