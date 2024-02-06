@@ -2,6 +2,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from collections.abc import Iterable, Sequence
+from gettext import ngettext
+from typing import NamedTuple
 
 from anki.notes import Note
 from anki.utils import html_to_text_line
@@ -70,19 +72,24 @@ class SearchResultLabel(QLabel):
             self.show()
 
 
+class NGetTextVariant(NamedTuple):
+    singular: str
+    plural: str
+
+
 class ColoredCounter(QLabel):
-    def __init__(self, color: str, counter_description: str):
+    def __init__(self, color: str, description: NGetTextVariant):
         super().__init__()
         self.setStyleSheet("QLabel { color: %s; }" % color)
-        self._counter_description = counter_description
+        self._description = description
         assert color.startswith('#')
-        assert counter_description.count('%d') == 1
+        assert all(s.count('%d') == 1 for s in description)
         # by default, the counter is not visible.
         self.hide()
 
     def set_count(self, count: int):
         if count > 0:
-            self.setText(self._counter_description % count)
+            self.setText(ngettext(self._description.singular, self._description.plural, count) % count)
             self.show()
         else:
             self.hide()
@@ -93,11 +100,17 @@ class StatusBar(QHBoxLayout):
         super().__init__(*args, **kwargs)
         self._success_label = ColoredCounter(
             color="#228B22",
-            counter_description="%d notes were successfully imported."
+            description=NGetTextVariant(
+                singular="%d note was successfully imported.",
+                plural="%d notes were successfully imported.",
+            ),
         )
         self._dupes_label = ColoredCounter(
             color="#FF8C00",
-            counter_description="%d notes were duplicates and were skipped."
+            description=NGetTextVariant(
+                singular="%d note was a duplicate and was skipped.",
+                plural="%d notes were duplicates and were skipped.",
+            ),
         )
         self.addWidget(self._success_label)
         self.addWidget(self._dupes_label)
