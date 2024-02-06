@@ -75,10 +75,10 @@ def remove_media_files(new_note: Note) -> None:
     ])
 
 
-def get_matching_model(model_id: int, reference_model: NoteType) -> NoteType:
-    if model_id != NameId.none_type().id:
+def get_matching_model(target_model_id: int, reference_model: NoteType) -> NoteType:
+    if target_model_id != NameId.none_type().id:
         # use existing note type (even if its name or fields are different)
-        return mw.col.models.get(model_id)
+        return mw.col.models.get(target_model_id)
     else:
         # find a model in current profile that matches the name of model from other profile
         # create a new note type (clone) if needed.
