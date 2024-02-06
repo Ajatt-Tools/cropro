@@ -70,40 +70,46 @@ class SearchResultLabel(QLabel):
             self.show()
 
 
+class ColoredCounter(QLabel):
+    def __init__(self, color: str, counter_description: str):
+        super().__init__()
+        self.setStyleSheet("QLabel { color: %s; }" % color)
+        self._counter_description = counter_description
+        assert color.startswith('#')
+        assert counter_description.count('%d') == 1
+        # by default, the counter is not visible.
+        self.hide()
+
+    def set_count(self, count: int):
+        if count > 0:
+            self.setText(self._counter_description % count)
+            self.show()
+        else:
+            self.hide()
+
+
 class StatusBar(QHBoxLayout):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._add_success_label()
-        self._add_dupes_label()
-        self.addStretch()
-        self.hide()
-
-    def _add_dupes_label(self):
-        self._dupes_label = QLabel()
-        self._dupes_label.setStyleSheet('QLabel { color: #FF8C00; }')
-        self.addWidget(self._dupes_label)
-
-    def _add_success_label(self):
-        self._success_label = QLabel()
-        self._success_label.setStyleSheet('QLabel { color: #228B22; }')
+        self._success_label = ColoredCounter(
+            color="#228B22",
+            counter_description="%d notes were successfully imported."
+        )
+        self._dupes_label = ColoredCounter(
+            color="#FF8C00",
+            counter_description="%d notes were duplicates and were skipped."
+        )
         self.addWidget(self._success_label)
+        self.addWidget(self._dupes_label)
+        self.addStretch()
 
-    def hide(self):
-        self._dupes_label.hide()
+    def hide_counters(self):
         self._success_label.hide()
+        self._dupes_label.hide()
 
     def set_import_status(self, results: ImportResultCounter):
-        if results.successes:
-            self._success_label.setText(f'{results.successes} notes successfully imported.')
-            self._success_label.show()
-        else:
-            self._success_label.hide()
-
-        if results.duplicates:
-            self._dupes_label.setText(f'{results.duplicates} notes were duplicates, and skipped.')
-            self._dupes_label.show()
-        else:
-            self._dupes_label.hide()
+        self._success_label.set_count(results.successes)
+        self._dupes_label.set_count(results.duplicates)
 
     def set_import_count(self, success_count: int = 0, dupe_count: int = 0):
         self.set_import_status(ImportResultCounter({

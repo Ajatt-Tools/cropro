@@ -193,7 +193,7 @@ class MainDialog(MainDialogUI):
         self.search_term_edit.setFocus()
 
     def populate_ui(self):
-        self.status_bar.hide()
+        self.status_bar.hide_counters()
         self.populate_note_type_selection_combo()
         self.populate_current_profile_decks()
         # 1) If the combo box is emtpy the window is opened for the first time.
