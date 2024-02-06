@@ -5,7 +5,7 @@ from aqt import mw
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
-from .ajt_common.about_menu import tweak_window, menu_root_entry
+from .ajt_common.about_menu import tweak_window
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
 from .config import config
 from .widgets import ItemBox, SpinBox
@@ -121,11 +121,6 @@ class CroProSettingsDialog(QDialog):
         return super().accept()
 
 
-def init():
-    def on_open_settings():
-        dialog = CroProSettingsDialog(parent=mw)
-        dialog.exec()
-
-    root_menu = menu_root_entry()
-    action = root_menu.addAction(f"{ADDON_NAME} Options...")
-    qconnect(action.triggered, on_open_settings)
+def open_cropro_settings(parent: QWidget):
+    dialog = CroProSettingsDialog(parent=(parent or mw))
+    dialog.exec()

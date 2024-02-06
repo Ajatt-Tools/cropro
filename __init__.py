@@ -4,4 +4,3 @@
 from . import cropro, settings_dialog
 
 cropro.init()
-settings_dialog.init()

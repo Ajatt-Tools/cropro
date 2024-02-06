@@ -27,6 +27,7 @@ from aqt import mw, gui_hooks
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink
 
+from .settings_dialog import open_cropro_settings
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
@@ -184,7 +185,10 @@ class MainDialog(MainDialogUI):
     def setup_menubar(self):
         menu_bar = self.menuBar()
 
+        options_menu = menu_bar.addMenu('&Options')
         help_menu = menu_bar.addMenu('&Help')
+
+        options_menu.addAction("Options", lambda: open_cropro_settings(parent=self))
 
         help_menu.addAction("Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
