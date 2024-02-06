@@ -25,7 +25,7 @@ from typing import Optional
 from anki.models import NotetypeDict
 from aqt import mw, gui_hooks
 from aqt.qt import *
-from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink
+from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning
 
 from .settings_dialog import open_cropro_settings
 from .ajt_common.about_menu import menu_root_entry
@@ -200,6 +200,11 @@ class MainDialog(MainDialogUI):
             showInfo(
                 text=f"## Target note type has fields:\n\n{names}",
                 textFormat="markdown",
+                title=ADDON_NAME,
+            )
+        else:
+            showWarning(
+                text="Target note type is not assigned.",
                 title=ADDON_NAME,
             )
 
