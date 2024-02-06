@@ -58,6 +58,11 @@ class SearchResultLabel(QLabel):
         super().__init__(*args, )
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
 
+    def hide_count(self):
+        self.setText("")
+        self.setStyleSheet("")
+        self.hide()
+
     def set_count(self, found: int, displayed: int):
         if found == 0:
             self.setText(f'No notes found')

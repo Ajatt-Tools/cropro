@@ -231,8 +231,14 @@ class MainDialog(MainDialogUI):
         col_name = self.other_profile_names_combo.currentText()
 
         if not self.other_col.is_opened or col_name != self.other_col.name:
+            self.reset_cropro_status()
             self.other_col.open(col_name)
             self.populate_other_profile_decks()
+
+    def reset_cropro_status(self):
+        self.status_bar.hide_counters()
+        self.search_result_label.hide_count()
+        self.note_list.clear()
 
     def populate_current_profile_decks(self):
         logDebug("populating current profile decks...")
@@ -246,7 +252,7 @@ class MainDialog(MainDialogUI):
 
     def update_notes_list(self):
         self.search_term_edit.setFocus()
-        self.search_result_label.hide()
+        self.reset_cropro_status()
         self.open_other_col()
 
         if not self.search_term_edit.text() and not config['allow_empty_search']:
