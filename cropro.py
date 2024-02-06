@@ -20,12 +20,15 @@ TODO:
 import json
 import os.path
 from collections import defaultdict
+from typing import Optional
 
+from anki.models import NotetypeDict
 from aqt import mw, gui_hooks
 from aqt.qt import *
-from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip
+from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink
 
 from .ajt_common.about_menu import menu_root_entry
+from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .common import ADDON_NAME, LogDebug
 from .config import config
@@ -56,7 +59,6 @@ class MainDialogUI(QMainWindow):
         self.other_profile_names_combo = ComboBox()
         self.other_profile_deck_combo = DeckCombo()
         self.filter_button = QPushButton('Filter')
-        self.help_button = QPushButton('Help')
         self.note_list = NoteList()
         self.note_type_selection_combo = ComboBox()
         self.init_ui()
@@ -73,7 +75,6 @@ class MainDialogUI(QMainWindow):
         filter_row = QHBoxLayout()
         filter_row.addWidget(self.search_term_edit)
         filter_row.addWidget(self.filter_button)
-        filter_row.addWidget(self.help_button)
         return filter_row
 
     def make_main_layout(self) -> QLayout:
@@ -101,7 +102,6 @@ class MainDialogUI(QMainWindow):
                 self.edit_button,
                 self.import_button,
                 self.filter_button,
-                self.help_button,
                 self.search_term_edit,
         ):
             w.setMinimumHeight(WIDGET_HEIGHT)
@@ -178,14 +178,37 @@ class MainDialog(MainDialogUI):
         self.other_col = CollectionManager()
         self._add_window_mgr = AddDialogLauncher(self)
         self.connect_elements()
+        self.setup_menubar()
         disable_help_button(self)
+
+    def setup_menubar(self):
+        menu_bar = self.menuBar()
+
+        help_menu = menu_bar.addMenu('&Help')
+
+        help_menu.addAction("Searching", lambda: openHelp("searching"))
+        help_menu.addAction("Note fields", self.show_target_note_fields)
+        help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
+
+    def show_target_note_fields(self):
+        if note_type := self.get_target_note_type():
+            names = '\n'.join(f"* {name}" for name in mw.col.models.field_names(note_type))
+            showInfo(
+                text=f"## Target note type has fields:\n\n{names}",
+                textFormat="markdown",
+                title=ADDON_NAME,
+            )
+
+    def get_target_note_type(self) -> Optional[NotetypeDict]:
+        selected_note_type_id = self.note_type_selection_combo.currentData()
+        if selected_note_type_id and selected_note_type_id > 0:
+            return mw.col.models.get(selected_note_type_id)
 
     def connect_elements(self):
         qconnect(self.other_profile_deck_combo.currentIndexChanged, self.update_notes_list)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
         qconnect(self.filter_button.clicked, self.update_notes_list)
-        qconnect(self.help_button.clicked, lambda: openHelp("searching"))
         qconnect(self.search_term_edit.editingFinished, self.update_notes_list)
         qconnect(self.other_profile_names_combo.currentIndexChanged, self.open_other_col)
 
