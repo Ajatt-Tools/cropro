@@ -20,25 +20,24 @@ TODO:
 import json
 import os.path
 from collections import defaultdict
-from typing import Optional
-from aqt.qt import *
+
 from anki.models import NotetypeDict
-from aqt import mw, gui_hooks
+from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning
 
-from .widgets.note_list import NoteList
-from .widgets.utils import ProfileNameLabel, DeckCombo, CroProPushButton, CroProComboBox
-from .widgets.search_result_label import SearchResultLabel
-from .widgets.status_bar import StatusBar
-from .widgets.search_bar import SearchBar
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
-from .common import ADDON_NAME, LogDebug
+from .common import *
 from .config import config
 from .edit_window import AddDialogLauncher
 from .note_importer import import_note, ImportResultCounter
 from .settings_dialog import open_cropro_settings
+from .widgets.note_list import NoteList
+from .widgets.search_bar import SearchBar
+from .widgets.search_result_label import SearchResultLabel
+from .widgets.status_bar import StatusBar
+from .widgets.utils import ProfileNameLabel, DeckCombo, CroProPushButton, CroProComboBox
 
 logDebug = LogDebug()
 
@@ -100,7 +99,7 @@ class MainDialogUI(QMainWindow):
 class WindowState:
     def __init__(self, window: MainDialogUI):
         self._window = window
-        self._json_filepath = os.path.join(os.path.dirname(__file__), 'user_files', 'window_state.json')
+        self._json_filepath = WINDOW_STATE_FILE_PATH
         self._map = {
             "from_profile": self._window.search_bar.other_profile_names_combo,
             "from_deck": self._window.search_bar.other_profile_deck_combo,
@@ -187,10 +186,6 @@ class MainDialog(MainDialogUI):
 
     def show(self):
         super().show()
-        self.populate_ui()
-        self.search_bar.focus()
-
-    def populate_ui(self):
         self.status_bar.hide_counters()
         self.populate_note_type_selection_combo()
         self.populate_current_profile_decks()
@@ -199,6 +194,7 @@ class MainDialog(MainDialogUI):
         self.open_other_col()
         self.into_profile_label.setText(mw.pm.name or 'Unknown')
         self.window_state.restore()
+        self.search_bar.focus()
 
     def populate_other_profile_names(self):
         logDebug("populating other profiles.")
@@ -293,10 +289,9 @@ class MainDialog(MainDialogUI):
         else:
             tooltip("No note selected.", period=1000, parent=self)
 
-    def done(self, result_code: int):
+    def closeEvent(self, event: QCloseEvent):
         self.window_state.save()
-        self.other_col.close_all()
-        return super().done(result_code)
+        return super().closeEvent(event)
 
 
 ######################################################################
@@ -316,4 +311,5 @@ def init():
     root_menu.addAction(action)
     # react to anki's state changes
     gui_hooks.profile_will_close.append(d.close)
+    gui_hooks.profile_will_close.append(d.other_col.close_all)
     gui_hooks.profile_did_open.append(d.search_bar.clear_profiles_list)

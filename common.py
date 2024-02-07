@@ -10,6 +10,9 @@ from .config import config
 
 ADDON_NAME = 'Cross Profile Search and Import'
 DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, 'cropro.log')
+ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
+WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, 'web')
+WINDOW_STATE_FILE_PATH = os.path.join(ADDON_DIR_PATH, 'user_files', 'window_state.json')
 
 
 class LogDebug:

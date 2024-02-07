@@ -3,8 +3,8 @@
 
 import base64
 import os.path
-from gettext import gettext as _
 from collections.abc import Iterable
+from gettext import gettext as _
 from typing import Optional
 
 from anki.notes import Note
@@ -16,12 +16,11 @@ from aqt.qt import *
 from aqt.webview import AnkiWebView
 
 from ..ajt_common.media import find_sounds, find_images
-
-WEB_DIR = os.path.join(os.path.dirname(__file__), 'web')
+from ..common import WEB_DIR_PATH
 
 
 def get_previewer_html() -> str:
-    with open(os.path.join(WEB_DIR, 'previewer.html'), encoding='utf8') as f:
+    with open(os.path.join(WEB_DIR_PATH, 'previewer.html'), encoding='utf8') as f:
         return f.read()
 
 
