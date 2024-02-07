@@ -153,7 +153,8 @@ class MainDialog(MainDialogUI):
         help_menu = menu_bar.addMenu('&Help')
 
         options_menu.addAction("Options", lambda: open_cropro_settings(parent=self))
-        options_menu.addAction("Close", lambda: self.close())
+        close_act = options_menu.addAction("Close", lambda: self.close())
+        close_act.setShortcut(QKeySequence("Ctrl+q"))
 
         help_menu.addAction("Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
