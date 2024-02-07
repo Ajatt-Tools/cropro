@@ -68,7 +68,7 @@ class MainDialogUI(QMainWindow):
         central_widget.setLayout(self.make_main_layout())
         self.setWindowTitle(ADDON_NAME)
         self.setCentralWidget(central_widget)
-        self.setMinimumSize(680, 500)
+        self.setMinimumSize(900, 480)
 
     def make_main_layout(self) -> QLayout:
         main_vbox = QVBoxLayout()
@@ -87,7 +87,6 @@ class MainDialogUI(QMainWindow):
         import_row.addWidget(self.current_profile_deck_combo)
         import_row.addWidget(QLabel('Map to Note Type:'))
         import_row.addWidget(self.note_type_selection_combo)
-        import_row.addStretch(1)
         import_row.addWidget(self.edit_button)
         import_row.addWidget(self.import_button)
         return import_row
