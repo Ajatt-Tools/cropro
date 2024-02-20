@@ -161,7 +161,7 @@ class MainDialog(MainDialogUI):
         toggle_web_search_act.setChecked(config.search_the_web)
         qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
 
-        close_act = options_menu.addAction("Close", lambda: self.close())
+        close_act = options_menu.addAction("Close", self.close)
         close_act.setShortcut(QKeySequence("Ctrl+q"))
 
         help_menu.addAction("Searching", lambda: openHelp("searching"))
