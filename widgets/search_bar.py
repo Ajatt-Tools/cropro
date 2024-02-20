@@ -7,11 +7,16 @@ from collections.abc import Iterable
 from aqt import AnkiQt
 from aqt.qt import *
 
-from .utils import CroProComboBox, DeckCombo, CroProLineEdit, CroProPushButton
-from ..collection_manager import NameId
+try:
+    from .utils import CroProComboBox, DeckCombo, CroProLineEdit, CroProPushButton
+    from ..collection_manager import NameId
+except ImportError:
+    from utils import CroProComboBox, DeckCombo, CroProLineEdit, CroProPushButton
+    from collection_manager import NameId
 
 
 class ColSearchBar(QWidget):
+    # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
     def __init__(self, mw: AnkiQt):
@@ -98,9 +103,48 @@ class ColSearchBar(QWidget):
     def _connect_elements(self):
         def handle_search_requested():
             if (text := self.search_term_edit.text()) != self._current_search_string:
-                self.search_requested.emit(text)  # type: ignore
+                # noinspection PyUnresolvedReferences
+                self.search_requested.emit(text)
                 self._current_search_string = text
 
         qconnect(self.other_profile_deck_combo.currentIndexChanged, handle_search_requested)
         qconnect(self.filter_button.clicked, handle_search_requested)
         qconnect(self.search_term_edit.editingFinished, handle_search_requested)
+
+
+# Debug
+##########################################################################
+
+
+def on_search_requested(text: str):
+    print(text)
+
+
+class App(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Test")
+        # noinspection PyTypeChecker
+        self.search_bar = ColSearchBar(None)
+        self.initUI()
+        qconnect(self.search_bar.search_requested, on_search_requested)
+        # self.search_bar.set_profile_names(["User 1", "subs2srs", "dumpster"])
+        # self.search_bar.set_decks([NameId("History", 1), NameId("Math", 2)])
+
+    def initUI(self):
+        self.setMinimumSize(640, 480)
+        self.setLayout(layout := QVBoxLayout())
+        layout.addWidget(self.search_bar)
+        layout.addStretch(1)
+
+
+def main():
+    app = QApplication(sys.argv)
+    ex: QWidget = App()
+    ex.show()
+    app.exec()
+    sys.exit()
+
+
+if __name__ == '__main__':
+    main()
