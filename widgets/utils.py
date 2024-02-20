@@ -5,7 +5,10 @@ from typing import Iterable
 
 from aqt.qt import *
 
-from ..collection_manager import NameId
+try:
+    from ..collection_manager import NameId
+except ImportError:
+    from collection_manager import NameId
 
 WIDGET_MIN_HEIGHT = 29
 COMBO_MIN_WIDTH = 120
