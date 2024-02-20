@@ -12,11 +12,12 @@ from ..collection_manager import NameId
 
 
 class ColSearchBar(QWidget):
-    search_requested = pyqtSignal()
+    search_requested = pyqtSignal(str)
 
     def __init__(self, mw: AnkiQt):
         super().__init__()
         self.mw = mw
+        self._current_search_string = ""
         self.other_profile_names_combo = CroProComboBox()
         self.selected_profile_changed = self.other_profile_names_combo.currentIndexChanged
         self.other_profile_deck_combo = DeckCombo()
@@ -95,6 +96,11 @@ class ColSearchBar(QWidget):
         return layout
 
     def _connect_elements(self):
-        qconnect(self.other_profile_deck_combo.currentIndexChanged, self.search_requested)
-        qconnect(self.filter_button.clicked, self.search_requested)
-        qconnect(self.search_term_edit.editingFinished, self.search_requested)
+        def handle_search_requested():
+            if (text := self.search_term_edit.text()) != self._current_search_string:
+                self.search_requested.emit(text)  # type: ignore
+                self._current_search_string = text
+
+        qconnect(self.other_profile_deck_combo.currentIndexChanged, handle_search_requested)
+        qconnect(self.filter_button.clicked, handle_search_requested)
+        qconnect(self.search_term_edit.editingFinished, handle_search_requested)

@@ -236,18 +236,18 @@ class MainDialog(MainDialogUI):
         logDebug("populating other profile decks...")
         self.search_bar.set_decks([self.other_col.col_name_and_id(), *self.other_col.deck_names_and_ids(), ])
 
-    def update_notes_list(self):
+    def update_notes_list(self, search_text: str):
         self.search_bar.focus()
         self.reset_cropro_status()
         self.open_other_col()
 
-        if not (self.search_bar.search_text() or config.allow_empty_search):
+        if not (search_text or config.allow_empty_search):
             return
 
         if not self.search_bar.decks_populated():
             return
 
-        note_ids = self.other_col.find_notes(self.search_bar.current_deck(), self.search_bar.search_text())
+        note_ids = self.other_col.find_notes(self.search_bar.current_deck(), search_text)
         limited_note_ids = note_ids[:config['max_displayed_notes']]
 
         self.note_list.set_notes(
