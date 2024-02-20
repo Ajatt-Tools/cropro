@@ -9,7 +9,7 @@ from .ajt_common.about_menu import tweak_window
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
 from .config import config
 from .widgets.item_box import ItemBox
-from .widgets.utils import SpinBox
+from .widgets.utils import CroProSpinBox
 
 
 def make_checkboxes() -> dict[str, QCheckBox]:
@@ -50,7 +50,7 @@ class CroProSettingsDialog(QDialog):
 
     def _make_form(self) -> QFormLayout:
         self.tag_edit = QLineEdit(config['exported_tag'])
-        self.max_notes_edit = SpinBox(min_val=10, max_val=10_000, step=50, value=config['max_displayed_notes'])
+        self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config['max_displayed_notes'])
         self.hidden_fields_edit = QLineEdit()
         self.hidden_fields_edit.setPlaceholderText("New item")
 

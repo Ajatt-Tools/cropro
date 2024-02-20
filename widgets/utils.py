@@ -23,7 +23,7 @@ class CroProLineEdit(QLineEdit):
         self.setMinimumHeight(WIDGET_MIN_HEIGHT)
 
 
-class SpinBox(QSpinBox):
+class CroProSpinBox(QSpinBox):
     def __init__(self, min_val: int, max_val: int, step: int, value: int):
         super().__init__()
         self.setRange(min_val, max_val)
