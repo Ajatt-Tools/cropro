@@ -23,5 +23,9 @@ class CroProConfig(AddonConfigManager):
     def search_the_web(self) -> bool:
         return self["search_the_web"]
 
+    @search_the_web.setter
+    def search_the_web(self, value: bool):
+        self["search_the_web"] = bool(value)
+
 
 config = CroProConfig()

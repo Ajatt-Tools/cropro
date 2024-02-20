@@ -155,12 +155,22 @@ class MainDialog(MainDialogUI):
         help_menu = menu_bar.addMenu('&Help')
 
         options_menu.addAction("Options", self._open_cropro_settings)
+
+        toggle_web_search_act = options_menu.addAction("Search the web")
+        toggle_web_search_act.setCheckable(True)
+        toggle_web_search_act.setChecked(config.search_the_web)
+        qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
+
         close_act = options_menu.addAction("Close", lambda: self.close())
         close_act.setShortcut(QKeySequence("Ctrl+q"))
 
         help_menu.addAction("Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
         help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
+
+    def _on_toggle_web_search_triggered(self, checked: bool):
+        config.search_the_web = checked
+        self._activate_enabled_search_bar()
 
     def show_target_note_fields(self):
         if note_type := self.get_target_note_type():
