@@ -34,7 +34,7 @@ from .edit_window import AddDialogLauncher
 from .note_importer import import_note, ImportResultCounter
 from .settings_dialog import open_cropro_settings
 from .widgets.note_list import NoteList
-from .widgets.search_bar import SearchBar
+from .widgets.search_bar import ColSearchBar
 from .widgets.search_result_label import SearchResultLabel
 from .widgets.status_bar import StatusBar
 from .widgets.utils import ProfileNameLabel, DeckCombo, CroProPushButton, CroProComboBox
@@ -51,7 +51,7 @@ class MainDialogUI(QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.search_bar = SearchBar(mw)
+        self.search_bar = ColSearchBar(mw)
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()

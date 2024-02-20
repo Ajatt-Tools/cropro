@@ -11,7 +11,7 @@ from .utils import CroProComboBox, DeckCombo, CroProLineEdit, CroProPushButton
 from ..collection_manager import NameId
 
 
-class SearchBar(QWidget):
+class ColSearchBar(QWidget):
     search_requested = pyqtSignal()
 
     def __init__(self, mw: AnkiQt):
