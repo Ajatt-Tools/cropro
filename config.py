@@ -19,5 +19,9 @@ class CroProConfig(AddonConfigManager):
     def allow_empty_search(self) -> bool:
         return self["allow_empty_search"]
 
+    @property
+    def search_the_web(self) -> bool:
+        return self["search_the_web"]
+
 
 config = CroProConfig()

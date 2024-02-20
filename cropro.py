@@ -25,7 +25,6 @@ from anki.models import NotetypeDict
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning
 
-from .widgets.remote_search_bar import RemoteSearchBar
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
@@ -35,6 +34,7 @@ from .edit_window import AddDialogLauncher
 from .note_importer import import_note, ImportResultCounter
 from .settings_dialog import open_cropro_settings
 from .widgets.note_list import NoteList
+from .widgets.remote_search_bar import RemoteSearchBar
 from .widgets.search_bar import ColSearchBar
 from .widgets.search_result_label import SearchResultLabel
 from .widgets.status_bar import StatusBar
@@ -154,7 +154,7 @@ class MainDialog(MainDialogUI):
         options_menu = menu_bar.addMenu('&Options')
         help_menu = menu_bar.addMenu('&Help')
 
-        options_menu.addAction("Options", lambda: open_cropro_settings(parent=self))
+        options_menu.addAction("Options", self._open_cropro_settings)
         close_act = options_menu.addAction("Close", lambda: self.close())
         close_act.setShortcut(QKeySequence("Ctrl+q"))
 
@@ -197,7 +197,7 @@ class MainDialog(MainDialogUI):
         self.open_other_col()
         self.into_profile_label.setText(mw.pm.name or 'Unknown')
         self.window_state.restore()
-        self.search_bar.focus()
+        self._activate_enabled_search_bar()
 
     def populate_other_profile_names(self):
         logDebug("populating other profiles.")
@@ -240,7 +240,7 @@ class MainDialog(MainDialogUI):
         self.search_bar.set_decks([self.other_col.col_name_and_id(), *self.other_col.deck_names_and_ids(), ])
 
     def update_notes_list(self, search_text: str):
-        self.search_bar.focus()
+        self._activate_enabled_search_bar()
         self.reset_cropro_status()
         self.open_other_col()
 
@@ -295,6 +295,20 @@ class MainDialog(MainDialogUI):
     def closeEvent(self, event: QCloseEvent):
         self.window_state.save()
         return super().closeEvent(event)
+
+    def _activate_enabled_search_bar(self):
+        if config.search_the_web:
+            self.remote_search_bar.show()
+            self.remote_search_bar.focus()
+            self.search_bar.hide()
+        else:
+            self.search_bar.show()
+            self.search_bar.focus()
+            self.remote_search_bar.hide()
+
+    def _open_cropro_settings(self):
+        open_cropro_settings(parent=self)
+        self._activate_enabled_search_bar()  # the "search_the_web" setting may have changed
 
 
 ######################################################################

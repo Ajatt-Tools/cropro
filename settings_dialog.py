@@ -107,6 +107,10 @@ class CroProSettingsDialog(QDialog):
             "Show a list of notes from the other collection\n"
             "even when the search bar is empty."
         )
+        self.checkboxes['search_the_web'].setToolTip(
+            "Instead of searching notes in a local profile,\n"
+            "search the Internet instead."
+        )
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)

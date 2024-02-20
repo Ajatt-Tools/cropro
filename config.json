@@ -13,5 +13,6 @@
   "preview_on_right_side": true,
   "copy_card_data": false,
   "call_add_cards_hook": false,
-  "enable_debug_log": false
+  "enable_debug_log": false,
+  "search_the_web": false
 }
