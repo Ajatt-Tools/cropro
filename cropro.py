@@ -7,7 +7,7 @@ and then use this add-on to search for and import cards with certain words into 
 This helps keep your main profile uncluttered and free of large amounts of unneeded media.
 
 GNU AGPL
-Copyright (c) 2021-2023 Ren Tatsumoto
+Copyright (c) 2021-2024 Ren Tatsumoto
 Copyright (c) 2018 Russel Simmons
 Original concept by CalculusAce, with help from Matt VS Japan (@mattvsjapan)
 
@@ -25,6 +25,7 @@ from anki.models import NotetypeDict
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning
 
+from .widgets.remote_search_bar import RemoteSearchBar
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
@@ -52,6 +53,7 @@ class MainDialogUI(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.search_bar = ColSearchBar(mw)
+        self.remote_search_bar = RemoteSearchBar()
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
@@ -72,6 +74,7 @@ class MainDialogUI(QMainWindow):
     def make_main_layout(self) -> QLayout:
         main_vbox = QVBoxLayout()
         main_vbox.addWidget(self.search_bar)
+        main_vbox.addWidget(self.remote_search_bar)
         main_vbox.addWidget(self.search_result_label)
         main_vbox.addWidget(self.note_list)
         main_vbox.addLayout(self.status_bar)
