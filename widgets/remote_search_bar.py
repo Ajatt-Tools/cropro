@@ -98,7 +98,7 @@ class RemoteSearchBar(QWidget):
         def handle_search_requested():
             if (url := self.get_request_url()) != self._current_request_url:
                 # noinspection PyUnresolvedReferences
-                self.search_requested.emit(url)
+                self.search_requested.emit(self._keyword_edit.text())
                 self._current_request_url = url
 
         qconnect(self._search_button.clicked, handle_search_requested)
