@@ -39,18 +39,18 @@ class RemoteSearchBar(QWidget):
 
     def __init__(self):
         super().__init__()
-        self._current_search_string = ""
+        self._current_request_url = ""
         self._keyword_edit = CroProLineEdit()  # keyword
         self._category_combo = new_combo_box(
             [RemoteComboBoxItem(None, "all"), "anime", "drama", "games", "literature", ],
             key="category"
         )
         self._sort_combo = new_combo_box(
-            [RemoteComboBoxItem(None, "none"), "shortness", "longness",],
+            [RemoteComboBoxItem(None, "none"), "shortness", "longness", ],
             key="sort"
         )
         self._jlpt_level_combo = new_combo_box(
-            [RemoteComboBoxItem(None, "all"), *map(str, range(1, 6)),],
+            [RemoteComboBoxItem(None, "all"), *map(str, range(1, 6)), ],
             key="jlpt"
         )
 
@@ -96,10 +96,10 @@ class RemoteSearchBar(QWidget):
 
     def _connect_elements(self):
         def handle_search_requested():
-            if (text := self._keyword_edit.text()) != self._current_search_string:
+            if (url := self.get_request_url()) != self._current_request_url:
                 # noinspection PyUnresolvedReferences
-                self.search_requested.emit(text)
-                self._current_search_string = text
+                self.search_requested.emit(url)
+                self._current_request_url = url
 
         qconnect(self._search_button.clicked, handle_search_requested)
         qconnect(self._keyword_edit.editingFinished, handle_search_requested)
@@ -109,17 +109,17 @@ class RemoteSearchBar(QWidget):
 ##########################################################################
 
 
-def on_search_requested(text: str):
-    print(f"search: {text}")
-
-
 class App(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Test")
         self.search_bar = RemoteSearchBar()
         self.initUI()
-        qconnect(self.search_bar.search_requested, on_search_requested)
+        qconnect(self.search_bar.search_requested, self.on_search_requested)
+
+    def on_search_requested(self, text: str):
+        print(f"Search: {text}")
+        print(f"GET url: {self.search_bar.get_request_url()}")
 
     def initUI(self):
         self.setMinimumSize(640, 480)
@@ -130,7 +130,7 @@ class App(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    ex: QWidget = App()
+    ex = App()
     ex.show()
     app.exec()
     sys.exit()
