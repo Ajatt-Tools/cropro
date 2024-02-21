@@ -40,6 +40,7 @@ class RemoteSearchBar(QWidget):
     def __init__(self):
         super().__init__()
         self._current_search_string = ""
+        self._keyword_edit = CroProLineEdit()  # keyword
         self._category_combo = new_combo_box([
             RemoteComboBoxItem(None, "all"), "anime", "drama", "games", "literature",
         ])
@@ -49,13 +50,21 @@ class RemoteSearchBar(QWidget):
         self._jlpt_level_combo = new_combo_box([
             RemoteComboBoxItem(None, "all"), *map(str, range(1, 6)),
         ])
-        self._keyword_edit = CroProLineEdit()  # keyword
         self._search_button = CroProPushButton("Search")
         self._setup_layout()
         self._connect_elements()
 
-    def search_text(self) -> str:
-        return self._keyword_edit.text()
+    def get_request_url(self) -> str:
+        url = ""
+        if keyword := self._keyword_edit.text():
+            url = f"https://api.immersionkit.com/look_up_dictionary?keyword={keyword}"
+            if sort := self._sort_combo.currentData().http_arg:
+                url = f"{url}&sort={sort}"
+            if category := self._category_combo.currentData().http_arg:
+                url = f"{url}&category={category}"
+            if jlpt := self._jlpt_level_combo.currentData().http_arg:
+                url = f"{url}&jlpt={jlpt}"
+        return url
 
     def focus(self):
         self._keyword_edit.setFocus()
