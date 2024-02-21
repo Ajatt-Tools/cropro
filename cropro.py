@@ -265,7 +265,6 @@ class MainDialog(MainDialogUI):
         self.note_list.set_notes(
             map(self.other_col.get_note, note_ids[:config.max_displayed_notes]),
             hide_fields=config['hidden_fields'],
-            media_dir=self.other_col.media_dir,
             previewer=config['preview_on_right_side'],
         )
 

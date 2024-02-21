@@ -3,6 +3,8 @@
 
 import base64
 import os.path
+import re
+import urllib.parse
 from collections.abc import Iterable
 from gettext import gettext as _
 from typing import Optional
@@ -16,15 +18,19 @@ from aqt.qt import *
 from aqt.webview import AnkiWebView
 
 from ..ajt_common.media import find_sounds, find_images
-from ..common import WEB_DIR_PATH
+
+RE_DANGEROUS = re.compile(r'[\'"<>]+')
+
+
+def name_attr_strip(file_name: str):
+    return re.sub(RE_DANGEROUS, " ", os.path.basename(file_name)).strip()
 
 
 def get_previewer_html() -> str:
-    with open(os.path.join(WEB_DIR_PATH, 'previewer.html'), encoding='utf8') as f:
-        return f.read()
+    return """<main><!--CONTENT--></main>"""
 
 
-def encode(s_bytes):
+def img2b64(s_bytes):
     return base64.b64encode(s_bytes).decode("ascii")
 
 
@@ -40,7 +46,7 @@ class NotePreviewer(AnkiWebView):
 
     def __init__(self, parent: QWidget):
         super().__init__(parent)
-        self._note_media_dir: Optional[str] = None
+        self._note: Optional[Note] = None
         self.set_title("Note previewer")
         self.disable_zoom()
         self.setProperty("url", QUrl("about:blank"))
@@ -49,8 +55,13 @@ class NotePreviewer(AnkiWebView):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.set_bridge_command(self._handle_play_button_press, self)
 
-    def load_note(self, note: Note, note_media_dir: str) -> None:
-        self._note_media_dir = note_media_dir
+    def unload_note(self) -> None:
+        self._note = None
+        self.stdHtml("", js=[], css=[])
+        self.hide()
+
+    def load_note(self, note: Note) -> None:
+        self._note = note
         rows: list[str] = []
         for field_name, field_content in note.items():
             rows.append(
@@ -62,6 +73,7 @@ class NotePreviewer(AnkiWebView):
             js=[],
             css=[self._css_relpath, ]
         )
+        self.show()
 
     def _create_html_row_for_field(self, field_content: str) -> str:
         """Creates a row for the previewer showing the current note's field."""
@@ -79,25 +91,25 @@ class NotePreviewer(AnkiWebView):
         return ''.join(
             """
             <button class="cropro__play_button" title="{}" onclick='pycmd("cropro__play_file:{}");'></button>
-            """.format(_(f"Play file: {f}"), f, )
-            for f in audio_files
+            """.format(_(f"Play file: {name_attr_strip(file_name)}"), urllib.parse.quote(file_name), )
+            for file_name in audio_files
         )
 
     def _make_images(self, image_files: Iterable[str]) -> str:
         return ''.join(
-            f'<img alt="image:{os.path.basename(f)}" src="{self._image_as_base64_src(f)}"/>'
-            for f in image_files
+            f'<img alt="image:{name_attr_strip(file_name)}" src="{self._image_as_base64_src(file_name)}"/>'
+            for file_name in image_files
         )
 
     def _image_as_base64_src(self, file_name: str) -> str:
-        with open(os.path.join(self._note_media_dir, file_name), 'rb') as f:
-            return f'data:image/{filetype(file_name)};base64,{encode(f.read())}'
+        with open(os.path.join(self._note.col.media.dir(), file_name), 'rb') as f:
+            return f'data:image/{filetype(file_name)};base64,{img2b64(f.read())}'
 
     def _handle_play_button_press(self, cmd: str):
         """Play audio files if a play button was pressed."""
         if cmd.startswith('cropro__play_file:'):
-            file_name = os.path.basename(cmd.split(':', maxsplit=1)[-1])
-            file_path = os.path.join(self._note_media_dir, file_name)
+            file_name = os.path.basename(urllib.parse.unquote(cmd.split(':', maxsplit=1)[-1]))
+            file_path = os.path.join(self._note.col.media.dir(), file_name)
             return sound.av_player.play_tags([SoundOrVideoTag(file_path), ])
         else:
             return self.defaultOnBridgeCmd(cmd)

@@ -21,7 +21,6 @@ class NoteList(QWidget):
         super().__init__(*args, **kwargs)
         self._note_list = QListWidget(self)
         self._previewer = NotePreviewer(self)
-        self._other_media_dir = None
         self._enable_previewer = True
         self._setup_ui()
         self.itemDoubleClicked = self._note_list.itemDoubleClicked
@@ -46,10 +45,9 @@ class NoteList(QWidget):
 
     def _on_current_item_changed(self, current: QListWidgetItem, _previous: QListWidgetItem):
         if current is None or self._enable_previewer is False:
-            self._previewer.setHidden(True)
+            self._previewer.unload_note()
         else:
-            self._previewer.setHidden(False)
-            self._previewer.load_note(current.data(self._role), self._other_media_dir)
+            self._previewer.load_note(current.data(self._role))
 
     def selected_notes(self) -> Sequence[Note]:
         return [item.data(self._role) for item in self._note_list.selectedItems()]
@@ -58,10 +56,10 @@ class NoteList(QWidget):
         return self._note_list.clearSelection()
 
     def clear(self):
+        self._previewer.unload_note()
         self._note_list.clear()
 
-    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], media_dir: str, previewer: bool = True):
-        self._other_media_dir = media_dir
+    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], previewer: bool = True):
         self._enable_previewer = previewer
 
         def is_hidden(field_name: str) -> bool:
