@@ -43,8 +43,9 @@ class ProfileNameLabel(QLabel):
 
 
 class CroProComboBox(QComboBox):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent=None, key: str = None):
+        super().__init__(parent)
+        self.key = key  # can be used to describe itself
         self.setMaximumHeight(WIDGET_MIN_HEIGHT)
         self.setMinimumWidth(COMBO_MIN_WIDTH)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)

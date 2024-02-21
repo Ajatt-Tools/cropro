@@ -21,8 +21,8 @@ class RemoteComboBoxItem:
         self.visible_name = (self.visible_name or str(self.http_arg)).capitalize()
 
 
-def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]]):
-    b = CroProComboBox()
+def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]], key: str):
+    b = CroProComboBox(key=key)
     for item in add_items:
         if not isinstance(item, RemoteComboBoxItem):
             item = RemoteComboBoxItem(item)
@@ -41,15 +41,19 @@ class RemoteSearchBar(QWidget):
         super().__init__()
         self._current_search_string = ""
         self._keyword_edit = CroProLineEdit()  # keyword
-        self._category_combo = new_combo_box([
-            RemoteComboBoxItem(None, "all"), "anime", "drama", "games", "literature",
-        ])
-        self._sort_combo = new_combo_box([
-            RemoteComboBoxItem(None, "none"), "shortness", "longness",
-        ])
-        self._jlpt_level_combo = new_combo_box([
-            RemoteComboBoxItem(None, "all"), *map(str, range(1, 6)),
-        ])
+        self._category_combo = new_combo_box(
+            [RemoteComboBoxItem(None, "all"), "anime", "drama", "games", "literature", ],
+            key="category"
+        )
+        self._sort_combo = new_combo_box(
+            [RemoteComboBoxItem(None, "none"), "shortness", "longness",],
+            key="sort"
+        )
+        self._jlpt_level_combo = new_combo_box(
+            [RemoteComboBoxItem(None, "all"), *map(str, range(1, 6)),],
+            key="jlpt"
+        )
+
         self._search_button = CroProPushButton("Search")
         self._setup_layout()
         self._connect_elements()
@@ -58,12 +62,9 @@ class RemoteSearchBar(QWidget):
         url = ""
         if keyword := self._keyword_edit.text():
             url = f"https://api.immersionkit.com/look_up_dictionary?keyword={keyword}"
-            if sort := self._sort_combo.currentData().http_arg:
-                url = f"{url}&sort={sort}"
-            if category := self._category_combo.currentData().http_arg:
-                url = f"{url}&category={category}"
-            if jlpt := self._jlpt_level_combo.currentData().http_arg:
-                url = f"{url}&jlpt={jlpt}"
+            for widget in (self._sort_combo, self._category_combo, self._jlpt_level_combo):
+                if param := widget.currentData().http_arg:
+                    url = f"{url}&{widget.key}={param}"
         return url
 
     def focus(self):
