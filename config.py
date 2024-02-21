@@ -27,5 +27,9 @@ class CroProConfig(AddonConfigManager):
     def search_the_web(self, value: bool):
         self["search_the_web"] = bool(value)
 
+    @property
+    def max_displayed_notes(self) -> int:
+        return self["max_displayed_notes"]
+
 
 config = CroProConfig()

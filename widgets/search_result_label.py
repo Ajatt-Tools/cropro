@@ -1,6 +1,7 @@
 # Copyright: Ajatt-Tools and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from typing import Sized
 
 from aqt.qt import *
 
@@ -14,6 +15,11 @@ class SearchResultLabel(QLabel):
         self.setText("")
         self.setStyleSheet("")
         self.hide()
+
+    def set_search_result(self, note_ids: Sized, display_limit: int):
+        found = len(note_ids)
+        displayed = max(found, display_limit)
+        return self.set_count(found, displayed)
 
     def set_count(self, found: int, displayed: int):
         if found == 0:

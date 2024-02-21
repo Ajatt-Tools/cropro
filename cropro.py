@@ -261,16 +261,15 @@ class MainDialog(MainDialogUI):
             return
 
         note_ids = self.other_col.find_notes(self.search_bar.current_deck(), search_text)
-        limited_note_ids = note_ids[:config['max_displayed_notes']]
 
         self.note_list.set_notes(
-            map(self.other_col.get_note, limited_note_ids),
+            map(self.other_col.get_note, note_ids[:config.max_displayed_notes]),
             hide_fields=config['hidden_fields'],
             media_dir=self.other_col.media_dir,
             previewer=config['preview_on_right_side'],
         )
 
-        self.search_result_label.set_count(len(note_ids), len(limited_note_ids))
+        self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
 
     def do_import(self):
         logDebug('beginning import')
