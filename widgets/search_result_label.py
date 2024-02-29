@@ -18,14 +18,14 @@ class SearchResultLabel(QLabel):
 
     def set_search_result(self, note_ids: Sized, display_limit: int):
         found = len(note_ids)
-        displayed = max(found, display_limit)
+        displayed = min(found, display_limit)
         return self.set_count(found, displayed)
 
     def set_count(self, found: int, displayed: int):
         if found == 0:
             self.setText(f'No notes found')
             self.setStyleSheet('QLabel { color: red; }')
-        elif displayed == found:
+        elif displayed >= found:
             self.setText(f'{found} notes found')
             self.setStyleSheet('QLabel { color: green; }')
         else:
