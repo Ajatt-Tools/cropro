@@ -293,7 +293,7 @@ class MainDialog(MainDialogUI):
         self.note_list.set_notes(
             map(self.other_col.get_note, note_ids[:config.max_displayed_notes]),
             hide_fields=config['hidden_fields'],
-            previewer=config['preview_on_right_side'],
+            previewer_enabled=config['preview_on_right_side'],
         )
 
         self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)

@@ -59,8 +59,8 @@ class NoteList(QWidget):
         self._previewer.unload_note()
         self._note_list.clear()
 
-    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], previewer: bool = True):
-        self._enable_previewer = previewer
+    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], previewer_enabled: bool = True):
+        self._enable_previewer = previewer_enabled
 
         def is_hidden(field_name: str) -> bool:
             field_name = field_name.lower()
