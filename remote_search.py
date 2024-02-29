@@ -1,8 +1,22 @@
 import dataclasses
 import itertools
 import os.path
+import typing
 
 import anki.httpclient
+
+
+class ApiReturnExampleDict(typing.TypedDict):
+    """
+    This json dict is what the remote server sends back.
+    """
+    tags: list[str]
+    image_url: str
+    sound_url: str
+    sentence: str
+    sentence_with_furigana: str
+    translation: str
+    sentence_id: str
 
 
 @dataclasses.dataclass
@@ -19,6 +33,9 @@ class RemoteNote:
     tags: list[str]
 
     def mapping(self):
+        """
+        Return something similar to what Note.items() returns.
+        """
         return {
             "SentKanji": self.sent_kanji,
             "SentFurigana": self.sent_furigana,
@@ -29,7 +46,7 @@ class RemoteNote:
         }
 
     @classmethod
-    def from_json(cls, json_dict: dict[str]):
+    def from_json(cls, json_dict: ApiReturnExampleDict):
         return RemoteNote(
             tags=json_dict["tags"],
             image_url=json_dict["image_url"],
@@ -46,7 +63,7 @@ class CroProWebSearchClient:
         self._client = anki.httpclient.HttpClient()
         self._client.timeout = 30
 
-    def search(self, get_url: str):
+    def search(self, get_url: str) -> list[RemoteNote]:
         resp = self._client.get(get_url)
         resp.raise_for_status()
         examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
