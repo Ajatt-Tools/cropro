@@ -63,7 +63,7 @@ class CroProWebSearchClient:
         self._client = anki.httpclient.HttpClient()
         self._client.timeout = 30
 
-    def search(self, get_url: str) -> list[RemoteNote]:
+    def send_request(self, get_url: str) -> list[RemoteNote]:
         resp = self._client.get(get_url)
         resp.raise_for_status()
         examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
@@ -75,7 +75,7 @@ class CroProWebSearchClient:
 
 def main():
     client = CroProWebSearchClient()
-    result = client.search("https://api.immersionkit.com/look_up_dictionary?keyword=人事")
+    result = client.send_request("https://api.immersionkit.com/look_up_dictionary?keyword=人事")
     for note in result:
         print(note)
 
