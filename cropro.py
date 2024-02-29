@@ -25,6 +25,7 @@ from anki.models import NotetypeDict
 from aqt.qt import *
 from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning
 
+from .remote_search import CroProWebSearchClient
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
@@ -143,6 +144,7 @@ class MainDialog(MainDialogUI):
         super().__init__(*args, **kwargs)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
+        self.web_search_client = CroProWebSearchClient()
         self._add_window_mgr = AddDialogLauncher(self)
         self.connect_elements()
         self.setup_menubar()
@@ -195,6 +197,7 @@ class MainDialog(MainDialogUI):
     def connect_elements(self):
         qconnect(self.search_bar.selected_profile_changed, self.open_other_col)
         qconnect(self.search_bar.search_requested, self.update_notes_list)
+        qconnect(self.remote_search_bar.search_requested, self.perform_remote_search)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
 
@@ -249,6 +252,27 @@ class MainDialog(MainDialogUI):
     def populate_other_profile_decks(self):
         logDebug("populating other profile decks...")
         self.search_bar.set_decks([self.other_col.col_name_and_id(), *self.other_col.deck_names_and_ids(), ])
+
+    def perform_remote_search(self, search_text: str):
+        """
+        Search notes on a remote server.
+        """
+        self._activate_enabled_search_bar()
+        self.reset_cropro_status()
+
+        if not search_text:
+            return
+
+        notes = self.web_search_client.send_request(self.remote_search_bar.get_request_url())
+
+        self.note_list.set_notes(
+            notes[:config.max_displayed_notes],
+            hide_fields=config['hidden_fields'],
+            previewer_enabled=config['preview_on_right_side'],
+        )
+
+        self.search_result_label.set_search_result(notes, config.max_displayed_notes)
+
 
     def update_notes_list(self, search_text: str):
         self._activate_enabled_search_bar()
