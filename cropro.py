@@ -275,6 +275,9 @@ class MainDialog(MainDialogUI):
 
 
     def update_notes_list(self, search_text: str):
+        """
+        Search notes in a different Anki collection.
+        """
         self._activate_enabled_search_bar()
         self.reset_cropro_status()
         self.open_other_col()
