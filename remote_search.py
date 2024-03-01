@@ -35,8 +35,8 @@ class RemoteNote:
     notes: str
     tags: list[str]
 
-    def mapping(self) -> dict[str, str]:
-        return {
+    def __post_init__(self):
+        self._mapping = {
             "SentKanji": self.sent_kanji,
             "SentFurigana": self.sent_furigana,
             "SentEng": self.sent_eng,
@@ -45,11 +45,14 @@ class RemoteNote:
             "Notes": self.notes,
         }
 
+    def __contains__(self, item) -> bool:
+        return item in self._mapping
+
     def items(self):
         """
         Return something similar to what Note.items() returns.
         """
-        return self.mapping().items()
+        return self._mapping.items()
 
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict):
