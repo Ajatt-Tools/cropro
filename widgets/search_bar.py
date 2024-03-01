@@ -32,7 +32,7 @@ class ColSearchBar(QWidget):
         self._connect_elements()
 
     def search_text(self) -> str:
-        return self.search_term_edit.text()
+        return self.search_term_edit.text().strip()
 
     def current_deck(self) -> NameId:
         return self.other_profile_deck_combo.current_deck()
@@ -102,7 +102,7 @@ class ColSearchBar(QWidget):
 
     def _connect_elements(self):
         def handle_search_requested():
-            if (text := self.search_term_edit.text()) != self._current_search_string:
+            if (text := self.search_text()) != self._current_search_string:
                 # noinspection PyUnresolvedReferences
                 self.search_requested.emit(text)
                 self._current_search_string = text
