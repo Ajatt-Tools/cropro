@@ -193,6 +193,7 @@ class MainDialog(MainDialogUI):
     def _on_toggle_web_search_triggered(self, checked: bool):
         config.search_the_web = checked
         self._activate_enabled_search_bar()
+        self.reset_cropro_status()
         config.write_config()
 
     def show_target_note_fields(self):
