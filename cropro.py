@@ -21,6 +21,7 @@ import json
 import os.path
 from collections import defaultdict
 
+import aqt
 from anki.decks import DeckId
 from anki.models import NotetypeDict
 from aqt.qt import *
@@ -173,8 +174,8 @@ class MainDialog(MainDialogUI):
     def setup_menubar(self):
         menu_bar = self.menuBar()
 
+        # Options menu
         options_menu = menu_bar.addMenu("&Options")
-        help_menu = menu_bar.addMenu("&Help")
 
         options_menu.addAction("Add-on Options", self._open_cropro_settings)
 
@@ -183,13 +184,27 @@ class MainDialog(MainDialogUI):
         toggle_web_search_act.setChecked(config.search_the_web)
         qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
 
+        options_menu.addAction("Send query to Browser", self._send_query_to_browser)
+
         close_act = options_menu.addAction("Close", self.close)
         close_act.setShortcut(QKeySequence("Ctrl+q"))
 
+        # Help menu
+        help_menu = menu_bar.addMenu("&Help")
         help_menu.addAction("Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
         help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
         help_menu.addAction("Create sentence bank: subs2srs", lambda: openLink(SUBS2SRS_LINK))
+
+    def _send_query_to_browser(self):
+        search_text = (
+            self.search_bar.search_text() if self.search_bar.isVisible() else self.remote_search_bar.search_text()
+        )
+        if not search_text:
+            return tooltip("Nothing to do.", parent=self)
+        browser = aqt.dialogs.open("Browser", mw)
+        browser.activateWindow()
+        browser.search_for(search_text)
 
     def _on_toggle_web_search_triggered(self, checked: bool):
         config.search_the_web = checked
