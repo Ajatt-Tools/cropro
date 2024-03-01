@@ -15,7 +15,10 @@ WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
 WINDOW_STATE_FILE_PATH = os.path.join(ADDON_DIR_PATH, "user_files", "window_state.json")
 CLOSE_ICON_PATH = os.path.join(ADDON_DIR_PATH, "img", "close.png")
 
-for file in (WEB_DIR_PATH, WINDOW_STATE_FILE_PATH, CLOSE_ICON_PATH):
+for file in (WEB_DIR_PATH,):
+    assert os.path.isdir(file), f"Path must be valid: {file}"
+
+for file in (WINDOW_STATE_FILE_PATH, CLOSE_ICON_PATH):
     assert os.path.isfile(file), f"Path must be valid: {file}"
 
 
