@@ -1,7 +1,7 @@
 import dataclasses
+import enum
 import itertools
-import os.path
-import typing
+from typing import TypedDict, Iterable
 
 import anki.httpclient
 
@@ -10,7 +10,7 @@ AUDIO_FIELD_NAME = "SentAudio"
 API_URL = "https://api.immersionkit.com/look_up_dictionary?"
 
 
-class ApiReturnExampleDict(typing.TypedDict):
+class ApiReturnExampleDict(TypedDict):
     """
     This json dict is what the remote server sends back.
     """
@@ -21,6 +21,37 @@ class ApiReturnExampleDict(typing.TypedDict):
     sentence_with_furigana: str
     translation: str
     sentence_id: str
+
+
+@enum.unique
+class MediaType(enum.Enum):
+    image = enum.auto()
+    sound = enum.auto()
+
+
+@dataclasses.dataclass
+class RemoteMediaInfo:
+    field_name: str
+    url: str
+    type: MediaType
+
+    def __post_init__(self):
+        self.file_name = self.url.split('/')[-1] if self.is_valid_url() else ""
+
+    def is_valid_url(self) -> bool:
+        """
+        immersionkit return URLs that always start with https.
+        """
+        return bool(self.url and self.url.startswith('https://'))
+
+    def as_anki_ref(self):
+        if not self.is_valid_url():
+            return ""
+        return (
+            f'<img src="{self.file_name}">'
+            if self.type == MediaType.image
+            else f'[sound:{self.file_name}]'
+        )
 
 
 @dataclasses.dataclass
@@ -37,20 +68,35 @@ class RemoteNote:
     tags: list[str]
 
     def __post_init__(self):
+        self._media = {
+            IMAGE_FIELD_NAME: RemoteMediaInfo(IMAGE_FIELD_NAME, self.image_url, MediaType.image),
+            AUDIO_FIELD_NAME: RemoteMediaInfo(AUDIO_FIELD_NAME, self.sound_url, MediaType.sound),
+        }
         self._mapping = {
             "SentKanji": self.sent_kanji,
             "SentFurigana": self.sent_furigana,
             "SentEng": self.sent_eng,
-            AUDIO_FIELD_NAME: f'[sound:{os.path.basename(self.sound_url)}]',
-            IMAGE_FIELD_NAME: f'<img src="{os.path.basename(self.image_url)}">',
+            AUDIO_FIELD_NAME: self.audio.as_anki_ref(),
+            IMAGE_FIELD_NAME: self.image.as_anki_ref(),
             "Notes": self.notes,
         }
+
+    @property
+    def image(self) -> RemoteMediaInfo:
+        return self._media[IMAGE_FIELD_NAME]
+
+    @property
+    def audio(self) -> RemoteMediaInfo:
+        return self._media[AUDIO_FIELD_NAME]
 
     def __contains__(self, item) -> bool:
         return item in self._mapping
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> str:
         return self._mapping[item]
+
+    def media_info(self) -> Iterable[RemoteMediaInfo]:
+        return self._media.values()
 
     @staticmethod
     def note_type() -> None:
