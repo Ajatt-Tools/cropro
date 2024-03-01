@@ -7,6 +7,7 @@ from anki.notes import Note
 from anki.utils import html_to_text_line
 from aqt.qt import *
 
+from ..remote_search import RemoteNote
 from .note_previewer import NotePreviewer
 
 WIDGET_MIN_HEIGHT = 29
@@ -59,7 +60,7 @@ class NoteList(QWidget):
         self._previewer.unload_note()
         self._note_list.clear()
 
-    def set_notes(self, notes: Iterable[Note], hide_fields: list[str], previewer_enabled: bool = True):
+    def set_notes(self, notes: Iterable[Union[Note, RemoteNote]], hide_fields: list[str], previewer_enabled: bool = True):
         self._enable_previewer = previewer_enabled
 
         def is_hidden(field_name: str) -> bool:

@@ -5,6 +5,9 @@ import typing
 
 import anki.httpclient
 
+IMAGE_FIELD_NAME = "Image"
+AUDIO_FIELD_NAME = "SentAudio"
+
 
 class ApiReturnExampleDict(typing.TypedDict):
     """
@@ -32,18 +35,21 @@ class RemoteNote:
     notes: str
     tags: list[str]
 
-    def mapping(self):
-        """
-        Return something similar to what Note.items() returns.
-        """
+    def mapping(self) -> dict[str, str]:
         return {
             "SentKanji": self.sent_kanji,
             "SentFurigana": self.sent_furigana,
             "SentEng": self.sent_eng,
-            "SentAudio": f'[sound:{os.path.basename(self.sound_url)}]',
-            "Image": f'<img src="{os.path.basename(self.image_url)}">',
+            AUDIO_FIELD_NAME: f'[sound:{os.path.basename(self.sound_url)}]',
+            IMAGE_FIELD_NAME: f'<img src="{os.path.basename(self.image_url)}">',
             "Notes": self.notes,
         }
+
+    def items(self):
+        """
+        Return something similar to what Note.items() returns.
+        """
+        return self.mapping().items()
 
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict):
