@@ -116,11 +116,16 @@ class WindowState:
     def __init__(self, window: MainDialogUI):
         self._window = window
         self._json_filepath = WINDOW_STATE_FILE_PATH
-        self._map = {
+        self._map: dict[str, CroProComboBox] = {
+            # Search bar settings
             "from_profile": self._window.search_bar.other_profile_names_combo,
             "from_deck": self._window.search_bar.other_profile_deck_combo,
             "to_deck": self._window.current_profile_deck_combo,
             "note_type": self._window.note_type_selection_combo,
+            # Web search settings
+            "web_category": self._window.remote_search_bar.category_combo,
+            "web_sort_by": self._window.remote_search_bar.sort_combo,
+            "web_jlpt_level": self._window.remote_search_bar.jlpt_level_combo,
         }
         self._state = defaultdict(dict)
 
@@ -134,6 +139,9 @@ class WindowState:
         logDebug(f"saved window state.")
 
     def _load(self) -> bool:
+        """
+        Attempt to read the state json from disk. Return true on success.
+        """
         if self._state:
             return True
         elif os.path.isfile(self._json_filepath):
@@ -146,7 +154,7 @@ class WindowState:
     def restore(self):
         if self._load() and (profile_settings := self._state.get(mw.pm.name)):
             for key, widget in self._map.items():
-                if (value := profile_settings.get(key)) in widget.all_items():
+                if value := profile_settings.get(key):
                     widget.setCurrentText(value)
         restoreGeom(self._window, self._window.name, adjustSize=True)
 

@@ -50,7 +50,7 @@ class CroProComboBox(QComboBox):
         self.setMinimumWidth(COMBO_MIN_WIDTH)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-    def all_items(self) -> Iterable[str]:
+    def all_texts(self) -> Iterable[str]:
         """Returns an iterable of all items stored in the combo box."""
         for i in range(self.count()):
             yield self.itemText(i)
