@@ -1,6 +1,5 @@
 {
   "max_displayed_notes": 500,
-  "tag_original_notes": true,
   "exported_tag": "cropro_exported",
   "hidden_fields": [
     "furigana",
@@ -14,5 +13,6 @@
   "copy_card_data": false,
   "call_add_cards_hook": false,
   "enable_debug_log": false,
-  "search_the_web": false
+  "search_the_web": false,
+  "timeout_seconds": 60
 }
