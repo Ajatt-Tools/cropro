@@ -86,9 +86,12 @@ class RemoteSearchBar(QWidget):
     def jlpt_level_combo(self) -> CroProComboBox:
         return self._jlpt_level_combo
 
+    def search_text(self) -> str:
+        return self._keyword_edit.text().strip()
+
     def get_request_args(self) -> dict[str, str]:
         args = {}
-        if keyword := self._keyword_edit.text():
+        if keyword := self.search_text():
             args["keyword"] = keyword
             for widget in (self._sort_combo, self._category_combo, self._jlpt_level_combo):
                 if param := widget.currentData().http_arg:
@@ -129,7 +132,7 @@ class RemoteSearchBar(QWidget):
         def handle_search_requested():
             if (url := self.get_request_url()) != self._current_request_url:
                 # noinspection PyUnresolvedReferences
-                self.search_requested.emit(self._keyword_edit.text())
+                self.search_requested.emit(self.search_text())
                 self._current_request_url = url
 
         qconnect(self._search_button.clicked, handle_search_requested)
