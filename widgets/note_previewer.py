@@ -37,9 +37,19 @@ def filetype(file: str):
     return os.path.splitext(file)[-1]
 
 
+def is_valid_url(url: str) -> bool:
+    """
+    immersionkit return URLs that always start with https.
+    """
+    return url and url.startswith('https://')
+
+
 def format_remote_image(image_url: str) -> str:
-    assert image_url.startswith('https://'), "Remote image URL must be valid."
-    return f'<img src="{urllib.parse.quote(image_url, safe=QUOTE_SAFE)}">'
+    return (
+        f'<img src="{urllib.parse.quote(image_url, safe=QUOTE_SAFE)}">'
+        if is_valid_url(image_url)
+        else ""
+    )
 
 
 def format_local_images(note: Note, image_file_names: Iterable[str]) -> str:
@@ -54,6 +64,8 @@ def format_local_images(note: Note, image_file_names: Iterable[str]) -> str:
 
 
 def format_remote_audio(sound_url: str):
+    if not is_valid_url(sound_url):
+        return ""
     element_id = f'cropro__remote_{urllib.parse.quote(os.path.basename(sound_url))}'
     return """
     <audio preload="auto" id="{}" src="{}"></audio>
@@ -130,18 +142,19 @@ class NotePreviewer(AnkiWebView):
         return markup.getvalue()
 
     def _create_html_for_remote_field(self, field_name: str, field_content: str) -> str:
+        """Creates the content for the previewer showing the remote note's field."""
         assert self._is_remote_note(), "Remote note required."
-        if not field_content:
-            return ""
-        elif field_name == IMAGE_FIELD_NAME:
-            return format_remote_image(self._note.image_url)
-        elif field_name == AUDIO_FIELD_NAME:
-            return format_remote_audio(self._note.sound_url)
-        else:
-            return html_to_text_line(field_content)
+        markup = io.StringIO()
+        if field_name == IMAGE_FIELD_NAME:
+            markup.write(format_remote_image(self._note.image_url))
+        if field_name == AUDIO_FIELD_NAME:
+            markup.write(format_remote_audio(self._note.sound_url))
+        if text := html_to_text_line(field_content):
+            markup.write(f'<div>{html_to_text_line(text)}</div>')
+        return markup.getvalue()
 
     def _create_html_for_field(self, field_content: str) -> str:
-        """Creates the content for the previewer showing the current note's field."""
+        """Creates the content for the previewer showing the local note's field."""
         assert self._is_local_note(), "Local note required."
         markup = io.StringIO()
         if audio_files := find_sounds(field_content):
