@@ -181,7 +181,7 @@ def import_note(
         download_media(new_note, other_note, web_client)
     else:
         copy_media_files(new_note, other_note)
-        if tag := config.tag_original_notes():
+        if tag := config.tag_original_notes:
             other_note.add_tag(tag)
             other_note.flush()
         if config.copy_card_data:
