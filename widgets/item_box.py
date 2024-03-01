@@ -3,12 +3,14 @@
 
 from aqt.qt import *
 
+from ..common import CLOSE_ICON_PATH
+
 
 class ItemBox(QWidget):
     """Displays tag-like labels with × icons. Pressing on the × deletes the tag."""
 
     class ItemButton(QPushButton):
-        _close_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), "img", "close.png")))
+        _close_icon = QIcon(QPixmap(CLOSE_ICON_PATH))
 
         def __init__(self, item_box: "ItemBox", text: str):
             super().__init__(text)
@@ -20,7 +22,7 @@ class ItemBox(QWidget):
                     color: #292c31;
                     border-radius: 12px;
                     padding: 3px 6px;
-                    border: 0px;
+                    border: 1px solid #d0d2d4;
                 }
             """
             )
