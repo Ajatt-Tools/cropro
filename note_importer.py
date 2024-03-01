@@ -53,7 +53,7 @@ def files_in_note(note: Note) -> Iterable[FileInfo]:
     """
     for file_ref in note.col.media.files_in_str(note.mid, join_fields(note.fields)):
         if os.path.exists(file_path := os.path.join(note.col.media.dir(), file_ref)):
-            yield FileInfo(file_ref, file_path)
+            yield FileInfo(file_ref, str(file_path))
 
 
 def copy_media_files(new_note: Note, other_note: Note) -> None:
