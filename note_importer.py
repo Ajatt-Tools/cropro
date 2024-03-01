@@ -4,11 +4,11 @@
 import collections
 import concurrent.futures
 import dataclasses
+import enum
 import math
 import os.path
 from collections.abc import Iterable
 from copy import deepcopy
-from enum import Enum, auto
 from typing import NamedTuple, Optional, Sequence
 
 from anki.cards import Card
@@ -23,12 +23,15 @@ from aqt.qt import *
 
 from .collection_manager import NameId
 from .config import config
-from .remote_search import RemoteNote, CroProWebSearchClient
+from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
+import enum
 
 
-class ImportResult(Enum):
-    success = auto()
-    dupe = auto()
+@enum.unique
+class ImportResult(enum.Enum):
+    success = enum.auto()
+    dupe = enum.auto()
+    connection_error = enum.auto()
 
 
 class ImportResultCounter(collections.Counter[ImportResult, int]):
@@ -39,6 +42,10 @@ class ImportResultCounter(collections.Counter[ImportResult, int]):
     @property
     def duplicates(self) -> int:
         return self[ImportResult.dupe]
+
+    @property
+    def errors(self) -> int:
+        return self[ImportResult.connection_error]
 
 
 class FileInfo(NamedTuple):
@@ -178,7 +185,10 @@ def import_note(
         return NoteCreateResult(new_note, ImportResult.dupe)
 
     if isinstance(other_note, RemoteNote):
-        download_media(new_note, other_note, web_client)
+        try:
+            download_media(new_note, other_note, web_client)
+        except CroProWebClientException:
+            return NoteCreateResult(new_note, ImportResult.connection_error)
     else:
         copy_media_files(new_note, other_note)
         if tag := config.tag_original_notes:

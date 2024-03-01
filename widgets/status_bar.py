@@ -49,19 +49,34 @@ class StatusBar(QHBoxLayout):
                 plural="%d notes were duplicates and were skipped.",
             ),
         )
+        self._error_label = ColoredCounter(
+            color="#C63434",
+            description=NGetTextVariant(
+                singular="%d note encountered connection errors.",
+                plural="%d notes encountered connection errors.",
+            ),
+        )
         self.addWidget(self._success_label)
         self.addWidget(self._dupes_label)
+        self.addWidget(self._error_label)
         self.addStretch()
 
     def hide_counters(self):
         self._success_label.hide()
         self._dupes_label.hide()
+        self._error_label.hide()
 
     def set_import_status(self, results: ImportResultCounter):
         self._success_label.set_count(results.successes)
         self._dupes_label.set_count(results.duplicates)
+        self._error_label.set_count(results.errors)
 
     def set_import_count(self, success_count: int = 0, dupe_count: int = 0):
         self.set_import_status(
-            ImportResultCounter({ImportResult.success: success_count, ImportResult.dupe: dupe_count})
+            ImportResultCounter(
+                {
+                    ImportResult.success: success_count,
+                    ImportResult.dupe: dupe_count,
+                }
+            )
         )
