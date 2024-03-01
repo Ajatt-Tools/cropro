@@ -7,7 +7,7 @@ from aqt.utils import restoreGeom, saveGeom, disable_help_button
 from .ajt_common.about_menu import tweak_window
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
 from .config import config
-from .widgets.item_box import ItemBox
+from .widgets.item_edit import ItemEditBox
 from .widgets.utils import CroProSpinBox
 
 
@@ -25,18 +25,12 @@ class CroProSettingsDialog(QDialog):
     def __init__(self, *args, **kwargs) -> None:
         QDialog.__init__(self, *args, **kwargs)
         disable_help_button(self)
-
         self.checkboxes = make_checkboxes()
         self.tag_edit = QLineEdit(config.tag_original_notes)
         self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.max_displayed_notes)
-
-        self.hidden_fields_edit = QLineEdit()
-        self.hidden_fields_edit.setPlaceholderText("New item")
-        self.hidden_fields_box = ItemBox(parent=self, initial_values=config.hidden_fields)
-
+        self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
         self.button_box = QDialogButtonBox(BUT_OK | BUT_CANCEL)
-
         self._setup_ui()
         self.connect_widgets()
         self.add_tooltips()
@@ -61,9 +55,7 @@ class CroProSettingsDialog(QDialog):
         layout.addRow("Max displayed notes", self.max_notes_edit)
         layout.addRow("Tag original cards with", self.tag_edit)
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
-
-        layout.addRow("Hide fields matching", self.hidden_fields_edit)
-        layout.addRow(self.hidden_fields_box)
+        layout.addRow(self.hidden_fields)
 
         for key, checkbox in self.checkboxes.items():
             layout.addRow(checkbox)
@@ -73,7 +65,6 @@ class CroProSettingsDialog(QDialog):
     def connect_widgets(self):
         qconnect(self.button_box.accepted, self.accept)
         qconnect(self.button_box.rejected, self.reject)
-        qconnect(self.hidden_fields_edit.textChanged, lambda: self.hidden_fields_box.new_item(self.hidden_fields_edit))
 
     def add_tooltips(self) -> None:
         self.tag_edit.setToolTip(
@@ -83,7 +74,7 @@ class CroProSettingsDialog(QDialog):
             "The tag that is added to the original notes is controlled by this setting.\n"
             "Left it empty to disable tagging."
         )
-        self.hidden_fields_edit.setToolTip(
+        self.hidden_fields.setToolTip(
             "Hide fields whose names contain these words.\n" "Press space or comma to commit."
         )
         self.web_timeout_spinbox.setToolTip("Give up trying to connect to the remote server after this many seconds.")
@@ -126,7 +117,7 @@ class CroProSettingsDialog(QDialog):
     def accept(self) -> None:
         config.max_displayed_notes = self.max_notes_edit.value()
         config.tag_original_notes = self.tag_edit.text()
-        config.hidden_fields = self.hidden_fields_box.values()
+        config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()

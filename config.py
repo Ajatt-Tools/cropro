@@ -68,8 +68,8 @@ class CroProConfig(AddonConfigManager):
         return self["hidden_fields"]
 
     @hidden_fields.setter
-    def hidden_fields(self, new_value: list[str]) -> None:
-        self["hidden_fields"] = new_value
+    def hidden_fields(self, new_values: list[str]) -> None:
+        self["hidden_fields"] = new_values
 
     @property
     def preview_on_right_side(self) -> bool:
