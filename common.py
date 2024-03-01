@@ -13,6 +13,10 @@ DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, "cropro.log")
 ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
 WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
 WINDOW_STATE_FILE_PATH = os.path.join(ADDON_DIR_PATH, "user_files", "window_state.json")
+CLOSE_ICON_PATH = os.path.join(ADDON_DIR_PATH, "img", "close.png")
+
+for file in (WEB_DIR_PATH, WINDOW_STATE_FILE_PATH, CLOSE_ICON_PATH):
+    assert os.path.isfile(file), f"Path must be valid: {file}"
 
 
 class LogDebug:
