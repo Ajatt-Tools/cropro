@@ -1,9 +1,18 @@
 # Copyright: Ajatt-Tools and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import typing
 from typing import Sized
 
+import requests
 from aqt.qt import *
+
+
+class CropProExceptionProtocol(typing.Protocol):
+    response: typing.Optional[requests.Response]
+
+    def what(self) -> str:
+        ...
 
 
 class SearchResultLabel(QLabel):
@@ -15,6 +24,15 @@ class SearchResultLabel(QLabel):
         self.setText("")
         self.setStyleSheet("")
         self.hide()
+
+    def set_error(self, ex: CropProExceptionProtocol):
+        text = f"Error: {ex.what()}."
+        if ex.response:
+            text += f" Status code: {ex.response.status_code}"
+        self.setText(text)
+        self.setStyleSheet("QLabel { color: red; }")
+        if self.isHidden():
+            self.show()
 
     def set_search_result(self, note_ids: Sized, display_limit: int):
         found = len(note_ids)

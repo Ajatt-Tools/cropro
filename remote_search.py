@@ -1,9 +1,13 @@
+# Copyright: Ajatt-Tools and contributors
+# License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 import dataclasses
 import enum
 import itertools
-from typing import TypedDict, Iterable
+from typing import TypedDict, Iterable, Optional
 
 import anki.httpclient
+import requests
 
 IMAGE_FIELD_NAME = "Image"
 AUDIO_FIELD_NAME = "SentAudio"
@@ -132,21 +136,37 @@ def get_request_url(request_args: dict[str, str]) -> str:
     return ""
 
 
+@dataclasses.dataclass
+class CroProWebClientException(Exception):
+    response: Optional[requests.Response] = None
+
+    def what(self) -> str:
+        return self.__cause__.__class__.__name__
+
+
 class CroProWebSearchClient:
     def __init__(self) -> None:
         self._client = anki.httpclient.HttpClient()
+
+    def _get(self, url: str) -> requests.Response:
+        try:
+            resp = self._client.get(url)
+        except OSError as ex:
+            raise CroProWebClientException() from ex
+        try:
+            resp.raise_for_status()
+        except requests.HTTPError as ex:
+            raise CroProWebClientException(ex.response) from ex
+        return resp
 
     def set_timeout(self, timeout_seconds: int):
         self._client.timeout = timeout_seconds
 
     def download_media(self, url: str) -> bytes:
-        resp = self._client.get(url)
-        resp.raise_for_status()
-        return self._client.stream_content(resp)
+        return self._client.stream_content(self._get(url))
 
     def search_notes(self, search_args: dict[str, str]) -> list[RemoteNote]:
-        resp = self._client.get(get_request_url(search_args))
-        resp.raise_for_status()
+        resp = self._get(get_request_url(search_args))
         examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
         return [RemoteNote.from_json(example) for example in examples]
 

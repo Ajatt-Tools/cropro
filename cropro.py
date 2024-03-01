@@ -43,7 +43,7 @@ from .common import *
 from .config import config
 from .edit_window import AddDialogLauncher
 from .note_importer import NoteTypeUnavailable, import_notes
-from .remote_search import CroProWebSearchClient
+from .remote_search import CroProWebSearchClient, CroProWebClientException
 from .settings_dialog import open_cropro_settings
 from .widgets.note_list import NoteList
 from .widgets.remote_search_bar import RemoteSearchBar
@@ -288,7 +288,11 @@ class MainDialog(MainDialogUI):
         if not search_text:
             return
 
-        notes = self.web_search_client.search_notes(self.remote_search_bar.get_request_args())
+        try:
+            notes = self.web_search_client.search_notes(self.remote_search_bar.get_request_args())
+        except CroProWebClientException as ex:
+            self.search_result_label.set_error(ex)
+            return
 
         self.note_list.set_notes(
             notes[: config.max_displayed_notes],
