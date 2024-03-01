@@ -176,7 +176,7 @@ class MainDialog(MainDialogUI):
         options_menu = menu_bar.addMenu("&Options")
         help_menu = menu_bar.addMenu("&Help")
 
-        options_menu.addAction("Options", self._open_cropro_settings)
+        options_menu.addAction("Add-on Options", self._open_cropro_settings)
 
         toggle_web_search_act = options_menu.addAction("Search the web")
         toggle_web_search_act.setCheckable(True)
@@ -189,6 +189,7 @@ class MainDialog(MainDialogUI):
         help_menu.addAction("Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
         help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
+        help_menu.addAction("Create sentence bank: subs2srs", lambda: openLink(SUBS2SRS_LINK))
 
     def _on_toggle_web_search_triggered(self, checked: bool):
         config.search_the_web = checked

@@ -14,6 +14,7 @@ ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__
 WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
 WINDOW_STATE_FILE_PATH = os.path.join(ADDON_DIR_PATH, "user_files", "window_state.json")
 CLOSE_ICON_PATH = os.path.join(ADDON_DIR_PATH, "img", "close.png")
+SUBS2SRS_LINK = "https://aur.archlinux.org/packages/subs2srs"
 
 for file in (WEB_DIR_PATH,):
     assert os.path.isdir(file), f"Path must be valid: {file}"
