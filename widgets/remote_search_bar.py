@@ -7,9 +7,11 @@ from typing import Sequence
 from aqt.qt import *
 
 try:
+    from ..remote_search import get_request_url
     from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
 except ImportError:
     from utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
+    from remote_search import get_request_url
 
 
 @dataclasses.dataclass
@@ -58,14 +60,17 @@ class RemoteSearchBar(QWidget):
         self._setup_layout()
         self._connect_elements()
 
-    def get_request_url(self) -> str:
-        url = ""
+    def get_request_args(self) -> dict[str, str]:
+        args = {}
         if keyword := self._keyword_edit.text():
-            url = f"https://api.immersionkit.com/look_up_dictionary?keyword={keyword}"
+            args["keyword"] = keyword
             for widget in (self._sort_combo, self._category_combo, self._jlpt_level_combo):
                 if param := widget.currentData().http_arg:
-                    url = f"{url}&{widget.key}={param}"
-        return url
+                    args[widget.key] = param
+        return args
+
+    def get_request_url(self) -> str:
+        return get_request_url(self.get_request_args())
 
     def focus(self):
         self._keyword_edit.setFocus()
