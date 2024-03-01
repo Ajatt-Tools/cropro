@@ -49,6 +49,8 @@ class AddDialogLauncher:
         gui_hooks.add_cards_will_add_note.append(self.on_add_import)
 
     def create_window(self, other_note: Note = None) -> NoteId:
+        if not isinstance(other_note, Note):
+            return 0
         if other_note is None:
             self.add_window = aqt.dialogs.open('AddCards', mw)
             self.add_window.activateWindow()

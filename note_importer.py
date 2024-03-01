@@ -1,12 +1,15 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org> and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+
 import collections
+import concurrent.futures
+import dataclasses
 import math
 import os.path
 from collections.abc import Iterable
 from copy import deepcopy
 from enum import Enum, auto
-from typing import NamedTuple
+from typing import NamedTuple, Optional, Sequence
 
 from anki.cards import Card
 from anki.collection import Collection
@@ -20,6 +23,7 @@ from aqt.qt import *
 
 from .collection_manager import NameId
 from .config import config
+from .remote_search import RemoteNote, CroProWebSearchClient, IMAGE_FIELD_NAME, AUDIO_FIELD_NAME
 
 
 class ImportResult(Enum):
@@ -77,11 +81,16 @@ def remove_media_files(new_note: Note) -> None:
     ])
 
 
-def get_matching_model(target_model_id: int, reference_model: NoteType) -> NoteType:
+class NoteTypeUnavailable(RuntimeError):
+    pass
+
+
+def get_matching_model(target_model_id: int, reference_model: Optional[NoteType]) -> NoteType:
     if target_model_id != NameId.none_type().id:
         # use existing note type (even if its name or fields are different)
         return mw.col.models.get(target_model_id)
-    else:
+
+    if reference_model:
         # find a model in current profile that matches the name of model from other profile
         # create a new note type (clone) if needed.
         matching_model = mw.col.models.by_name(reference_model.get('name'))
@@ -91,6 +100,8 @@ def get_matching_model(target_model_id: int, reference_model: NoteType) -> NoteT
             matching_model['id'] = 0
             mw.col.models.add(matching_model)
         return matching_model
+
+    raise NoteTypeUnavailable()
 
 
 def col_diff(col: Collection, other_col: Collection) -> int:
@@ -106,6 +117,8 @@ def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
     For all cards in the new note,
     copy some scheduling info from the old card to the newly imported one.
     """
+    assert new_note.id == 0, "This function expects a note that hasn't been added yet."
+
     for new_card, other_card in zip(new_note.cards(), other_note.cards()):
         # If the note types are similar, this loop will iterate over identical cards.
         # Otherwise, some cards might be skipped (lost scheduling info).
@@ -125,10 +138,37 @@ def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
         if new_card.type == 2:
             new_card.due += col_diff(mw.col, other_col)
 
-        new_card.flush()
+
+@dataclasses.dataclass
+class NoteCreateResult:
+    note: Union[Note, RemoteNote]
+    status: ImportResult
 
 
-def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id: DeckId) -> ImportResult:
+def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWebSearchClient):
+    assert new_note.id == 0, "This function expects a note that hasn't been added yet."
+
+    if other_note.image_url:
+        filename = mw.col.media.write_data(
+            desired_fname=other_note[IMAGE_FIELD_NAME],
+            data=web_client.download_media(other_note.image_url),
+        )
+        new_note[IMAGE_FIELD_NAME] = filename
+    if other_note.sound_url:
+        filename = mw.col.media.write_data(
+            desired_fname=other_note[AUDIO_FIELD_NAME],
+            data=web_client.download_media(other_note.sound_url),
+        )
+        new_note[AUDIO_FIELD_NAME] = filename
+
+
+def import_note(
+        other_note: Union[Note, RemoteNote],
+        other_col: Collection,
+        model_id: int,
+        deck_id: DeckId,
+        web_client: CroProWebSearchClient,
+) -> NoteCreateResult:
     matching_model = get_matching_model(model_id, other_note.note_type())
     new_note = Note(mw.col, matching_model)
     new_note.note_type()['did'] = deck_id
@@ -141,21 +181,49 @@ def import_note(other_note: Note, other_col: Collection, model_id: int, deck_id:
     if config.get('copy_tags'):
         new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
 
-    if tag := config.tag_original_notes():
-        other_note.add_tag(tag)
-        other_note.flush()
-
     # check if note is dupe of existing one
     if config.get('skip_duplicates') and new_note.dupeOrEmpty():
-        return ImportResult.dupe
+        return NoteCreateResult(new_note, ImportResult.dupe)
 
-    copy_media_files(new_note, other_note)
-    mw.col.add_note(new_note, deck_id)  # new_note has changed its id
+    if isinstance(other_note, RemoteNote):
+        download_media(new_note, other_note, web_client)
+    else:
+        copy_media_files(new_note, other_note)
+        if tag := config.tag_original_notes():
+            other_note.add_tag(tag)
+            other_note.flush()
+        if config['copy_card_data']:
+            import_card_info(new_note, other_note, other_col)
 
-    if config['copy_card_data']:
-        import_card_info(new_note, other_note, other_col)
+    return NoteCreateResult(new_note, ImportResult.success)
 
-    if config['call_add_cards_hook']:
-        gui_hooks.add_cards_did_add_note(new_note)
 
-    return ImportResult.success
+def import_notes(notes: Sequence[Union[Note, RemoteNote]],
+                 other_col: Collection,
+                 model_id: int,
+                 deck_id: DeckId,
+                 web_client: CroProWebSearchClient,
+                 ) -> ImportResultCounter:
+    results = ImportResultCounter()
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [
+            executor.submit(
+                import_note,
+                other_note=note,
+                other_col=other_col,
+                model_id=model_id,
+                deck_id=deck_id,
+                web_client=web_client,
+            )
+            for note in notes
+        ]
+
+        for future in concurrent.futures.as_completed(futures):
+            result: NoteCreateResult = future.result()
+            mw.col.add_note(result.note, deck_id)  # new_note has changed its id
+            results[result.status] += 1
+            if config['call_add_cards_hook']:
+                gui_hooks.add_cards_did_add_note(result.note)
+
+    return results

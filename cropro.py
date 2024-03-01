@@ -21,18 +21,22 @@ import json
 import os.path
 from collections import defaultdict
 
+from anki.decks import DeckId
 from anki.models import NotetypeDict
 from aqt.qt import *
-from aqt.utils import showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning
+from aqt.utils import (
+    showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning,
+    showCritical,
+)
 
-from .remote_search import CroProWebSearchClient
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
 from .common import *
 from .config import config
 from .edit_window import AddDialogLauncher
-from .note_importer import import_note, ImportResultCounter
+from .note_importer import NoteTypeUnavailable, import_notes
+from .remote_search import CroProWebSearchClient
 from .settings_dialog import open_cropro_settings
 from .widgets.note_list import NoteList
 from .widgets.remote_search_bar import RemoteSearchBar
@@ -190,7 +194,7 @@ class MainDialog(MainDialogUI):
             )
 
     def get_target_note_type(self) -> Optional[NotetypeDict]:
-        selected_note_type_id = self.note_type_selection_combo.currentData()
+        selected_note_type_id = self.model_id()
         if selected_note_type_id and selected_note_type_id > 0:
             return mw.col.models.get(selected_note_type_id)
 
@@ -263,7 +267,7 @@ class MainDialog(MainDialogUI):
         if not search_text:
             return
 
-        notes = self.web_search_client.send_request(self.remote_search_bar.get_request_url())
+        notes = self.web_search_client.search_notes(self.remote_search_bar.get_request_args())
 
         self.note_list.set_notes(
             notes[:config.max_displayed_notes],
@@ -272,7 +276,6 @@ class MainDialog(MainDialogUI):
         )
 
         self.search_result_label.set_search_result(notes, config.max_displayed_notes)
-
 
     def update_notes_list(self, search_text: str):
         """
@@ -298,6 +301,12 @@ class MainDialog(MainDialogUI):
 
         self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
 
+    def model_id(self) -> int:
+        return self.note_type_selection_combo.currentData()
+
+    def deck_id(self) -> DeckId:
+        return self.current_profile_deck_combo.currentData()
+
     def do_import(self):
         logDebug('beginning import')
 
@@ -309,17 +318,22 @@ class MainDialog(MainDialogUI):
 
         logDebug(f'importing {len(notes)} notes')
 
-        results = ImportResultCounter()
-
-        for note in notes:
-            results[import_note(
-                other_note=note,
+        try:
+            results = import_notes(
+                notes,
                 other_col=self.other_col.col,
-                model_id=self.note_type_selection_combo.currentData(),
-                deck_id=self.current_profile_deck_combo.currentData(),
-            )] += 1
+                model_id=self.model_id(),
+                deck_id=self.deck_id(),
+                web_client=self.web_search_client,
+            )
+        except NoteTypeUnavailable:
+            showCritical(
+                title="Note importer",
+                text="Note type must be assigned when importing from the Internet.",
+            )
+        else:
+            self.status_bar.set_import_status(results)
 
-        self.status_bar.set_import_status(results)
         mw.reset()
 
     def new_edit_win(self):

@@ -7,6 +7,7 @@ import anki.httpclient
 
 IMAGE_FIELD_NAME = "Image"
 AUDIO_FIELD_NAME = "SentAudio"
+API_URL = "https://api.immersionkit.com/look_up_dictionary?"
 
 
 class ApiReturnExampleDict(typing.TypedDict):
@@ -48,6 +49,16 @@ class RemoteNote:
     def __contains__(self, item) -> bool:
         return item in self._mapping
 
+    def __getitem__(self, item):
+        return self._mapping[item]
+
+    @staticmethod
+    def note_type() -> None:
+        return None
+
+    def keys(self):
+        return self._mapping.keys()
+
     def items(self):
         """
         Return something similar to what Note.items() returns.
@@ -67,13 +78,24 @@ class RemoteNote:
         )
 
 
+def get_request_url(request_args: dict[str, str]) -> str:
+    if "keyword" in request_args:
+        return API_URL + '&'.join(f'{key}={val}' for key, val in request_args.items())
+    return ""
+
+
 class CroProWebSearchClient:
     def __init__(self) -> None:
         self._client = anki.httpclient.HttpClient()
         self._client.timeout = 30
 
-    def send_request(self, get_url: str) -> list[RemoteNote]:
-        resp = self._client.get(get_url)
+    def download_media(self, url: str) -> bytes:
+        resp = self._client.get(url)
+        resp.raise_for_status()
+        return self._client.stream_content(resp)
+
+    def search_notes(self, search_args: dict[str, str]) -> list[RemoteNote]:
+        resp = self._client.get(get_request_url(search_args))
         resp.raise_for_status()
         examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
         return [
@@ -84,7 +106,7 @@ class CroProWebSearchClient:
 
 def main():
     client = CroProWebSearchClient()
-    result = client.send_request("https://api.immersionkit.com/look_up_dictionary?keyword=人事")
+    result = client.search_notes({"keyword": "人事"})
     for note in result:
         print(note)
 
