@@ -195,6 +195,7 @@ class MainDialog(MainDialogUI):
         config.search_the_web = checked
         self._activate_enabled_search_bar()
         self.reset_cropro_status()
+        # save config to disk to remember checkbox state.
         config.write_config()
 
     def show_target_note_fields(self):
