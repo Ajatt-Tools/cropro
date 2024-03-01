@@ -14,12 +14,11 @@ from anki.notes import Note
 from anki.sound import SoundOrVideoTag
 from anki.utils import html_to_text_line
 from aqt import mw
-from aqt import sound
 from aqt.qt import *
 from aqt.webview import AnkiWebView
 
 from ..ajt_common.media import find_sounds, find_images
-from ..remote_search import RemoteNote, IMAGE_FIELD_NAME, AUDIO_FIELD_NAME
+from ..remote_search import RemoteNote, IMAGE_FIELD_NAME, AUDIO_FIELD_NAME, RemoteMediaInfo
 
 RE_DANGEROUS = re.compile(r'[\'"<>]+')
 QUOTE_SAFE = ":/%"
@@ -37,17 +36,10 @@ def filetype(file: str):
     return os.path.splitext(file)[-1]
 
 
-def is_valid_url(url: str) -> bool:
-    """
-    immersionkit return URLs that always start with https.
-    """
-    return url and url.startswith('https://')
-
-
-def format_remote_image(image_url: str) -> str:
+def format_remote_image(image: RemoteMediaInfo) -> str:
     return (
-        f'<img src="{urllib.parse.quote(image_url, safe=QUOTE_SAFE)}">'
-        if is_valid_url(image_url)
+        f'<img src="{urllib.parse.quote(image.url, safe=QUOTE_SAFE)}" alt="remote image">'
+        if image.is_valid_url()
         else ""
     )
 
@@ -63,17 +55,17 @@ def format_local_images(note: Note, image_file_names: Iterable[str]) -> str:
     )
 
 
-def format_remote_audio(sound_url: str):
-    if not is_valid_url(sound_url):
+def format_remote_audio(audio: RemoteMediaInfo):
+    if not audio.is_valid_url():
         return ""
-    element_id = f'cropro__remote_{urllib.parse.quote(os.path.basename(sound_url))}'
+    element_id = f'cropro__remote_{urllib.parse.quote(audio.file_name)}'
     return """
     <audio preload="auto" id="{}" src="{}"></audio>
     <button class="cropro__play_button" title="{}" onclick='{}'></button>
     """.format(
         element_id,
-        urllib.parse.quote(sound_url, safe=QUOTE_SAFE),
-        _(f"Play file: {name_attr_strip(os.path.basename(sound_url))}"),
+        urllib.parse.quote(audio.url, safe=QUOTE_SAFE),
+        _(f"Play file: {name_attr_strip(audio.file_name)}"),
         f'cropro__play_remote_audio("{element_id}");',
     )
 
@@ -146,9 +138,9 @@ class NotePreviewer(AnkiWebView):
         assert self._is_remote_note(), "Remote note required."
         markup = io.StringIO()
         if field_name == IMAGE_FIELD_NAME:
-            markup.write(format_remote_image(self._note.image_url))
+            markup.write(format_remote_image(self._note.image))
         if field_name == AUDIO_FIELD_NAME:
-            markup.write(format_remote_audio(self._note.sound_url))
+            markup.write(format_remote_audio(self._note.audio))
         if text := html_to_text_line(field_content):
             markup.write(f'<div>{html_to_text_line(text)}</div>')
         return markup.getvalue()
@@ -167,6 +159,8 @@ class NotePreviewer(AnkiWebView):
 
     def _handle_play_button_press(self, cmd: str):
         """Play audio files if a play button was pressed. Works with local files."""
+        from aqt import sound
+
         if cmd.startswith('cropro__play_file:'):
             assert self._is_local_note(), "Only local files can be played with av_player."
             file_name = os.path.basename(urllib.parse.unquote(cmd.split(':', maxsplit=1)[-1]))
