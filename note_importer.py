@@ -23,7 +23,7 @@ from aqt.qt import *
 
 from .collection_manager import NameId
 from .config import config
-from .remote_search import RemoteNote, CroProWebSearchClient, IMAGE_FIELD_NAME, AUDIO_FIELD_NAME
+from .remote_search import RemoteNote, CroProWebSearchClient
 
 
 class ImportResult(Enum):
@@ -147,19 +147,13 @@ class NoteCreateResult:
 
 def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWebSearchClient):
     assert new_note.id == 0, "This function expects a note that hasn't been added yet."
-
-    if other_note.image_url:
-        filename = mw.col.media.write_data(
-            desired_fname=other_note[IMAGE_FIELD_NAME],
-            data=web_client.download_media(other_note.image_url),
-        )
-        new_note[IMAGE_FIELD_NAME] = filename
-    if other_note.sound_url:
-        filename = mw.col.media.write_data(
-            desired_fname=other_note[AUDIO_FIELD_NAME],
-            data=web_client.download_media(other_note.sound_url),
-        )
-        new_note[AUDIO_FIELD_NAME] = filename
+    for file in other_note.media_info():
+        if file.is_valid_url() and file.field_name in new_note:
+            file.file_name = mw.col.media.write_data(
+                desired_fname=file.file_name,
+                data=web_client.download_media(file.url),
+            )
+            new_note[file.field_name] = file.as_anki_ref()
 
 
 def import_note(
