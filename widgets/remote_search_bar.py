@@ -36,6 +36,7 @@ class RemoteSearchBar(QWidget):
     """
     Search bar for https://docs.immersionkit.com/public%20api/search/
     """
+
     # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
@@ -44,16 +45,29 @@ class RemoteSearchBar(QWidget):
         self._current_request_url = ""
         self._keyword_edit = CroProLineEdit()  # keyword
         self._category_combo = new_combo_box(
-            [RemoteComboBoxItem(None, "all"), "anime", "drama", "games", "literature", ],
-            key="category"
+            [
+                RemoteComboBoxItem(None, "all"),
+                "anime",
+                "drama",
+                "games",
+                "literature",
+            ],
+            key="category",
         )
         self._sort_combo = new_combo_box(
-            [RemoteComboBoxItem(None, "none"), "shortness", "longness", ],
-            key="sort"
+            [
+                RemoteComboBoxItem(None, "none"),
+                "shortness",
+                "longness",
+            ],
+            key="sort",
         )
         self._jlpt_level_combo = new_combo_box(
-            [RemoteComboBoxItem(None, "all"), *map(str, range(1, 6)), ],
-            key="jlpt"
+            [
+                RemoteComboBoxItem(None, "all"),
+                *map(str, range(1, 6)),
+            ],
+            key="jlpt",
         )
 
         self._search_button = CroProPushButton("Search")
@@ -79,7 +93,7 @@ class RemoteSearchBar(QWidget):
         self.setLayout(layout := QVBoxLayout())
         layout.addLayout(self._make_search_settings_box())
         layout.addLayout(self._make_filter_row())
-        self._keyword_edit.setPlaceholderText('<text to search>')
+        self._keyword_edit.setPlaceholderText("<text to search>")
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.focus()
 
@@ -141,5 +155,5 @@ def main():
     sys.exit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

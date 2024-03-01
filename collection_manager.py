@@ -14,8 +14,8 @@ class NameId(NamedTuple):
     id: int
 
     @classmethod
-    def none_type(cls) -> 'NameId':
-        return cls('None (create new if needed)', -1)
+    def none_type(cls) -> "NameId":
+        return cls("None (create new if needed)", -1)
 
 
 def sorted_decks_and_ids(col: Collection) -> list[NameId]:
@@ -70,7 +70,7 @@ class CollectionManager:
 
     def open(self, name: str) -> None:
         if name not in self._opened_cols:
-            self._opened_cols[name] = Collection(os.path.join(mw.pm.base, name, 'collection.anki2'))
+            self._opened_cols[name] = Collection(os.path.join(mw.pm.base, name, "collection.anki2"))
         self._current_name = name
 
     def deck_names_and_ids(self) -> list[NameId]:

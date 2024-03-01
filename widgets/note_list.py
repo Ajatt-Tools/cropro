@@ -16,6 +16,7 @@ COMBO_MIN_WIDTH = 120
 
 class NoteList(QWidget):
     """Lists notes and previews them."""
+
     _role = Qt.ItemDataRole.UserRole
 
     def __init__(self, *args, **kwargs):
@@ -60,7 +61,9 @@ class NoteList(QWidget):
         self._previewer.unload_note()
         self._note_list.clear()
 
-    def set_notes(self, notes: Iterable[Union[Note, RemoteNote]], hide_fields: list[str], previewer_enabled: bool = True):
+    def set_notes(
+        self, notes: Iterable[Union[Note, RemoteNote]], hide_fields: list[str], previewer_enabled: bool = True
+    ):
         self._enable_previewer = previewer_enabled
 
         def is_hidden(field_name: str) -> bool:
@@ -70,10 +73,12 @@ class NoteList(QWidget):
         self.clear()
         for note in notes:
             item = QListWidgetItem()
-            item.setText(' | '.join(
-                html_to_text_line(field_content)
-                for field_name, field_content in note.items()
-                if not is_hidden(field_name) and field_content.strip())
+            item.setText(
+                " | ".join(
+                    html_to_text_line(field_content)
+                    for field_name, field_content in note.items()
+                    if not is_hidden(field_name) and field_content.strip()
+                )
             )
             item.setData(self._role, note)
             self._note_list.addItem(item)

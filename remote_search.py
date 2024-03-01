@@ -14,6 +14,7 @@ class ApiReturnExampleDict(TypedDict):
     """
     This json dict is what the remote server sends back.
     """
+
     tags: list[str]
     image_url: str
     sound_url: str
@@ -36,22 +37,22 @@ class RemoteMediaInfo:
     type: MediaType
 
     def __post_init__(self):
-        self.file_name = self.url.split('/')[-1] if self.is_valid_url() else ""
+        self.file_name = self.url.split("/")[-1] if self.is_valid_url() else ""
 
     def is_valid_url(self) -> bool:
         """
         immersionkit return URLs that always start with https.
         """
-        return bool(self.url and self.url.startswith('https://'))
+        return bool(self.url and self.url.startswith("https://"))
 
     def as_anki_ref(self):
         if not self.is_valid_url():
             return ""
-        return (
-            f'<img src="{self.file_name}">'
-            if self.type == MediaType.image
-            else f'[sound:{self.file_name}]'
-        )
+        if self.type == MediaType.image:
+            return f'<img src="{self.file_name}">'
+        if self.type == MediaType.sound:
+            return f"[sound:{self.file_name}]"
+        raise NotImplementedError(f"not implemented: {self.type}")
 
 
 @dataclasses.dataclass
@@ -59,6 +60,7 @@ class RemoteNote:
     """
     Packs the response from the API into a familiar interface.
     """
+
     sent_kanji: str
     sent_furigana: str
     sent_eng: str
@@ -126,14 +128,16 @@ class RemoteNote:
 
 def get_request_url(request_args: dict[str, str]) -> str:
     if "keyword" in request_args:
-        return API_URL + '&'.join(f'{key}={val}' for key, val in request_args.items())
+        return API_URL + "&".join(f"{key}={val}" for key, val in request_args.items())
     return ""
 
 
 class CroProWebSearchClient:
     def __init__(self) -> None:
         self._client = anki.httpclient.HttpClient()
-        self._client.timeout = 30
+
+    def set_timeout(self, timeout_seconds: int):
+        self._client.timeout = timeout_seconds
 
     def download_media(self, url: str) -> bytes:
         resp = self._client.get(url)
@@ -144,10 +148,7 @@ class CroProWebSearchClient:
         resp = self._client.get(get_request_url(search_args))
         resp.raise_for_status()
         examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
-        return [
-            RemoteNote.from_json(example)
-            for example in examples
-        ]
+        return [RemoteNote.from_json(example) for example in examples]
 
 
 def main():

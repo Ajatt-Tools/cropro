@@ -50,15 +50,15 @@ class ColSearchBar(QWidget):
         2) If it happens to contain the current profile name, the user has switched profiles.
         """
         return (
-                self.other_profile_names_combo.count() == 0
-                or self.other_profile_names_combo.findText(self.mw.pm.name) != -1
+            self.other_profile_names_combo.count() == 0
+            or self.other_profile_names_combo.findText(self.mw.pm.name) != -1
         )
 
     def set_profile_names(self, other_profile_names: list[str]):
         """
         Populate profile selector with a list of profile names, excluding the current profile.
         """
-        assert (self.mw.pm.name not in other_profile_names)
+        assert self.mw.pm.name not in other_profile_names
         self.other_profile_names_combo.clear()
         self.other_profile_names_combo.addItems(other_profile_names)
 
@@ -82,15 +82,15 @@ class ColSearchBar(QWidget):
         self.setLayout(layout := QVBoxLayout())
         layout.addLayout(self._make_other_profile_settings_box())
         layout.addLayout(self._make_filter_row())
-        self.search_term_edit.setPlaceholderText('<text to filter by>')
+        self.search_term_edit.setPlaceholderText("<text to filter by>")
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.focus()
 
     def _make_other_profile_settings_box(self) -> QLayout:
         layout = QHBoxLayout()
-        layout.addWidget(QLabel('Import From Profile:'))
+        layout.addWidget(QLabel("Import From Profile:"))
         layout.addWidget(self.other_profile_names_combo)
-        layout.addWidget(QLabel('Deck:'))
+        layout.addWidget(QLabel("Deck:"))
         layout.addWidget(self.other_profile_deck_combo)
         return layout
 
@@ -146,5 +146,5 @@ def main():
     sys.exit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

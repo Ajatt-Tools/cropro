@@ -8,11 +8,11 @@ from aqt import mw, gui_hooks
 
 from .config import config
 
-ADDON_NAME = 'Cross Profile Search and Import'
-DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, 'cropro.log')
+ADDON_NAME = "Cross Profile Search and Import"
+DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, "cropro.log")
 ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
-WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, 'web')
-WINDOW_STATE_FILE_PATH = os.path.join(ADDON_DIR_PATH, 'user_files', 'window_state.json')
+WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
+WINDOW_STATE_FILE_PATH = os.path.join(ADDON_DIR_PATH, "user_files", "window_state.json")
 
 
 class LogDebug:
@@ -28,13 +28,13 @@ class LogDebug:
         gui_hooks.profile_will_close.append(self.close)
 
     def write(self, msg: str) -> None:
-        print('CroPro debug:', str(msg))
-        if not config['enable_debug_log']:
+        print("CroPro debug:", str(msg))
+        if not config.enable_debug_log:
             return
         if not self._logfile:
             print(f'CroPro debug: opening log file "{DEBUG_LOG_FILE_PATH}"')
-            self._logfile = open(DEBUG_LOG_FILE_PATH, 'a')
-        self._logfile.write(str(msg) + '\n')
+            self._logfile = open(DEBUG_LOG_FILE_PATH, "a")
+        self._logfile.write(str(msg) + "\n")
         self._logfile.flush()
 
     def __call__(self, *args, **kwargs):

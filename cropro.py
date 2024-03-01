@@ -25,7 +25,14 @@ from anki.decks import DeckId
 from anki.models import NotetypeDict
 from aqt.qt import *
 from aqt.utils import (
-    showInfo, disable_help_button, restoreGeom, saveGeom, openHelp, tooltip, openLink, showWarning,
+    showInfo,
+    disable_help_button,
+    restoreGeom,
+    saveGeom,
+    openHelp,
+    tooltip,
+    openLink,
+    showWarning,
     showCritical,
 )
 
@@ -52,6 +59,7 @@ logDebug = LogDebug()
 # UI layout
 #############################################################################
 
+
 class MainDialogUI(QMainWindow):
     name = "cropro_dialog"
 
@@ -63,8 +71,8 @@ class MainDialogUI(QMainWindow):
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
         self.current_profile_deck_combo = DeckCombo()
-        self.edit_button = CroProPushButton('Edit')
-        self.import_button = CroProPushButton('Import')
+        self.edit_button = CroProPushButton("Edit")
+        self.import_button = CroProPushButton("Import")
         self.note_list = NoteList()
         self.note_type_selection_combo = CroProComboBox()
         self.init_ui()
@@ -88,11 +96,11 @@ class MainDialogUI(QMainWindow):
 
     def make_input_row(self) -> QLayout:
         import_row = QHBoxLayout()
-        import_row.addWidget(QLabel('Into Profile:'))
+        import_row.addWidget(QLabel("Into Profile:"))
         import_row.addWidget(self.into_profile_label)
-        import_row.addWidget(QLabel('Deck:'))
+        import_row.addWidget(QLabel("Deck:"))
         import_row.addWidget(self.current_profile_deck_combo)
-        import_row.addWidget(QLabel('Map to Note Type:'))
+        import_row.addWidget(QLabel("Map to Note Type:"))
         import_row.addWidget(self.note_type_selection_combo)
         import_row.addWidget(self.edit_button)
         import_row.addWidget(self.import_button)
@@ -120,16 +128,16 @@ class WindowState:
         self._load()
         for key, widget in self._map.items():
             self._state[mw.pm.name][key] = widget.currentText()
-        with open(self._json_filepath, 'w', encoding='utf8') as of:
+        with open(self._json_filepath, "w", encoding="utf8") as of:
             json.dump(self._state, of, indent=4, ensure_ascii=False)
         saveGeom(self._window, self._window.name)
-        logDebug(f'saved window state.')
+        logDebug(f"saved window state.")
 
     def _load(self) -> bool:
         if self._state:
             return True
         elif os.path.isfile(self._json_filepath):
-            with open(self._json_filepath, encoding='utf8') as f:
+            with open(self._json_filepath, encoding="utf8") as f:
                 self._state.update(json.load(f))
             return True
         else:
@@ -157,8 +165,8 @@ class MainDialog(MainDialogUI):
     def setup_menubar(self):
         menu_bar = self.menuBar()
 
-        options_menu = menu_bar.addMenu('&Options')
-        help_menu = menu_bar.addMenu('&Help')
+        options_menu = menu_bar.addMenu("&Options")
+        help_menu = menu_bar.addMenu("&Help")
 
         options_menu.addAction("Options", self._open_cropro_settings)
 
@@ -181,7 +189,7 @@ class MainDialog(MainDialogUI):
 
     def show_target_note_fields(self):
         if note_type := self.get_target_note_type():
-            names = '\n'.join(f"* {name}" for name in mw.col.models.field_names(note_type))
+            names = "\n".join(f"* {name}" for name in mw.col.models.field_names(note_type))
             showInfo(
                 text=f"## Target note type has fields:\n\n{names}",
                 textFormat="markdown",
@@ -213,7 +221,7 @@ class MainDialog(MainDialogUI):
         if self.search_bar.needs_to_repopulate_profile_names():
             self.populate_other_profile_names()
         self.open_other_col()
-        self.into_profile_label.setText(mw.pm.name or 'Unknown')
+        self.into_profile_label.setText(mw.pm.name or "Unknown")
         self.window_state.restore()
         self._activate_enabled_search_bar()
 
@@ -222,7 +230,7 @@ class MainDialog(MainDialogUI):
 
         other_profile_names: list[str] = get_other_profile_names()
         if not other_profile_names:
-            msg: str = 'This add-on only works if you have multiple profiles.'
+            msg: str = "This add-on only works if you have multiple profiles."
             showInfo(msg)
             logDebug(msg)
             self.hide()
@@ -255,7 +263,12 @@ class MainDialog(MainDialogUI):
 
     def populate_other_profile_decks(self):
         logDebug("populating other profile decks...")
-        self.search_bar.set_decks([self.other_col.col_name_and_id(), *self.other_col.deck_names_and_ids(), ])
+        self.search_bar.set_decks(
+            [
+                self.other_col.col_name_and_id(),
+                *self.other_col.deck_names_and_ids(),
+            ]
+        )
 
     def perform_remote_search(self, search_text: str):
         """
@@ -270,9 +283,9 @@ class MainDialog(MainDialogUI):
         notes = self.web_search_client.search_notes(self.remote_search_bar.get_request_args())
 
         self.note_list.set_notes(
-            notes[:config.max_displayed_notes],
-            hide_fields=config['hidden_fields'],
-            previewer_enabled=config['preview_on_right_side'],
+            notes[: config.max_displayed_notes],
+            hide_fields=config.hidden_fields,
+            previewer_enabled=config.preview_on_right_side,
         )
 
         self.search_result_label.set_search_result(notes, config.max_displayed_notes)
@@ -294,9 +307,9 @@ class MainDialog(MainDialogUI):
         note_ids = self.other_col.find_notes(self.search_bar.current_deck(), search_text)
 
         self.note_list.set_notes(
-            map(self.other_col.get_note, note_ids[:config.max_displayed_notes]),
-            hide_fields=config['hidden_fields'],
-            previewer_enabled=config['preview_on_right_side'],
+            map(self.other_col.get_note, note_ids[: config.max_displayed_notes]),
+            hide_fields=config.hidden_fields,
+            previewer_enabled=config.preview_on_right_side,
         )
 
         self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
@@ -308,7 +321,7 @@ class MainDialog(MainDialogUI):
         return self.current_profile_deck_combo.currentData()
 
     def do_import(self):
-        logDebug('beginning import')
+        logDebug("beginning import")
 
         # get selected notes
         notes = self.note_list.selected_notes()
@@ -316,7 +329,7 @@ class MainDialog(MainDialogUI):
         # clear the selection
         self.note_list.clear_selection()
 
-        logDebug(f'importing {len(notes)} notes')
+        logDebug(f"importing {len(notes)} notes")
 
         try:
             results = import_notes(
@@ -335,6 +348,7 @@ class MainDialog(MainDialogUI):
             self.status_bar.set_import_status(results)
 
         mw.reset()
+        logDebug("import finished")
 
     def new_edit_win(self):
         if len(selected_notes := self.note_list.selected_notes()) > 0:
@@ -364,6 +378,7 @@ class MainDialog(MainDialogUI):
 ######################################################################
 # Entry point
 ######################################################################
+
 
 def init():
     # init dialog

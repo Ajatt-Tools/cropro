@@ -1,7 +1,6 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org> and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from aqt import mw
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
@@ -17,7 +16,7 @@ def make_checkboxes() -> dict[str, QCheckBox]:
 
 
 class CroProSettingsDialog(QDialog):
-    name = 'cropro_settings_dialog'
+    name = "cropro_settings_dialog"
 
     def __init__(self, *args, **kwargs) -> None:
         QDialog.__init__(self, *args, **kwargs)
@@ -117,9 +116,10 @@ class CroProSettingsDialog(QDialog):
         return super().done(result)
 
     def accept(self) -> None:
-        config['max_displayed_notes'] = self.max_notes_edit.value()
-        config['exported_tag'] = self.tag_edit.text()
-        config['hidden_fields'] = self.hidden_fields_box.values()
+        config.max_displayed_notes = self.max_notes_edit.value()
+        config.tag_original_notes = self.tag_edit.text()
+        config.hidden_fields = self.hidden_fields_box.values()
+        config.timeout_seconds = self.web_timeout_spinbox.value()
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
         config.write_config()
@@ -127,5 +127,7 @@ class CroProSettingsDialog(QDialog):
 
 
 def open_cropro_settings(parent: QWidget):
+    from aqt import mw
+
     dialog = CroProSettingsDialog(parent=(parent or mw))
     dialog.exec()

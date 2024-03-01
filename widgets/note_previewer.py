@@ -18,7 +18,7 @@ from aqt.qt import *
 from aqt.webview import AnkiWebView
 
 from ..ajt_common.media import find_sounds, find_images
-from ..remote_search import RemoteNote, IMAGE_FIELD_NAME, AUDIO_FIELD_NAME, RemoteMediaInfo
+from ..remote_search import RemoteNote, RemoteMediaInfo
 
 RE_DANGEROUS = re.compile(r'[\'"<>]+')
 QUOTE_SAFE = ":/%"
@@ -46,10 +46,10 @@ def format_remote_image(image: RemoteMediaInfo) -> str:
 
 def format_local_images(note: Note, image_file_names: Iterable[str]) -> str:
     def image_as_base64_src(file_name: str) -> str:
-        with open(os.path.join(note.col.media.dir(), file_name), 'rb') as f:
-            return f'data:image/{filetype(file_name)};base64,{img2b64(f.read())}'
+        with open(os.path.join(note.col.media.dir(), file_name), "rb") as f:
+            return f"data:image/{filetype(file_name)};base64,{img2b64(f.read())}"
 
-    return ''.join(
+    return "".join(
         f'<img alt="image:{name_attr_strip(file_name)}" src="{image_as_base64_src(file_name)}"/>'
         for file_name in image_file_names
     )
@@ -58,7 +58,7 @@ def format_local_images(note: Note, image_file_names: Iterable[str]) -> str:
 def format_remote_audio(audio: RemoteMediaInfo):
     if not audio.is_valid_url():
         return ""
-    element_id = f'cropro__remote_{urllib.parse.quote(audio.file_name)}'
+    element_id = f"cropro__remote_{urllib.parse.quote(audio.file_name)}"
     return """
     <audio preload="auto" id="{}" src="{}"></audio>
     <button class="cropro__play_button" title="{}" onclick='{}'></button>
@@ -71,16 +71,22 @@ def format_remote_audio(audio: RemoteMediaInfo):
 
 
 def format_local_audio(audio_files: Iterable[str]) -> str:
-    return ''.join(
+    return "".join(
         """
         <button class="cropro__play_button" title="{}" onclick='pycmd("cropro__play_file:{}");'></button>
-        """.format(_(f"Play file: {name_attr_strip(file_name)}"), urllib.parse.quote(file_name), )
+        """.format(
+            _(f"Play file: {name_attr_strip(file_name)}"),
+            urllib.parse.quote(file_name),
+        )
         for file_name in audio_files
     )
 
 
 class NotePreviewer(AnkiWebView):
     """Previews a note in a Form Layout using a webview."""
+
+    assert mw, "Anki must be initialized."
+
     _web_relpath = f"/_addons/{mw.addonManager.addonFromModule(__name__)}/web"
     _css_relpath = f"{_web_relpath}/previewer.css"
     _js_relpath = f"{_web_relpath}/previewer.js"
@@ -107,8 +113,12 @@ class NotePreviewer(AnkiWebView):
         self._note = note
         self.stdHtml(
             body=f"<main>{self._generate_html_for_note(note)}</main>",
-            js=[self._js_relpath, ],
-            css=[self._css_relpath, ]
+            js=[
+                self._js_relpath,
+            ],
+            css=[
+                self._css_relpath,
+            ],
         )
         self.show()
 
@@ -130,19 +140,19 @@ class NotePreviewer(AnkiWebView):
                 markup.write(self._create_html_for_remote_field(field_name, field_content))
             else:
                 markup.write(self._create_html_for_field(field_content))
-            markup.write('</div>')
+            markup.write("</div>")
         return markup.getvalue()
 
     def _create_html_for_remote_field(self, field_name: str, field_content: str) -> str:
         """Creates the content for the previewer showing the remote note's field."""
         assert self._is_remote_note(), "Remote note required."
         markup = io.StringIO()
-        if field_name == IMAGE_FIELD_NAME:
+        if field_name == self._note.image.field_name:
             markup.write(format_remote_image(self._note.image))
-        if field_name == AUDIO_FIELD_NAME:
+        if field_name == self._note.audio.field_name:
             markup.write(format_remote_audio(self._note.audio))
         if text := html_to_text_line(field_content):
-            markup.write(f'<div>{html_to_text_line(text)}</div>')
+            markup.write(f"<div>{html_to_text_line(text)}</div>")
         return markup.getvalue()
 
     def _create_html_for_field(self, field_content: str) -> str:
@@ -161,10 +171,14 @@ class NotePreviewer(AnkiWebView):
         """Play audio files if a play button was pressed. Works with local files."""
         from aqt import sound
 
-        if cmd.startswith('cropro__play_file:'):
+        if cmd.startswith("cropro__play_file:"):
             assert self._is_local_note(), "Only local files can be played with av_player."
-            file_name = os.path.basename(urllib.parse.unquote(cmd.split(':', maxsplit=1)[-1]))
+            file_name = os.path.basename(urllib.parse.unquote(cmd.split(":", maxsplit=1)[-1]))
             file_path = os.path.join(self._note.col.media.dir(), file_name)
-            return sound.av_player.play_tags([SoundOrVideoTag(file_path), ])
+            return sound.av_player.play_tags(
+                [
+                    SoundOrVideoTag(file_path),
+                ]
+            )
         else:
             return self.defaultOnBridgeCmd(cmd)

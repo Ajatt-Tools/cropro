@@ -12,12 +12,7 @@ from aqt.qt import *
 from .collection_manager import CollectionManager
 from .common import LogDebug
 from .config import config
-from .note_importer import (
-    copy_media_files,
-    remove_media_files,
-    import_card_info,
-    get_matching_model
-)
+from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
 from .widgets.note_list import NoteList
 from .widgets.status_bar import StatusBar
 from .widgets.utils import DeckCombo, CroProComboBox
@@ -35,7 +30,7 @@ class CropProWindow(Protocol):
 
 def current_add_dialog() -> Optional[addcards.AddCards]:
     # noinspection PyProtectedMember
-    return aqt.dialogs._dialogs['AddCards'][1]
+    return aqt.dialogs._dialogs["AddCards"][1]
 
 
 class AddDialogLauncher:
@@ -52,7 +47,7 @@ class AddDialogLauncher:
         if not isinstance(other_note, Note):
             return 0
         if other_note is None:
-            self.add_window = aqt.dialogs.open('AddCards', mw)
+            self.add_window = aqt.dialogs.open("AddCards", mw)
             self.add_window.activateWindow()
             return self.add_window.editor.note.id
 
@@ -60,7 +55,7 @@ class AddDialogLauncher:
         logDebug("Preparing add window")
 
         if self.cropro.current_profile_deck_combo.currentData() is None:
-            raise Exception(f'deck was not found: {self.cropro.current_profile_deck_combo.currentData()}')
+            raise Exception(f"deck was not found: {self.cropro.current_profile_deck_combo.currentData()}")
 
         mw.col.decks.select(self.cropro.current_profile_deck_combo.currentData())
 
@@ -79,25 +74,26 @@ class AddDialogLauncher:
         # Copy media just yet, so it can still be deleted later but causes no unwanted behaviour
         copy_media_files(self.new_note, other_note)
 
-        if 'tags' in other_note and config.get('copy_tags'):
-            self.new_note.tags = [tag for tag in other_note.tags if tag != 'leech']
+        if "tags" in other_note and config.copy_tags:
+            self.new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
 
-        if tag := config.tag_original_notes():
-            other_note.add_tag(tag)
+        if config.tag_original_notes:
+            assert other_note.id, "Other note must be in the database."
+            other_note.add_tag(config.tag_original_notes)
             other_note.flush()
 
         def open_window():
-            self.add_window = aqt.dialogs.open('AddCards', mw)
+            self.add_window = aqt.dialogs.open("AddCards", mw)
 
             self.add_window.editor.set_note(self.new_note)
 
             self.add_window.activateWindow()
             # Modify Bottom Button Bar against confusion
-            self.add_window.addButton.setText('Import')
+            self.add_window.addButton.setText("Import")
             self.add_window.historyButton.hide()
-            self.add_window.helpButton.setText('Anki Help')
+            self.add_window.helpButton.setText("Anki Help")
 
-            aqt.dialogs.open('AddCards', mw)
+            aqt.dialogs.open("AddCards", mw)
 
             self.add_window.setAndFocusNote(self.add_window.editor.note)
 
@@ -118,7 +114,7 @@ class AddDialogLauncher:
     def on_add_import(self, problem: Optional[str], note: Note) -> str:
         if self.other_note and current_add_dialog() and current_add_dialog() is self.add_window:
             logDebug("Importing edited note")
-            if config['copy_card_data']:
+            if config.copy_card_data:
                 import_card_info(note, self.other_note, self.cropro.other_col.col)
             self.cropro.note_list.clear_selection()
             self.cropro.status_bar.set_import_count(success_count=1)

@@ -8,12 +8,13 @@ class ItemBox(QWidget):
     """Displays tag-like labels with × icons. Pressing on the × deletes the tag."""
 
     class ItemButton(QPushButton):
-        _close_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), 'img', 'close.png')))
+        _close_icon = QIcon(QPixmap(os.path.join(os.path.dirname(__file__), "img", "close.png")))
 
-        def __init__(self, item_box: 'ItemBox', text: str):
+        def __init__(self, item_box: "ItemBox", text: str):
             super().__init__(text)
             self.item_box = item_box
-            self.setStyleSheet('''
+            self.setStyleSheet(
+                """
                 QPushButton {
                     background-color: #eef0f2;
                     color: #292c31;
@@ -21,7 +22,8 @@ class ItemBox(QWidget):
                     padding: 3px 6px;
                     border: 0px;
                 }
-            ''')
+            """
+            )
             self.setIcon(self._close_icon)
             self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
             qconnect(self.clicked, lambda: self.item_box.remove_item(text))
@@ -55,9 +57,9 @@ class ItemBox(QWidget):
             widget.deleteLater()
 
     def new_item(self, edit: QLineEdit) -> None:
-        separators = (',', ' ', ';')
+        separators = (",", " ", ";")
         if (text := edit.text()).endswith(separators):
-            text = text.strip(''.join(separators))
+            text = text.strip("".join(separators))
             if text and text not in self.items:
                 self._add_item(text)
-            edit.setText('')
+            edit.setText("")

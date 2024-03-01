@@ -19,8 +19,8 @@ class ColoredCounter(QLabel):
         super().__init__()
         self.setStyleSheet("QLabel { color: %s; }" % color)
         self._description = description
-        assert color.startswith('#')
-        assert all(s.count('%d') == 1 for s in description)
+        assert color.startswith("#")
+        assert all(s.count("%d") == 1 for s in description)
         # by default, the counter is not visible.
         self.hide()
 
@@ -62,7 +62,6 @@ class StatusBar(QHBoxLayout):
         self._dupes_label.set_count(results.duplicates)
 
     def set_import_count(self, success_count: int = 0, dupe_count: int = 0):
-        self.set_import_status(ImportResultCounter({
-            ImportResult.success: success_count,
-            ImportResult.dupe: dupe_count
-        }))
+        self.set_import_status(
+            ImportResultCounter({ImportResult.success: success_count, ImportResult.dupe: dupe_count})
+        )
