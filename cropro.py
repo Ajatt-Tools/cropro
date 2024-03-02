@@ -202,9 +202,7 @@ class MainDialog(MainDialogUI):
         help_menu.addAction("Create sentence bank: subs2srs", lambda: openLink(SUBS2SRS_LINK))
 
     def _send_query_to_browser(self):
-        search_text = (
-            self.search_bar.search_text() if self.search_bar.isVisible() else self.remote_search_bar.search_text()
-        )
+        search_text = self.visible_search_bar().search_text()
         if not search_text:
             return tooltip("Nothing to do.", parent=self)
         browser = aqt.dialogs.open("Browser", mw)
