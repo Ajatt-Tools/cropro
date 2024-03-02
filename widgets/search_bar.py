@@ -75,7 +75,7 @@ class ColSearchBar(QWidget):
         """
         return self.other_profile_deck_combo.set_decks(decks)
 
-    def focus(self):
+    def set_focus(self):
         self.search_term_edit.setFocus()
 
     def _setup_layout(self) -> None:
@@ -84,7 +84,7 @@ class ColSearchBar(QWidget):
         layout.addLayout(self._make_filter_row())
         self.search_term_edit.setPlaceholderText("<text to filter by>")
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
-        self.focus()
+        self.set_focus()
 
     def _make_other_profile_settings_box(self) -> QLayout:
         layout = QHBoxLayout()

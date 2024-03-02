@@ -101,7 +101,7 @@ class RemoteSearchBar(QWidget):
     def get_request_url(self) -> str:
         return get_request_url(self.get_request_args())
 
-    def focus(self):
+    def set_focus(self):
         self._keyword_edit.setFocus()
 
     def _setup_layout(self) -> None:
@@ -110,7 +110,7 @@ class RemoteSearchBar(QWidget):
         layout.addLayout(self._make_filter_row())
         self._keyword_edit.setPlaceholderText("<text to search>")
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
-        self.focus()
+        self.set_focus()
 
     def _make_search_settings_box(self) -> QLayout:
         layout = QHBoxLayout()

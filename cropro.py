@@ -396,11 +396,11 @@ class MainDialog(MainDialogUI):
     def _activate_enabled_search_bar(self):
         if config.search_the_web:
             self.remote_search_bar.show()
-            self.remote_search_bar.focus()
+            self.remote_search_bar.set_focus()
             self.search_bar.hide()
         else:
             self.search_bar.show()
-            self.search_bar.focus()
+            self.search_bar.set_focus()
             self.remote_search_bar.hide()
 
     def _open_cropro_settings(self):
