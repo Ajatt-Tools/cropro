@@ -170,10 +170,23 @@ class MainDialog(MainDialogUI):
         self.connect_elements()
         self.setup_menubar()
         disable_help_button(self)
+        self._add_global_shortcuts()
+
+    def _add_global_shortcuts(self):
         self.addAction(
             "Focus search bar",
-            QKeySequence("Ctrl+l"),
+            QKeySequence("Ctrl+k"),
             lambda: self.visible_search_bar().set_focus(),
+        )
+        self.addAction(
+            "Import",
+            QKeySequence("Ctrl+i"),
+            lambda: self.import_button.click(),
+        )
+        self.addAction(
+            "Select list",
+            QKeySequence("Ctrl+l"),
+            lambda: self.note_list.set_focus(),
         )
 
     def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchBar]:
