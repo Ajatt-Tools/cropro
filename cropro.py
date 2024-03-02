@@ -171,6 +171,7 @@ class MainDialog(MainDialogUI):
         self.setup_menubar()
         disable_help_button(self)
         self._add_global_shortcuts()
+        self._add_tooltips()
 
     def _add_global_shortcuts(self):
         self.addAction(
@@ -188,6 +189,10 @@ class MainDialog(MainDialogUI):
             QKeySequence("Ctrl+l"),
             lambda: self.note_list.set_focus(),
         )
+
+    def _add_tooltips(self):
+        self.import_button.setToolTip("Add a new card (Ctrl+I)")
+        self.edit_button.setToolTip("Edit card before adding")
 
     def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchBar]:
         w = self.remote_search_bar if config.search_the_web else self.search_bar
