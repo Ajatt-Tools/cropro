@@ -170,6 +170,11 @@ class MainDialog(MainDialogUI):
         self.connect_elements()
         self.setup_menubar()
         disable_help_button(self)
+        self.addAction(
+            "Focus search bar",
+            QKeySequence("Ctrl+l"),
+            lambda: self.visible_search_bar().set_focus(),
+        )
 
     def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchBar]:
         w = self.remote_search_bar if config.search_the_web else self.search_bar
