@@ -51,6 +51,9 @@ class NoteList(QWidget):
         else:
             self._previewer.load_note(current.data(self._role))
 
+    def set_focus(self) -> None:
+        return self._note_list.setFocus()
+
     def selected_notes(self) -> Sequence[Note]:
         return [item.data(self._role) for item in self._note_list.selectedItems()]
 
