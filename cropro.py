@@ -198,18 +198,18 @@ class MainDialog(MainDialogUI):
         menu_bar = self.menuBar()
 
         # Options menu
-        options_menu = menu_bar.addMenu("&Options")
+        tools_menu = menu_bar.addMenu("&Tools")
 
-        options_menu.addAction("Add-on Options", self._open_cropro_settings)
+        tools_menu.addAction("Add-on Options", self._open_cropro_settings)
 
-        toggle_web_search_act = options_menu.addAction("Search the web")
+        toggle_web_search_act = tools_menu.addAction("Search the web")
         toggle_web_search_act.setCheckable(True)
         toggle_web_search_act.setChecked(config.search_the_web)
         qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
 
-        options_menu.addAction("Send query to Browser", self._send_query_to_browser)
+        tools_menu.addAction("Send query to Browser", self._send_query_to_browser)
 
-        close_act = options_menu.addAction("Close", self.close)
+        close_act = tools_menu.addAction("Close", self.close)
         close_act.setShortcut(QKeySequence("Ctrl+q"))
 
         # Help menu
