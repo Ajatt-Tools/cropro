@@ -171,6 +171,11 @@ class MainDialog(MainDialogUI):
         self.setup_menubar()
         disable_help_button(self)
 
+    def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchBar]:
+        w = self.remote_search_bar if config.search_the_web else self.search_bar
+        assert w.isVisible(), "Widget must be visible."
+        return w
+
     def setup_menubar(self):
         menu_bar = self.menuBar()
 
