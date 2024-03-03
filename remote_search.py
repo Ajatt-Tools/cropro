@@ -166,6 +166,8 @@ class CroProWebSearchClient:
         return self._client.stream_content(self._get(url))
 
     def search_notes(self, search_args: dict[str, str]) -> list[RemoteNote]:
+        if not search_args:
+            return []
         resp = self._get(get_request_url(search_args))
         examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
         return [RemoteNote.from_json(example) for example in examples]
