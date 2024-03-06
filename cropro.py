@@ -396,9 +396,10 @@ class MainDialog(MainDialogUI):
                 web_client=self.web_search_client,
             )
         except NoteTypeUnavailable:
-            showCritical(
+            showInfo(
                 title="Note importer",
                 text="Note type must be assigned when importing from the Internet.",
+                type="critical",
             )
         else:
             self.status_bar.set_import_status(results)
