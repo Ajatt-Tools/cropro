@@ -210,6 +210,9 @@ def import_notes(
     web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
     results = ImportResultCounter()
 
+    if config.search_the_web and model_id == NameId.none_type().id:
+        raise NoteTypeUnavailable()
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
             executor.submit(

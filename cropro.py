@@ -160,6 +160,17 @@ class WindowState:
         restoreGeom(self._window, self._window.name, adjustSize=True)
 
 
+def nag_about_note_type() -> int:
+    return showInfo(
+        title="Note importer",
+        text="Note type must be assigned when importing from the Internet.\n\n"
+             "Notes downloaded from the Internet do not come with a built-in note type. "
+             f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK}).",
+        type="critical",
+        textFormat="markdown",
+    )
+
+
 class MainDialog(MainDialogUI):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -396,14 +407,8 @@ class MainDialog(MainDialogUI):
                 web_client=self.web_search_client,
             )
         except NoteTypeUnavailable:
-            showInfo(
-                title="Note importer",
-                text="Note type must be assigned when importing from the Internet.\n"
-                     "Notes downloaded from the Internet do not come with a built-in note type.\n"
-                     f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK}).",
-                type="critical",
-                textFormat="markdown",
-            )
+            nag_about_note_type()
+            return
         else:
             self.status_bar.set_import_status(results)
 
