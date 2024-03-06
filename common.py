@@ -10,17 +10,22 @@ from .config import config
 
 ADDON_NAME = "Cross Profile Search and Import"
 DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, "cropro.log")
-ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
-WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
-WINDOW_STATE_FILE_PATH = os.path.join(ADDON_DIR_PATH, "user_files", "window_state.json")
-CLOSE_ICON_PATH = os.path.join(ADDON_DIR_PATH, "img", "close.png")
 SUBS2SRS_LINK = "https://aur.archlinux.org/packages/subs2srs"
 
-for file in (WEB_DIR_PATH,):
-    assert os.path.isdir(file), f"Path must be valid: {file}"
+ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
+WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
+USER_FILES_DIR_PATH = os.path.join(ADDON_DIR_PATH, "user_files")
+IMG_DIR_PATH = os.path.join(ADDON_DIR_PATH, "img")
 
-for file in (WINDOW_STATE_FILE_PATH, CLOSE_ICON_PATH):
-    assert os.path.isfile(file), f"Path must be valid: {file}"
+WINDOW_STATE_FILE_PATH = os.path.join(USER_FILES_DIR_PATH, "window_state.json")
+CLOSE_ICON_PATH = os.path.join(IMG_DIR_PATH, "close.png")
+PLAY_ICON_PATH = os.path.join(IMG_DIR_PATH, "play-button.png")
+
+for directory in (WEB_DIR_PATH, USER_FILES_DIR_PATH, IMG_DIR_PATH):
+    assert os.path.isdir(directory), f"Path to directory must be valid: {directory}"
+
+for file in (CLOSE_ICON_PATH, PLAY_ICON_PATH):
+    assert os.path.isfile(file), f"Path to file must be valid: {file}"
 
 
 class LogDebug:
