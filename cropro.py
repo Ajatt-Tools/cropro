@@ -398,8 +398,11 @@ class MainDialog(MainDialogUI):
         except NoteTypeUnavailable:
             showInfo(
                 title="Note importer",
-                text="Note type must be assigned when importing from the Internet.",
+                text="Note type must be assigned when importing from the Internet.\n"
+                     "Notes downloaded from the Internet do not come with a built-in note type.\n"
+                     f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK}).",
                 type="critical",
+                textFormat="markdown",
             )
         else:
             self.status_bar.set_import_status(results)

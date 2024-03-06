@@ -11,6 +11,7 @@ from .config import config
 ADDON_NAME = "Cross Profile Search and Import"
 DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, "cropro.log")
 SUBS2SRS_LINK = "https://aur.archlinux.org/packages/subs2srs"
+EXAMPLE_DECK_LINK = "https://tatsumoto.neocities.org/blog/setting-up-anki.html#import-an-example-mining-deck"
 
 ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
 WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
