@@ -2,7 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
-from typing import Optional, NamedTuple
+from typing import Optional, NamedTuple, Iterable
 
 from anki.collection import Collection
 from anki.notes import NoteId
@@ -20,6 +20,10 @@ class NameId(NamedTuple):
 
 def sorted_decks_and_ids(col: Collection) -> list[NameId]:
     return sorted(NameId(deck.name, deck.id) for deck in col.decks.all_names_and_ids())
+
+
+def note_type_names_and_ids(col: Collection) -> Iterable[NameId]:
+    return (NameId(note_type.name, note_type.id) for note_type in col.models.all_names_and_ids())
 
 
 def get_other_profile_names() -> list[str]:
