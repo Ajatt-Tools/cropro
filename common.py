@@ -19,7 +19,7 @@ IMG_DIR_PATH = os.path.join(ADDON_DIR_PATH, "img")
 
 WINDOW_STATE_FILE_PATH = os.path.join(USER_FILES_DIR_PATH, "window_state.json")
 CLOSE_ICON_PATH = os.path.join(IMG_DIR_PATH, "close.png")
-PLAY_ICON_PATH = os.path.join(IMG_DIR_PATH, "play-button.png")
+PLAY_ICON_PATH = os.path.join(IMG_DIR_PATH, "play-button.svg")
 
 for directory in (WEB_DIR_PATH, USER_FILES_DIR_PATH, IMG_DIR_PATH):
     assert os.path.isdir(directory), f"Path to directory must be valid: {directory}"
