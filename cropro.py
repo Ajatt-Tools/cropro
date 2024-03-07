@@ -22,7 +22,6 @@ import os.path
 from collections import defaultdict
 
 import aqt
-from anki.decks import DeckId
 from anki.models import NotetypeDict
 from aqt.qt import *
 from aqt.utils import (
@@ -34,12 +33,19 @@ from aqt.utils import (
     tooltip,
     openLink,
     showWarning,
-    showCritical,
 )
 
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
-from .collection_manager import CollectionManager, sorted_decks_and_ids, get_other_profile_names, NameId
+from .collection_manager import (
+    CollectionManager,
+    sorted_decks_and_ids,
+    get_other_profile_names,
+    NameId,
+    note_type_names_and_ids,
+    NO_MODEL,
+    WHOLE_COLLECTION,
+)
 from .common import *
 from .config import config
 from .edit_window import AddDialogLauncher
@@ -51,7 +57,7 @@ from .widgets.remote_search_bar import RemoteSearchBar
 from .widgets.search_bar import ColSearchBar
 from .widgets.search_result_label import SearchResultLabel
 from .widgets.status_bar import StatusBar
-from .widgets.utils import ProfileNameLabel, DeckCombo, CroProPushButton, CroProComboBox
+from .widgets.utils import ProfileNameLabel, NameIdComboBox, CroProPushButton, CroProComboBox
 
 logDebug = LogDebug()
 
@@ -71,11 +77,11 @@ class MainDialogUI(QMainWindow):
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
-        self.current_profile_deck_combo = DeckCombo()
+        self.current_profile_deck_combo = NameIdComboBox()
         self.edit_button = CroProPushButton("Edit")
         self.import_button = CroProPushButton("Import")
         self.note_list = NoteList()
-        self.note_type_selection_combo = CroProComboBox()
+        self.note_type_selection_combo = NameIdComboBox()
         self.init_ui()
 
     def init_ui(self):
@@ -175,8 +181,8 @@ def nag_about_note_type() -> int:
     return showInfo(
         title="Note importer",
         text="Note type must be assigned when importing from the Internet.\n\n"
-             "Notes downloaded from the Internet do not come with a built-in note type. "
-             f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK}).",
+        "Notes downloaded from the Internet do not come with a built-in note type. "
+        f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK}).",
         type="critical",
         textFormat="markdown",
     )
@@ -276,9 +282,9 @@ class MainDialog(MainDialogUI):
             )
 
     def get_target_note_type(self) -> Optional[NotetypeDict]:
-        selected_note_type_id = self.model_id()
-        if selected_note_type_id and selected_note_type_id > 0:
-            return mw.col.models.get(selected_note_type_id)
+        selected_note_type = self.current_model()
+        if selected_note_type.id and selected_note_type.id > 0:
+            return mw.col.models.get(selected_note_type.id)
 
     def connect_elements(self):
         qconnect(self.search_bar.selected_profile_changed, self.open_other_col)
@@ -313,10 +319,7 @@ class MainDialog(MainDialogUI):
         self.search_bar.set_profile_names(other_profile_names)
 
     def populate_note_type_selection_combo(self):
-        self.note_type_selection_combo.clear()
-        self.note_type_selection_combo.addItem(*NameId.none_type())
-        for note_type in mw.col.models.all_names_and_ids():
-            self.note_type_selection_combo.addItem(note_type.name, note_type.id)
+        self.note_type_selection_combo.set_items((NO_MODEL, *note_type_names_and_ids(mw.col)))
 
     def open_other_col(self):
         selected_profile_name = self.search_bar.selected_profile_name()
@@ -333,13 +336,13 @@ class MainDialog(MainDialogUI):
 
     def populate_current_profile_decks(self):
         logDebug("populating current profile decks...")
-        self.current_profile_deck_combo.set_decks(sorted_decks_and_ids(mw.col))
+        self.current_profile_deck_combo.set_items(sorted_decks_and_ids(mw.col))
 
     def populate_other_profile_decks(self):
         logDebug("populating other profile decks...")
         self.search_bar.set_decks(
             [
-                self.other_col.col_name_and_id(),
+                WHOLE_COLLECTION,  # the "whole collection" option goes first
                 *self.other_col.deck_names_and_ids(),
             ]
         )
@@ -392,13 +395,13 @@ class MainDialog(MainDialogUI):
 
         self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
 
-    def model_id(self) -> int:
-        return self.note_type_selection_combo.currentData()
+    def current_model(self) -> NameId:
+        return self.note_type_selection_combo.current_item()
 
-    def deck_id(self) -> DeckId:
-        return self.current_profile_deck_combo.currentData()
+    def current_deck(self) -> NameId:
+        return self.current_profile_deck_combo.current_item()
 
-    def do_import(self):
+    def do_import(self) -> None:
         logDebug("beginning import")
 
         # get selected notes
@@ -413,8 +416,8 @@ class MainDialog(MainDialogUI):
             results = import_notes(
                 notes,
                 other_col=self.other_col.col,
-                model_id=self.model_id(),
-                deck_id=self.deck_id(),
+                model=self.current_model(),
+                deck=self.current_deck(),
                 web_client=self.web_search_client,
             )
         except NoteTypeUnavailable:

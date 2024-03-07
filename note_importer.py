@@ -21,10 +21,9 @@ from aqt import gui_hooks
 from aqt import mw
 from aqt.qt import *
 
-from .collection_manager import NameId
+from .collection_manager import NameId, NO_MODEL
 from .config import config
 from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
-import enum
 
 
 @enum.unique
@@ -90,10 +89,10 @@ class NoteTypeUnavailable(RuntimeError):
     pass
 
 
-def get_matching_model(target_model_id: int, reference_model: Optional[NoteType]) -> NoteType:
-    if target_model_id != NameId.none_type().id:
+def get_matching_model(target_model: NameId, reference_model: Optional[NoteType]) -> NoteType:
+    if target_model != NO_MODEL:
         # use existing note type (even if its name or fields are different)
-        return mw.col.models.get(target_model_id)
+        return mw.col.models.get(target_model.id)
 
     if reference_model:
         # find a model in current profile that matches the name of model from other profile
@@ -164,13 +163,13 @@ def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWeb
 def import_note(
     other_note: Union[Note, RemoteNote],
     other_col: Collection,
-    model_id: int,
-    deck_id: DeckId,
+    model: NameId,
+    deck: NameId,
     web_client: CroProWebSearchClient,
 ) -> NoteCreateResult:
-    matching_model = get_matching_model(model_id, other_note.note_type())
+    matching_model = get_matching_model(model, other_note.note_type())
     new_note = Note(mw.col, matching_model)
-    new_note.note_type()["did"] = deck_id
+    new_note.note_type()["did"] = deck.id
 
     for key in new_note.keys():
         if key in other_note:
@@ -203,14 +202,14 @@ def import_note(
 def import_notes(
     notes: Sequence[Union[Note, RemoteNote]],
     other_col: Collection,
-    model_id: int,
-    deck_id: DeckId,
+    model: NameId,
+    deck: NameId,
     web_client: CroProWebSearchClient,
 ) -> ImportResultCounter:
     web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
     results = ImportResultCounter()
 
-    if config.search_the_web and model_id == NameId.none_type().id:
+    if config.search_the_web and model == NO_MODEL:
         raise NoteTypeUnavailable()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -219,8 +218,8 @@ def import_notes(
                 import_note,
                 other_note=note,
                 other_col=other_col,
-                model_id=model_id,
-                deck_id=deck_id,
+                model=model,
+                deck=deck,
                 web_client=web_client,
             )
             for note in notes
@@ -228,7 +227,7 @@ def import_notes(
 
         for future in concurrent.futures.as_completed(futures):
             result: NoteCreateResult = future.result()
-            mw.col.add_note(result.note, deck_id)  # new_note has changed its id
+            mw.col.add_note(result.note, DeckId(deck.id))  # new_note has changed its id
             results[result.status] += 1
             if config.call_add_cards_hook:
                 gui_hooks.add_cards_did_add_note(result.note)
