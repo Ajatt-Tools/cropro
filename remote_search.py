@@ -5,6 +5,7 @@ import dataclasses
 import enum
 import itertools
 from typing import TypedDict, Optional
+from collections.abc import Sequence
 from collections.abc import Iterable
 
 import anki.httpclient
@@ -169,7 +170,7 @@ class CroProWebSearchClient:
     def download_media(self, url: str) -> bytes:
         return self._client.stream_content(self._get(url))
 
-    def search_notes(self, search_args: dict[str, str]) -> list[RemoteNote]:
+    def search_notes(self, search_args: dict[str, str]) -> Sequence[RemoteNote]:
         if not search_args:
             return []
         resp = self._get(get_request_url(search_args))
