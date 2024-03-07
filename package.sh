@@ -45,3 +45,4 @@ git submodule foreach 'git archive HEAD --prefix=$path/ --format=zip --output "$
 
 zipmerge ./"$zip_name" ./*.zip
 rm -- ./*.zip ./"$manifest" 2>/dev/null || true
+echo "Done."
