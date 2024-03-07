@@ -18,6 +18,11 @@ This add-on is a continuation of the original
 [Cross Profile Search and Import](https://ankiweb.net/shared/info/310394744)
 that hasn't been updated since 2019.
 
+## ![youtube](https://raw.githubusercontent.com/Ajatt-Tools/BrowserPlayButton/main/.github/youtube_logo.webp) videos
+
+* [Web search](https://www.youtube.com/watch?v=Kx0ydJPB84Q)
+* [Note previewer](https://www.youtube.com/watch?v=9eM4KdVuVHc)
+
 ## How to use
 
 Install the add-on from [AnkiWeb](https://ankiweb.net/shared/info/1772763629).
