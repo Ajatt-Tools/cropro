@@ -106,6 +106,9 @@ class RemoteNote:
 
     @staticmethod
     def note_type() -> None:
+        """
+        Remote notes do not have a note type.
+        """
         return None
 
     def keys(self):
