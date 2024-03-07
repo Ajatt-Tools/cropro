@@ -15,13 +15,13 @@ from .config import config
 from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
 from .widgets.note_list import NoteList
 from .widgets.status_bar import StatusBar
-from .widgets.utils import DeckCombo, CroProComboBox
+from .widgets.utils import NameIdComboBox, CroProComboBox
 
 logDebug = LogDebug()
 
 
 class CropProWindow(Protocol):
-    current_profile_deck_combo: DeckCombo
+    current_profile_deck_combo: NameIdComboBox
     note_type_selection_combo: CroProComboBox
     other_col: CollectionManager
     note_list: NoteList
@@ -43,9 +43,10 @@ class AddDialogLauncher:
         self.block_close_cb: bool = False
         gui_hooks.add_cards_will_add_note.append(self.on_add_import)
 
-    def create_window(self, other_note: Note = None) -> NoteId:
+    def create_window(self, other_note: Optional[Note] = None) -> NoteId:
         if not isinstance(other_note, Note):
-            return 0
+            return NoteId(0)
+
         if other_note is None:
             self.add_window = aqt.dialogs.open("AddCards", mw)
             self.add_window.activateWindow()
@@ -82,25 +83,10 @@ class AddDialogLauncher:
             other_note.add_tag(config.tag_original_notes)
             other_note.flush()
 
-        def open_window():
-            self.add_window = aqt.dialogs.open("AddCards", mw)
-
-            self.add_window.editor.set_note(self.new_note)
-
-            self.add_window.activateWindow()
-            # Modify Bottom Button Bar against confusion
-            self.add_window.addButton.setText("Import")
-            self.add_window.historyButton.hide()
-            self.add_window.helpButton.setText("Anki Help")
-
-            aqt.dialogs.open("AddCards", mw)
-
-            self.add_window.setAndFocusNote(self.add_window.editor.note)
-
         if current_add_dialog() is not None:
-            current_add_dialog().closeWithCallback(open_window)
+            current_add_dialog().closeWithCallback(self._open_window)
         else:
-            open_window()
+            self._open_window()
 
             def on_visibility_changed():
                 if not self.block_close_cb and self.new_note:
@@ -110,6 +96,21 @@ class AddDialogLauncher:
             qconnect(self.add_window.windowHandle().visibilityChanged, on_visibility_changed)
 
         return self.new_note.id
+
+    def _open_window(self):
+        self.add_window = aqt.dialogs.open("AddCards", mw)
+
+        self.add_window.editor.set_note(self.new_note)
+
+        self.add_window.activateWindow()
+        # Modify Bottom Button Bar against confusion
+        self.add_window.addButton.setText("Import")
+        self.add_window.historyButton.hide()
+        self.add_window.helpButton.setText("Anki Help")
+
+        aqt.dialogs.open("AddCards", mw)
+
+        self.add_window.setAndFocusNote(self.add_window.editor.note)
 
     def on_add_import(self, problem: Optional[str], note: Note) -> str:
         if self.other_note and current_add_dialog() and current_add_dialog() is self.add_window:
