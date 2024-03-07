@@ -20,9 +20,12 @@ TODO:
 import json
 import os.path
 from collections import defaultdict
+from collections.abc import Sequence
 
 import aqt
 from anki.models import NotetypeDict
+from anki.notes import NoteId
+from aqt.operations import QueryOp
 from aqt.qt import *
 from aqt.utils import (
     showInfo,
@@ -50,7 +53,7 @@ from .common import *
 from .config import config
 from .edit_window import AddDialogLauncher
 from .note_importer import NoteTypeUnavailable, import_notes
-from .remote_search import CroProWebSearchClient, CroProWebClientException
+from .remote_search import CroProWebSearchClient, RemoteNote, CroProWebClientException
 from .settings_dialog import open_cropro_settings
 from .widgets.note_list import NoteList
 from .widgets.remote_search_bar import RemoteSearchBar
@@ -209,6 +212,7 @@ class MainDialog(MainDialogUI):
         self.other_col = CollectionManager()
         self.web_search_client = CroProWebSearchClient()
         self._add_window_mgr = AddDialogLauncher(self)
+        self._search_lock = SearchLock(self)
         self.connect_elements()
         self.setup_menubar()
         disable_help_button(self)
@@ -365,25 +369,47 @@ class MainDialog(MainDialogUI):
         """
         Search notes on a remote server.
         """
+        if self._search_lock.is_searching():
+            return
+
         self._activate_enabled_search_bar()
         self.reset_cropro_status()
 
         if not search_text:
             return
 
-        try:
-            notes = self.web_search_client.search_notes(self.remote_search_bar.get_request_args())
-        except CroProWebClientException as ex:
-            self.search_result_label.set_error(ex)
-            return
+        def search_notes(_col) -> Sequence[RemoteNote]:
+            return self.web_search_client.search_notes(self.remote_search_bar.get_request_args())
 
-        self.note_list.set_notes(
-            notes[: config.max_displayed_notes],
-            hide_fields=config.hidden_fields,
-            previewer_enabled=config.preview_on_right_side,
+        def set_search_results(notes: Sequence[RemoteNote]) -> None:
+            self.note_list.set_notes(
+                notes[: config.max_displayed_notes],
+                hide_fields=config.hidden_fields,
+                previewer_enabled=config.preview_on_right_side,
+            )
+            self.search_result_label.set_search_result(notes, config.max_displayed_notes)
+            self._search_lock.set_searching(False)
+
+        def on_exception(exception: Exception) -> None:
+            self._search_lock.set_searching(False)
+
+            if not isinstance(exception, CroProWebClientException):
+                raise exception
+
+            self.search_result_label.set_error(exception)
+
+        self._search_lock.set_searching(True)
+        (
+            QueryOp(
+                parent=self,
+                op=search_notes,
+                success=set_search_results,
+            )
+            .failure(on_exception)
+            .without_collection()
+            .with_progress("Searching notes...")
+            .run_in_background()
         )
-
-        self.search_result_label.set_search_result(notes, config.max_displayed_notes)
 
     def update_notes_list(self, search_text: str):
         """
