@@ -306,7 +306,7 @@ class MainDialog(MainDialogUI):
 
     def connect_elements(self):
         qconnect(self.search_bar.selected_profile_changed, self.open_other_col)
-        qconnect(self.search_bar.search_requested, self.update_notes_list)
+        qconnect(self.search_bar.search_requested, self.perform_local_search)
         qconnect(self.remote_search_bar.search_requested, self.perform_remote_search)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
@@ -411,10 +411,13 @@ class MainDialog(MainDialogUI):
             .run_in_background()
         )
 
-    def update_notes_list(self, search_text: str):
+    def perform_local_search(self, search_text: str):
         """
         Search notes in a different Anki collection.
         """
+        if self._search_lock.is_searching():
+            return
+
         self._activate_enabled_search_bar()
         self.reset_cropro_status()
         self.open_other_col()
@@ -425,15 +428,29 @@ class MainDialog(MainDialogUI):
         if not self.search_bar.decks_populated():
             return
 
-        note_ids = self.other_col.find_notes(self.search_bar.current_deck(), search_text)
+        def search_notes(_col) -> Sequence[NoteId]:
+            return self.other_col.find_notes(self.search_bar.current_deck(), search_text)
 
-        self.note_list.set_notes(
-            map(self.other_col.get_note, note_ids[: config.max_displayed_notes]),
-            hide_fields=config.hidden_fields,
-            previewer_enabled=config.preview_on_right_side,
+        def set_search_results(note_ids: Sequence[NoteId]) -> None:
+            self.note_list.set_notes(
+                map(self.other_col.get_note, note_ids[: config.max_displayed_notes]),
+                hide_fields=config.hidden_fields,
+                previewer_enabled=config.preview_on_right_side,
+            )
+            self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
+            self._search_lock.set_searching(False)
+
+        self._search_lock.set_searching(True)
+        (
+            QueryOp(
+                parent=self,
+                op=search_notes,
+                success=set_search_results,
+            )
+            .without_collection()
+            .with_progress("Searching notes...")
+            .run_in_background()
         )
-
-        self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
 
     def current_model(self) -> NameId:
         return self.note_type_selection_combo.current_item()
