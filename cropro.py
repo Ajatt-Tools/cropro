@@ -131,29 +131,40 @@ class WindowState:
         self._state = defaultdict(dict)
 
     def save(self):
-        self._load()
-        for key, widget in self._map.items():
-            self._state[mw.pm.name][key] = widget.currentText()
-        with open(self._json_filepath, "w", encoding="utf8") as of:
-            json.dump(self._state, of, indent=4, ensure_ascii=False)
+        self._ensure_loaded()
+        self._remember_current_values()
+        self._write_state_to_disk()
         saveGeom(self._window, self._window.name)
         logDebug(f"saved window state.")
 
-    def _load(self) -> bool:
+    def _write_state_to_disk(self):
+        with open(self._json_filepath, "w", encoding="utf8") as of:
+            json.dump(self._state, of, indent=4, ensure_ascii=False)
+
+    def _remember_current_values(self):
+        for key, widget in self._map.items():
+            if widget.currentText():
+                # A combo box should have current text.
+                # Otherwise, it apparently has no items set, and the value is invalid.
+                self._state[mw.pm.name][key] = widget.currentText()
+
+    def _ensure_loaded(self) -> bool:
         """
         Attempt to read the state json from disk. Return true on success.
         """
         if self._state:
+            # Already loaded, good.
             return True
-        elif os.path.isfile(self._json_filepath):
+        if os.path.isfile(self._json_filepath):
+            # File exists but the state hasn't been read yet.
             with open(self._json_filepath, encoding="utf8") as f:
                 self._state.update(json.load(f))
             return True
-        else:
-            return False
+        # There's nothing to do.
+        return False
 
     def restore(self):
-        if self._load() and (profile_settings := self._state.get(mw.pm.name)):
+        if self._ensure_loaded() and (profile_settings := self._state.get(mw.pm.name)):
             for key, widget in self._map.items():
                 if value := profile_settings.get(key):
                     widget.setCurrentText(value)
