@@ -13,9 +13,9 @@ class NameId(NamedTuple):
     name: str
     id: int
 
-    @classmethod
-    def none_type(cls) -> "NameId":
-        return cls("None (create new if needed)", -1)
+
+NO_MODEL = NameId("None (create new if needed)", -1)
+WHOLE_COLLECTION = NameId("Whole collection", -1)
 
 
 def sorted_decks_and_ids(col: Collection) -> list[NameId]:
@@ -53,10 +53,6 @@ class CollectionManager:
     def media_dir(self):
         return self.col.media.dir()
 
-    @staticmethod
-    def col_name_and_id() -> NameId:
-        return NameId("Whole collection", -1)
-
     @property
     def is_opened(self) -> bool:
         return (self._current_name is not None) and (self._current_name in self._opened_cols)
@@ -81,7 +77,7 @@ class CollectionManager:
         return sorted_decks_and_ids(self.col)
 
     def find_notes(self, deck: NameId, filter_text: str):
-        if deck == self.col_name_and_id():
+        if deck == WHOLE_COLLECTION:
             return self.col.find_notes(query=filter_text)
         else:
             return self.col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
