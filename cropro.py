@@ -188,6 +188,20 @@ def nag_about_note_type() -> int:
     )
 
 
+class SearchLock:
+    def __init__(self, cropro: MainDialogUI):
+        self._cropro = cropro
+        self._searching = False
+
+    def set_searching(self, searching: bool) -> None:
+        self._searching = searching
+        self._cropro.search_bar.setDisabled(searching)
+        self._cropro.remote_search_bar.setDisabled(searching)
+
+    def is_searching(self) -> bool:
+        return self._searching
+
+
 class MainDialog(MainDialogUI):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
