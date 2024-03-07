@@ -22,7 +22,6 @@ class ColSearchBar(QWidget):
     def __init__(self, mw: AnkiQt):
         super().__init__()
         self.mw = mw
-        self._current_search_string = ""
         self.other_profile_names_combo = CroProComboBox()
         self.selected_profile_changed = self.other_profile_names_combo.currentIndexChanged
         self.other_profile_deck_combo = NameIdComboBox()
@@ -102,10 +101,9 @@ class ColSearchBar(QWidget):
 
     def _connect_elements(self):
         def handle_search_requested():
-            if (text := self.search_text()) != self._current_search_string:
+            if text := self.search_text():
                 # noinspection PyUnresolvedReferences
                 self.search_requested.emit(text)
-                self._current_search_string = text
 
         qconnect(self.other_profile_deck_combo.currentIndexChanged, handle_search_requested)
         qconnect(self.filter_button.clicked, handle_search_requested)

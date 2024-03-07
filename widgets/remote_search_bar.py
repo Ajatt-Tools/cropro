@@ -42,7 +42,6 @@ class RemoteSearchBar(QWidget):
 
     def __init__(self):
         super().__init__()
-        self._current_request_url = ""
         self._keyword_edit = CroProLineEdit()  # keyword
         self._category_combo = new_combo_box(
             [
@@ -130,10 +129,9 @@ class RemoteSearchBar(QWidget):
 
     def _connect_elements(self):
         def handle_search_requested():
-            if (url := self.get_request_url()) != self._current_request_url:
+            if self.get_request_url():
                 # noinspection PyUnresolvedReferences
                 self.search_requested.emit(self.search_text())
-                self._current_request_url = url
 
         qconnect(self._search_button.clicked, handle_search_requested)
         qconnect(self._keyword_edit.editingFinished, handle_search_requested)
