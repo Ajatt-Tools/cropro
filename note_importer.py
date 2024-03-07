@@ -9,7 +9,8 @@ import math
 import os.path
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import NamedTuple, Optional, Sequence
+from typing import NamedTuple, Optional
+from collections.abc import Sequence
 
 from anki.cards import Card
 from anki.collection import Collection

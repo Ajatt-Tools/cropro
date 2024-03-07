@@ -2,7 +2,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
-from typing import Optional, NamedTuple, Iterable
+from typing import Optional, NamedTuple
+from collections.abc import Iterable, Sequence
 
 from anki.collection import Collection
 from anki.notes import NoteId
@@ -76,7 +77,7 @@ class CollectionManager:
     def deck_names_and_ids(self) -> list[NameId]:
         return sorted_decks_and_ids(self.col)
 
-    def find_notes(self, deck: NameId, filter_text: str):
+    def find_notes(self, deck: NameId, filter_text: str) -> Sequence[NoteId]:
         if deck == WHOLE_COLLECTION:
             return self.col.find_notes(query=filter_text)
         else:

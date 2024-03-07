@@ -2,7 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import typing
-from typing import Sized
+from collections.abc import Sized
 
 import requests
 from aqt.qt import *

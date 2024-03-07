@@ -4,7 +4,8 @@
 import dataclasses
 import enum
 import itertools
-from typing import TypedDict, Iterable, Optional
+from typing import TypedDict, Optional
+from collections.abc import Iterable
 
 import anki.httpclient
 import requests
