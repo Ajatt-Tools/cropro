@@ -56,11 +56,11 @@ class CroProComboBox(QComboBox):
             yield self.itemText(i)
 
 
-class DeckCombo(CroProComboBox):
-    def set_decks(self, decks: Iterable[NameId]):
+class NameIdComboBox(CroProComboBox):
+    def set_items(self, items: Iterable[NameId]):
         self.clear()
-        for deck_name, deck_id in decks:
-            self.addItem(deck_name, deck_id)
+        for item_name, item_id in items:
+            self.addItem(item_name, item_id)
 
-    def current_deck(self) -> NameId:
+    def current_item(self) -> NameId:
         return NameId(self.currentText(), self.currentData())

@@ -8,10 +8,10 @@ from aqt import AnkiQt
 from aqt.qt import *
 
 try:
-    from .utils import CroProComboBox, DeckCombo, CroProLineEdit, CroProPushButton
+    from .utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
     from ..collection_manager import NameId
 except ImportError:
-    from utils import CroProComboBox, DeckCombo, CroProLineEdit, CroProPushButton
+    from utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
     from collection_manager import NameId
 
 
@@ -25,7 +25,7 @@ class ColSearchBar(QWidget):
         self._current_search_string = ""
         self.other_profile_names_combo = CroProComboBox()
         self.selected_profile_changed = self.other_profile_names_combo.currentIndexChanged
-        self.other_profile_deck_combo = DeckCombo()
+        self.other_profile_deck_combo = NameIdComboBox()
         self.search_term_edit = CroProLineEdit()
         self.filter_button = CroProPushButton("Filter")
         self._setup_layout()
@@ -35,7 +35,7 @@ class ColSearchBar(QWidget):
         return self.search_term_edit.text().strip()
 
     def current_deck(self) -> NameId:
-        return self.other_profile_deck_combo.current_deck()
+        return self.other_profile_deck_combo.current_item()
 
     def decks_populated(self) -> bool:
         return self.other_profile_deck_combo.count() > 0
@@ -73,7 +73,7 @@ class ColSearchBar(QWidget):
         A list of decks to search in.
         The user can limit search to a certain deck in the other collection.
         """
-        return self.other_profile_deck_combo.set_decks(decks)
+        return self.other_profile_deck_combo.set_items(decks)
 
     def set_focus(self):
         self.search_term_edit.setFocus()
