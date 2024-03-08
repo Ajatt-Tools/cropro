@@ -28,24 +28,30 @@ from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientExc
 
 
 @enum.unique
-class ImportResult(enum.Enum):
+class NoteCreateStatus(enum.Enum):
     success = enum.auto()
     dupe = enum.auto()
     connection_error = enum.auto()
 
 
-class ImportResultCounter(collections.Counter[ImportResult, int]):
+@dataclasses.dataclass
+class NoteCreateResult:
+    note: Union[Note, RemoteNote]
+    status: NoteCreateStatus
+
+
+class ImportResultCounter(collections.Counter[NoteCreateStatus, int]):
     @property
     def successes(self) -> int:
-        return self[ImportResult.success]
+        return self[NoteCreateStatus.success]
 
     @property
     def duplicates(self) -> int:
-        return self[ImportResult.dupe]
+        return self[NoteCreateStatus.dupe]
 
     @property
     def errors(self) -> int:
-        return self[ImportResult.connection_error]
+        return self[NoteCreateStatus.connection_error]
 
 
 class FileInfo(NamedTuple):
@@ -144,12 +150,6 @@ def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
             new_card.due += col_diff(mw.col, other_col)
 
 
-@dataclasses.dataclass
-class NoteCreateResult:
-    note: Union[Note, RemoteNote]
-    status: ImportResult
-
-
 def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWebSearchClient):
     assert new_note.id == 0, "This function expects a note that hasn't been added yet."
     for file in other_note.media_info():
@@ -183,13 +183,13 @@ def construct_new_note(
 
     # check if note is dupe of existing one
     if config.skip_duplicates and new_note.dupeOrEmpty():
-        return NoteCreateResult(new_note, ImportResult.dupe)
+        return NoteCreateResult(new_note, NoteCreateStatus.dupe)
 
     if isinstance(other_note, RemoteNote):
         try:
             download_media(new_note, other_note, web_client)
         except CroProWebClientException:
-            return NoteCreateResult(new_note, ImportResult.connection_error)
+            return NoteCreateResult(new_note, NoteCreateStatus.connection_error)
     else:
         copy_media_files(new_note, other_note)
         if tag := config.tag_original_notes:
@@ -198,7 +198,7 @@ def construct_new_note(
         if config.copy_card_data:
             import_card_info(new_note, other_note, other_col)
 
-    return NoteCreateResult(new_note, ImportResult.success)
+    return NoteCreateResult(new_note, NoteCreateStatus.success)
 
 
 def import_notes(

@@ -6,7 +6,7 @@ from typing import NamedTuple
 
 from aqt.qt import *
 
-from ..note_importer import ImportResultCounter, ImportResult
+from ..note_importer import ImportResultCounter, NoteCreateStatus
 
 
 class NGetTextVariant(NamedTuple):
@@ -75,8 +75,8 @@ class StatusBar(QHBoxLayout):
         self.set_import_status(
             ImportResultCounter(
                 {
-                    ImportResult.success: success_count,
-                    ImportResult.dupe: dupe_count,
+                    NoteCreateStatus.success: success_count,
+                    NoteCreateStatus.dupe: dupe_count,
                 }
             )
         )
