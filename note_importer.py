@@ -161,7 +161,7 @@ def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWeb
             new_note[file.field_name] = file.as_anki_ref()
 
 
-def import_note(
+def construct_new_note(
     other_note: Union[Note, RemoteNote],
     other_col: Collection,
     model: NameId,
@@ -172,9 +172,10 @@ def import_note(
     new_note = Note(mw.col, matching_model)
     new_note.note_type()["did"] = deck.id
 
+    # populate the new note's fields by copying them from the other note.
     for key in new_note.keys():
         if key in other_note:
-            new_note[key] = str(other_note[key])
+            new_note[key] = other_note[key].strip()
 
     # copy field tags into new other_note object
     if config.copy_tags:
@@ -216,7 +217,7 @@ def import_notes(
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
             executor.submit(
-                import_note,
+                construct_new_note,
                 other_note=note,
                 other_col=other_col,
                 model=model,
