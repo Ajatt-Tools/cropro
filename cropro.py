@@ -255,8 +255,8 @@ class MainDialog(MainDialogUI):
 
         toggle_web_search_act = tools_menu.addAction("Search the web")
         toggle_web_search_act.setCheckable(True)
-        toggle_web_search_act.setChecked(config.search_the_web)
         qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
+        qconnect(tools_menu.aboutToShow, lambda: toggle_web_search_act.setChecked(config.search_the_web))
 
         tools_menu.addAction("Send query to Browser", self._send_query_to_browser)
 
