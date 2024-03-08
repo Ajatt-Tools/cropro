@@ -107,7 +107,7 @@ class RemoteSearchBar(QWidget):
         self.setLayout(layout := QVBoxLayout())
         layout.addLayout(self._make_search_settings_box())
         layout.addLayout(self._make_filter_row())
-        self._keyword_edit.setPlaceholderText("<text to search>")
+        self._keyword_edit.setPlaceholderText("<text to search the Web>")
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.set_focus()
 
