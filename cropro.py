@@ -278,7 +278,7 @@ class MainDialog(MainDialogUI):
         browser.activateWindow()
         browser.search_for(search_text)
 
-    def _on_toggle_web_search_triggered(self, checked: bool):
+    def _on_toggle_web_search_triggered(self, checked: bool) -> None:
         config.search_the_web = checked
         self._activate_enabled_search_bar()
         self.reset_cropro_status()
