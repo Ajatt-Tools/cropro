@@ -192,6 +192,11 @@ def nag_about_note_type() -> int:
 
 
 class SearchLock:
+    """
+    Class used to indicate that a search operation is in progress.
+    Until a search operation finishes, don't allow subsequent searches.
+    """
+
     def __init__(self, cropro: MainDialogUI):
         self._cropro = cropro
         self._searching = False
