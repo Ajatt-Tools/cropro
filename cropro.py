@@ -246,7 +246,7 @@ class MainDialog(MainDialogUI):
         return w
 
     def setup_menubar(self):
-        menu_bar = self.menuBar()
+        menu_bar: QMenuBar = self.menuBar()
 
         # Options menu
         tools_menu = menu_bar.addMenu("&Tools")
