@@ -279,6 +279,10 @@ class MainDialog(MainDialogUI):
         browser.search_for(search_text)
 
     def _on_toggle_web_search_triggered(self, checked: bool) -> None:
+        if checked == config.search_the_web:
+            # State hasn't changed.
+            return
+        logDebug(f"Web search option changed to {checked}")
         config.search_the_web = checked
         self._activate_enabled_search_bar()
         self.reset_cropro_status()
