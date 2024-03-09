@@ -21,6 +21,7 @@ from aqt import mw
 from aqt.qt import *
 
 from .collection_manager import NameId, NO_MODEL, CollectionManager
+from .common import ADDON_NAME_SHORT
 from .config import config
 from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
 
@@ -190,7 +191,7 @@ class NoteImporter:
         if config.search_the_web and model == NO_MODEL:
             raise NoteTypeUnavailable()
 
-        pos = col.add_custom_undo_entry(f"Import {len(notes)} notes")
+        pos = col.add_custom_undo_entry(f"{ADDON_NAME_SHORT}: import {len(notes)} notes")
         requests: list[AddNoteRequest] = []
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:

@@ -9,6 +9,7 @@ from aqt import mw, gui_hooks
 from .config import config
 
 ADDON_NAME = "Cross Profile Search and Import"
+ADDON_NAME_SHORT = "CroPro"
 DEBUG_LOG_FILE_PATH = os.path.join(mw.pm.base, "cropro.log")
 SUBS2SRS_LINK = "https://aur.archlinux.org/packages/subs2srs"
 EXAMPLE_DECK_LINK = "https://tatsumoto.neocities.org/blog/setting-up-anki.html#import-an-example-mining-deck"
@@ -42,12 +43,12 @@ class LogDebug:
         gui_hooks.profile_will_close.append(self.close)
 
     def write(self, msg: str) -> None:
-        print(f"CroPro debug: {msg}")
+        print(f"{ADDON_NAME_SHORT} debug: {msg}")
         if not config.enable_debug_log:
             # if disabled, don't write anything to the file, but still print to stdout.
             return
         if not self._logfile:
-            print(f"CroPro debug: opening log file {DEBUG_LOG_FILE_PATH}")
+            print(f"{ADDON_NAME_SHORT} debug: opening log file {DEBUG_LOG_FILE_PATH}")
             self._logfile = open(DEBUG_LOG_FILE_PATH, "a")
         self._logfile.write(f"{msg}\n")
         self._logfile.flush()
