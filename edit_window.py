@@ -20,7 +20,7 @@ from .widgets.utils import NameIdComboBox, CroProComboBox
 logDebug = LogDebug()
 
 
-class CropProWindow(Protocol):
+class CropProWindowProtocol(Protocol):
     current_profile_deck_combo: NameIdComboBox
     note_type_selection_combo: CroProComboBox
     other_col: CollectionManager
@@ -34,7 +34,7 @@ def current_add_dialog() -> Optional[addcards.AddCards]:
 
 
 class AddDialogLauncher:
-    def __init__(self, cropro: CropProWindow):
+    def __init__(self, cropro: CropProWindowProtocol):
         super().__init__()
         self.cropro = cropro
         self.add_window: Optional[addcards.AddCards] = None
