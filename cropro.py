@@ -338,7 +338,7 @@ class CroProMainWindow(MainWindowUI):
         """
         Search notes on a remote server.
         """
-        if self._search_lock.is_searching():
+        if self._search_lock.is_searching() or config.search_the_web is False:
             return
 
         self._activate_enabled_search_bar()
@@ -384,7 +384,7 @@ class CroProMainWindow(MainWindowUI):
         """
         Search notes in a different Anki collection.
         """
-        if self._search_lock.is_searching():
+        if self._search_lock.is_searching() or config.search_the_web is True:
             return
 
         self._activate_enabled_search_bar()
