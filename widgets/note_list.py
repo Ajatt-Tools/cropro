@@ -19,8 +19,8 @@ class NoteList(QWidget):
 
     _role = Qt.ItemDataRole.UserRole
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         self._note_list = QListWidget(self)
         self._previewer = NotePreviewer(self)
         self._enable_previewer = True
