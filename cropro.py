@@ -297,7 +297,19 @@ class CroProMainWindow(MainWindowUI):
         self.search_bar.set_profile_names(other_profile_names)
 
     def populate_note_type_selection_combo(self):
+        """
+        Set note types present in this collection.
+        Called when the window opens.
+        """
         self.note_type_selection_combo.set_items((NO_MODEL, *note_type_names_and_ids(mw.col)))
+
+    def populate_current_profile_decks(self):
+        """
+        Set deck names present in this collection.
+        Called when the window opens.
+        """
+        logDebug("populating current profile decks...")
+        self.current_profile_deck_combo.set_items(sorted_decks_and_ids(mw.col))
 
     def open_other_col(self):
         selected_profile_name = self.search_bar.selected_profile_name()
@@ -311,10 +323,6 @@ class CroProMainWindow(MainWindowUI):
         self.status_bar.hide_counters()
         self.search_result_label.hide_count()
         self.note_list.clear()
-
-    def populate_current_profile_decks(self):
-        logDebug("populating current profile decks...")
-        self.current_profile_deck_combo.set_items(sorted_decks_and_ids(mw.col))
 
     def populate_other_profile_decks(self):
         logDebug("populating other profile decks...")
