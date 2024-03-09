@@ -116,7 +116,7 @@ class AddDialogLauncher:
         if self.other_note and current_add_dialog() and current_add_dialog() is self.add_window:
             logDebug("Importing edited note")
             if config.copy_card_data:
-                import_card_info(note, self.other_note, self.cropro.other_col.col)
+                import_card_info(note, self.other_note)
             self.cropro.note_list.clear_selection()
             self.cropro.status_bar.set_import_count(success_count=1)
             mw.reset()

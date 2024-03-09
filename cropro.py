@@ -165,7 +165,7 @@ class CroProMainWindow(MainWindowUI):
         self.web_search_client = CroProWebSearchClient()
         self._add_window_mgr = AddDialogLauncher(self)
         self._search_lock = SearchLock(self)
-        self._importer = NoteImporter(col_mgr=self.other_col, web_client=self.web_search_client)
+        self._importer = NoteImporter(web_client=self.web_search_client)
         self.connect_elements()
         self.setup_menubar()
         disable_help_button(self)

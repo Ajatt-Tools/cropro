@@ -7,9 +7,9 @@ import enum
 import math
 import os.path
 from collections.abc import Iterable
+from collections.abc import MutableSequence
 from copy import deepcopy
 from typing import NamedTuple, Optional
-from collections.abc import MutableSequence
 
 from anki.cards import Card
 from anki.collection import Collection, AddNoteRequest, OpChanges
@@ -20,7 +20,7 @@ from anki.utils import join_fields
 from aqt import mw
 from aqt.qt import *
 
-from .collection_manager import NameId, NO_MODEL, CollectionManager
+from .collection_manager import NameId, NO_MODEL
 from .common import ADDON_NAME_SHORT
 from .config import config
 from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
@@ -173,8 +173,7 @@ def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWeb
 
 
 class NoteImporter:
-    def __init__(self, col_mgr: CollectionManager, web_client: CroProWebSearchClient):
-        self._other_col = col_mgr
+    def __init__(self, web_client: CroProWebSearchClient):
         self._web_client = web_client
         self._counter = ImportResultCounter()
 
@@ -254,6 +253,6 @@ class NoteImporter:
                 other_note.add_tag(tag)
                 other_note.flush()
             if config.copy_card_data:
-                import_card_info(new_note, other_note, col_diff(col, self._other_col.col))
+                import_card_info(new_note, other_note)
 
         return NoteCreateResult(new_note, NoteCreateStatus.success)
