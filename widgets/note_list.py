@@ -52,7 +52,13 @@ class NoteList(QWidget):
             self._previewer.load_note(current.data(self._role))
 
     def set_focus(self) -> None:
-        return self._note_list.setFocus()
+        """
+        Focus the note list. This method is called from a keyboard shortcut.
+        """
+        self._note_list.setFocus()
+        # if there's no selected notes, select the first note in the list.
+        if not self._note_list.selectedItems() and self._note_list.count() > 0:
+            self._note_list.setCurrentRow(0)
 
     def selected_notes(self) -> Sequence[Note]:
         return [item.data(self._role) for item in self._note_list.selectedItems()]
