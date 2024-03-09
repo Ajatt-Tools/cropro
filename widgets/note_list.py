@@ -14,7 +14,7 @@ WIDGET_MIN_HEIGHT = 29
 COMBO_MIN_WIDTH = 120
 
 
-class NoteList(QWidget):
+class NoteList(QSplitter):
     """Lists notes and previews them."""
 
     _role = Qt.ItemDataRole.UserRole
@@ -29,15 +29,14 @@ class NoteList(QWidget):
         qconnect(self._note_list.currentItemChanged, self._on_current_item_changed)
 
     def _setup_ui(self):
-        self.setLayout(layout := QHBoxLayout())
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+        self.setOrientation(Qt.Orientation.Horizontal)
 
-        layout.addWidget(splitter := QSplitter(Qt.Orientation.Horizontal))
-        splitter.addWidget(self._note_list)
-        splitter.addWidget(self._previewer)
-        splitter.setCollapsible(0, False)
-        splitter.setCollapsible(1, True)
-        splitter.setSizes([200, 100])
+        self.addWidget(self._note_list)
+        self.addWidget(self._previewer)
+        self.setCollapsible(0, False)
+        self.setCollapsible(1, True)
+        self.setSizes([200, 100])
 
         self._note_list.setAlternatingRowColors(True)
         self._note_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
