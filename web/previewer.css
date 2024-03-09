@@ -67,6 +67,7 @@ main > * {
     /* Sentence, Image, Audio, etc. */
     background-color: var(--content-bg);
     color: var(--content-color);
+    word-break: break-all;
 }
 
 .cropro__audio_list {
