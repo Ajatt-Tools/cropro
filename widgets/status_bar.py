@@ -61,19 +61,19 @@ class StatusBar(QHBoxLayout):
         self.addWidget(self._error_label)
         self.addStretch()
 
-    def hide_counters(self):
+    def hide_counters(self) -> None:
         self._success_label.hide()
         self._dupes_label.hide()
         self._error_label.hide()
 
-    def set_import_status(self, results: ImportResultCounter):
+    def set_import_status(self, results: ImportResultCounter) -> None:
         return self.set_import_count(
             len(results.successes),
             len(results.duplicates),
             len(results.errors),
         )
 
-    def set_import_count(self, success_count: int = 0, dupe_count: int = 0, error_count: int = 0):
+    def set_import_count(self, success_count: int = 0, dupe_count: int = 0, error_count: int = 0) -> None:
         self._success_label.set_count(success_count)
         self._dupes_label.set_count(dupe_count)
         self._error_label.set_count(error_count)
