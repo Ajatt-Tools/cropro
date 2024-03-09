@@ -492,6 +492,14 @@ class CroProMainWindow(MainWindowUI):
         open_cropro_settings(parent=self)
         self._activate_enabled_search_bar()  # the "search_the_web" setting may have changed
 
+    def on_profile_will_close(self):
+        self.close()
+        self.other_col.close_all()
+
+    def on_profile_did_open(self):
+        self.search_bar.clear_all()
+        self.note_list.clear_notes()
+
 
 ######################################################################
 # Entry point
@@ -510,7 +518,5 @@ def init():
     # and add it to the tools menu
     root_menu.addAction(action)
     # react to anki's state changes
-    gui_hooks.profile_will_close.append(d.close)
-    gui_hooks.profile_will_close.append(d.other_col.close_all)
-    gui_hooks.profile_did_open.append(d.search_bar.clear_profiles_list)
-    gui_hooks.profile_did_open.append(d.note_list.clear)
+    gui_hooks.profile_will_close.append(d.on_profile_will_close)
+    gui_hooks.profile_did_open.append(d.on_profile_did_open)

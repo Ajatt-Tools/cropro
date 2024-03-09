@@ -39,8 +39,14 @@ class ColSearchBar(QWidget):
     def decks_populated(self) -> bool:
         return self.other_profile_deck_combo.count() > 0
 
-    def clear_profiles_list(self) -> None:
-        return self.other_profile_names_combo.clear()
+    def clear_all(self) -> None:
+        """
+        Clear contents of all widgets in the search bar.
+        Called when profile opens to ensure that there's no conflicting data from the previously opened profile.
+        """
+        self.other_profile_names_combo.clear()
+        self.other_profile_deck_combo.clear()
+        self.search_term_edit.clear()
 
     def needs_to_repopulate_profile_names(self) -> bool:
         """
