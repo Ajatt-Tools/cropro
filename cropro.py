@@ -490,3 +490,4 @@ def init():
     gui_hooks.profile_will_close.append(d.close)
     gui_hooks.profile_will_close.append(d.other_col.close_all)
     gui_hooks.profile_did_open.append(d.search_bar.clear_profiles_list)
+    gui_hooks.profile_did_open.append(d.note_list.clear)
