@@ -11,6 +11,9 @@ from .search_result_label import SearchResultLabel
 from .status_bar import StatusBar
 from .utils import ProfileNameLabel, NameIdComboBox, CroProPushButton
 
+WIN_MIN_WIDTH = 900
+WIN_MIN_HEIGHT = 480
+
 
 class MainWindowUI(QMainWindow):
     name = "cropro_dialog"
@@ -34,7 +37,7 @@ class MainWindowUI(QMainWindow):
         central_widget = QWidget(self)
         central_widget.setLayout(self.make_main_layout())
         self.setCentralWidget(central_widget)
-        self.setMinimumSize(900, 480)
+        self.setMinimumSize(WIN_MIN_WIDTH, WIN_MIN_HEIGHT)
 
     def make_main_layout(self) -> QLayout:
         main_vbox = QVBoxLayout()
