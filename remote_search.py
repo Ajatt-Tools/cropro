@@ -47,7 +47,7 @@ class RemoteMediaInfo:
 
     def is_valid_url(self) -> bool:
         """
-        immersionkit return URLs that always start with https.
+        Immersion kit returns URLs that always start with https.
         """
         return bool(self.url and self.url.startswith("https://"))
 
