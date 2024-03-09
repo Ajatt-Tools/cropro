@@ -22,7 +22,7 @@ from aqt import gui_hooks
 from aqt import mw
 from aqt.qt import *
 
-from .collection_manager import NameId, NO_MODEL
+from .collection_manager import NameId, NO_MODEL, CollectionManager
 from .config import config
 from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
 
@@ -201,44 +201,48 @@ def construct_new_note(
     return NoteCreateResult(new_note, NoteCreateStatus.success)
 
 
-def import_notes(
-    notes: Sequence[Union[Note, RemoteNote]],
-    other_col: Collection,
-    model: NameId,
-    deck: NameId,
-    web_client: CroProWebSearchClient,
-) -> ImportResultCounter:
-    web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
+class NoteImporter:
+    def __init__(self, col_mgr: CollectionManager, web_client: CroProWebSearchClient):
+        self._col_mgr = col_mgr
+        self._web_client = web_client
 
-    if config.search_the_web and model == NO_MODEL:
-        raise NoteTypeUnavailable()
+    def import_notes(
+        self,
+        notes: Sequence[Union[Note, RemoteNote]],
+        model: NameId,
+        deck: NameId,
+    ) -> ImportResultCounter:
+        self._web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
 
-    results = ImportResultCounter()
-    requests: list[AddNoteRequest] = []
+        if config.search_the_web and model == NO_MODEL:
+            raise NoteTypeUnavailable()
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [
-            executor.submit(
-                construct_new_note,
-                other_note=note,
-                other_col=other_col,
-                model=model,
-                deck=deck,
-                web_client=web_client,
-            )
-            for note in notes
-        ]
+        results = ImportResultCounter()
+        requests: list[AddNoteRequest] = []
 
-        for future in concurrent.futures.as_completed(futures):
-            result: NoteCreateResult = future.result()
-            if result.status == NoteCreateStatus.success:
-                requests.append(AddNoteRequest(note=result.note, deck_id=DeckId(deck.id)))
-            results[result.status] += 1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [
+                executor.submit(
+                    construct_new_note,
+                    other_note=note,
+                    other_col=self._col_mgr.col,
+                    model=model,
+                    deck=deck,
+                    web_client=self._web_client,
+                )
+                for note in notes
+            ]
 
-    mw.col.add_notes(requests)  # new notes have changed their ids
+            for future in concurrent.futures.as_completed(futures):
+                result: NoteCreateResult = future.result()
+                if result.status == NoteCreateStatus.success:
+                    requests.append(AddNoteRequest(note=result.note, deck_id=DeckId(deck.id)))
+                results[result.status] += 1
 
-    if config.call_add_cards_hook:
-        for request in requests:
-            gui_hooks.add_cards_did_add_note(request.note)
+        mw.col.add_notes(requests)  # new notes have changed their ids
 
-    return results
+        if config.call_add_cards_hook:
+            for request in requests:
+                gui_hooks.add_cards_did_add_note(request.note)
+
+        return results

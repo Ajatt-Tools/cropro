@@ -53,7 +53,7 @@ from .collection_manager import (
 from .common import *
 from .config import config
 from .edit_window import AddDialogLauncher
-from .note_importer import NoteTypeUnavailable, import_notes
+from .note_importer import NoteTypeUnavailable, NoteImporter
 from .remote_search import CroProWebSearchClient, RemoteNote, CroProWebClientException
 from .settings_dialog import open_cropro_settings
 from .widgets.main_window_ui import MainWindowUI
@@ -165,6 +165,7 @@ class CroProMainWindow(MainWindowUI):
         self.web_search_client = CroProWebSearchClient()
         self._add_window_mgr = AddDialogLauncher(self)
         self._search_lock = SearchLock(self)
+        self._importer = NoteImporter(col_mgr=self.other_col, web_client=self.web_search_client)
         self.connect_elements()
         self.setup_menubar()
         disable_help_button(self)
@@ -429,13 +430,7 @@ class CroProMainWindow(MainWindowUI):
         logDebug(f"importing {len(notes)} notes")
 
         try:
-            results = import_notes(
-                notes,
-                other_col=self.other_col.col,
-                model=self.current_model(),
-                deck=self.current_deck(),
-                web_client=self.web_search_client,
-            )
+            results = self._importer.import_notes(notes, model=self.current_model(), deck=self.current_deck())
         except NoteTypeUnavailable:
             nag_about_note_type()
             return
