@@ -8,12 +8,12 @@ import enum
 import math
 import os.path
 from collections.abc import Iterable
+from collections.abc import Sequence
 from copy import deepcopy
 from typing import NamedTuple, Optional
-from collections.abc import Sequence
 
 from anki.cards import Card
-from anki.collection import Collection
+from anki.collection import Collection, AddNoteRequest
 from anki.decks import DeckId
 from anki.models import NoteType
 from anki.notes import Note
@@ -209,10 +209,12 @@ def import_notes(
     web_client: CroProWebSearchClient,
 ) -> ImportResultCounter:
     web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
-    results = ImportResultCounter()
 
     if config.search_the_web and model == NO_MODEL:
         raise NoteTypeUnavailable()
+
+    results = ImportResultCounter()
+    requests: list[AddNoteRequest] = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
@@ -229,9 +231,14 @@ def import_notes(
 
         for future in concurrent.futures.as_completed(futures):
             result: NoteCreateResult = future.result()
-            mw.col.add_note(result.note, DeckId(deck.id))  # new_note has changed its id
+            if result.status == NoteCreateStatus.success:
+                requests.append(AddNoteRequest(note=result.note, deck_id=DeckId(deck.id)))
             results[result.status] += 1
-            if config.call_add_cards_hook:
-                gui_hooks.add_cards_did_add_note(result.note)
+
+    mw.col.add_notes(requests)  # new notes have changed their ids
+
+    if config.call_add_cards_hook:
+        for request in requests:
+            gui_hooks.add_cards_did_add_note(request.note)
 
     return results
