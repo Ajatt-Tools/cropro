@@ -70,7 +70,10 @@ class NoteList(QSplitter):
         self._note_list.clear()
 
     def set_notes(
-        self, notes: Iterable[Union[Note, RemoteNote]], hide_fields: list[str], previewer_enabled: bool = True
+        self,
+        notes: Iterable[Union[Note, RemoteNote]],
+        hide_fields: list[str],
+        previewer_enabled: bool = True,
     ):
         self._enable_previewer = previewer_enabled
 
