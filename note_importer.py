@@ -123,12 +123,14 @@ def get_matching_model(target_model: NameId, reference_model: Optional[NoteType]
     raise NoteTypeUnavailable()
 
 
-def col_diff(col: Collection, other_col: Collection) -> int:
+def col_diff(this_col: Collection, other_col: Collection) -> int:
     """
     Because of difference in collection creation times,
     due numbers which are relative to the collection's creation time need to be adjusted by it.
+    Return difference as number of days.
     """
-    return math.ceil((other_col.crt - col.crt) / (60 * 60 * 24))
+    assert (this_col is mw.col) and (this_col is not other_col)
+    return math.ceil((other_col.crt - this_col.crt) / (60 * 60 * 24))
 
 
 def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
