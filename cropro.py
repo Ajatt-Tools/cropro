@@ -322,7 +322,8 @@ class CroProMainWindow(MainWindowUI):
     def reset_cropro_status(self):
         self.status_bar.hide_counters()
         self.search_result_label.hide_count()
-        self.note_list.clear()
+        self.note_list.clear_notes()
+        logDebug("cleared search results")
 
     def populate_other_profile_decks(self):
         logDebug("populating other profile decks...")

@@ -65,7 +65,7 @@ class NoteList(QSplitter):
     def clear_selection(self):
         return self._note_list.clearSelection()
 
-    def clear(self):
+    def clear_notes(self):
         self._previewer.unload_note()
         self._note_list.clear()
 
@@ -78,7 +78,7 @@ class NoteList(QSplitter):
             field_name = field_name.lower()
             return any(hidden_field.lower() in field_name for hidden_field in hide_fields)
 
-        self.clear()
+        self.clear_notes()
         for note in notes:
             item = QListWidgetItem()
             item.setText(
