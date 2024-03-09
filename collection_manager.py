@@ -48,7 +48,9 @@ class CollectionManager:
 
     @property
     def col(self) -> Collection:
-        return self._opened_cols[self.name]
+        ret = self._opened_cols[self.name]
+        assert ret is not mw.col, "The other collection can't be the same as the current one."
+        return ret
 
     @property
     def media_dir(self):
@@ -70,6 +72,7 @@ class CollectionManager:
         self._opened_cols.clear()
 
     def open(self, name: str) -> None:
+        assert name != mw.col.name(), "Can't open the current collection as other collection."
         if name not in self._opened_cols:
             self._opened_cols[name] = Collection(os.path.join(mw.pm.base, name, "collection.anki2"))
         self._current_name = name
@@ -84,4 +87,5 @@ class CollectionManager:
             return self.col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
 
     def get_note(self, note_id: NoteId):
+        assert note_id > 0, "Note ID must be greater than 0."
         return self.col.get_note(note_id)
