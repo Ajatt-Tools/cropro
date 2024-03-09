@@ -133,7 +133,7 @@ def col_diff(this_col: Collection, other_col: Collection) -> int:
     return math.ceil((other_col.crt - this_col.crt) / (60 * 60 * 24))
 
 
-def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
+def import_card_info(new_note: Note, other_note: Note):
     """
     For all cards in the new note,
     copy some scheduling info from the old card to the newly imported one.
@@ -156,8 +156,9 @@ def import_card_info(new_note: Note, other_note: Note, other_col: Collection):
         new_card.reps = other_card.reps
         new_card.left = other_card.left
 
-        if new_card.type == 2:
-            new_card.due += col_diff(mw.col, other_col)
+        if new_card.type == 2:  # 2=review
+            # due is integer day, relative to the collection's creation time
+            new_card.due += col_diff(new_note.col, other_note.col)
 
 
 def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWebSearchClient):
