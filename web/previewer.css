@@ -7,7 +7,7 @@
     --content-color: hsl(0, 0%, 1%);
 }
 
-:root[class*=night-mode] {
+:root[class*="night-mode"] {
     --body-bg: hsl(0, 0%, 30%);
     --name-bg: hsl(0, 0%, 12%);
     --content-bg: hsl(0, 0%, 3%);
@@ -45,23 +45,26 @@ body {
 }
 
 main {
+    /* This is the main grid where previews live. */
     display: grid;
     grid-template-columns: minmax(100px, auto) minmax(150px, 1fr);
     gap: 1px;
     min-height: 100vh;
 }
 
-main>* {
+main > * {
     padding: var(--elem-pad);
 }
 
 .name {
+    /* Field name, e.g. SentKanji. */
     font-weight: bold;
     background-color: var(--name-bg);
     color: var(--name-color);
 }
 
 .content {
+    /* Sentence, Image, Audio, etc. */
     background-color: var(--content-bg);
     color: var(--content-color);
 }
