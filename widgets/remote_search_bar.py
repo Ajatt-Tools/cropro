@@ -73,6 +73,9 @@ class RemoteSearchBar(QWidget):
         self._setup_layout()
         self._connect_elements()
 
+    def clear_search_text(self) -> None:
+        return self._keyword_edit.clear()
+
     @property
     def category_combo(self) -> CroProComboBox:
         return self._category_combo

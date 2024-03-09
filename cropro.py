@@ -271,19 +271,10 @@ class CroProMainWindow(MainWindowUI):
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
 
-    def show(self):
-        super().show()
-        self.status_bar.hide_counters()
-        self.populate_note_type_selection_combo()
-        self.populate_current_profile_decks()
-        if self.search_bar.needs_to_repopulate_profile_names():
-            self.populate_other_profile_names()
-        self.open_other_col()
-        self.into_profile_label.setText(mw.pm.name or "Unknown")
-        self.window_state.restore()
-        self._activate_enabled_search_bar()
+    def populate_other_profile_names(self) -> None:
+        if not self.search_bar.needs_to_repopulate_profile_names():
+            return
 
-    def populate_other_profile_names(self):
         logDebug("populating other profiles.")
 
         other_profile_names: list[str] = get_other_profile_names()
@@ -299,14 +290,14 @@ class CroProMainWindow(MainWindowUI):
     def populate_note_type_selection_combo(self):
         """
         Set note types present in this collection.
-        Called when the window opens.
+        Called when profile opens.
         """
         self.note_type_selection_combo.set_items((NO_MODEL, *note_type_names_and_ids(mw.col)))
 
     def populate_current_profile_decks(self):
         """
         Set deck names present in this collection.
-        Called when the window opens.
+        Called when profile opens.
         """
         logDebug("populating current profile decks...")
         self.current_profile_deck_combo.set_items(sorted_decks_and_ids(mw.col))
@@ -477,7 +468,16 @@ class CroProMainWindow(MainWindowUI):
         else:
             tooltip("No note selected.", period=1000, parent=self)
 
-    def closeEvent(self, event: QCloseEvent):
+    def showEvent(self, event: QShowEvent) -> None:
+        logDebug("show event received")
+        self.status_bar.hide_counters()
+        self.into_profile_label.setText(mw.pm.name or "Unknown")
+        self.window_state.restore()
+        self._activate_enabled_search_bar()
+        return super().showEvent(event)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        logDebug("close event received")
         self.window_state.save()
         return super().closeEvent(event)
 
@@ -500,8 +500,16 @@ class CroProMainWindow(MainWindowUI):
         self.other_col.close_all()
 
     def on_profile_did_open(self):
+        # clean state from the previous profile if it was set.
         self.search_bar.clear_all()
+        self.remote_search_bar.clear_search_text()
         self.note_list.clear_notes()
+        # setup search bar
+        self.populate_other_profile_names()
+        self.open_other_col()
+        # setup import conditions
+        self.populate_current_profile_decks()
+        self.populate_note_type_selection_combo()
 
 
 ######################################################################
