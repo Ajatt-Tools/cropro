@@ -55,66 +55,12 @@ from .edit_window import AddDialogLauncher
 from .note_importer import NoteTypeUnavailable, import_notes
 from .remote_search import CroProWebSearchClient, RemoteNote, CroProWebClientException
 from .settings_dialog import open_cropro_settings
-from .widgets.note_list import NoteList
+from .widgets.main_window_ui import MainWindowUI
 from .widgets.remote_search_bar import RemoteSearchBar
 from .widgets.search_bar import ColSearchBar
-from .widgets.search_result_label import SearchResultLabel
-from .widgets.status_bar import StatusBar
-from .widgets.utils import ProfileNameLabel, NameIdComboBox, CroProPushButton, CroProComboBox
+from .widgets.utils import CroProComboBox
 
 logDebug = LogDebug()
-
-
-#############################################################################
-# UI layout
-#############################################################################
-
-
-class MainDialogUI(QMainWindow):
-    name = "cropro_dialog"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.search_bar = ColSearchBar(mw)
-        self.remote_search_bar = RemoteSearchBar()
-        self.status_bar = StatusBar()
-        self.search_result_label = SearchResultLabel()
-        self.into_profile_label = ProfileNameLabel()
-        self.current_profile_deck_combo = NameIdComboBox()
-        self.edit_button = CroProPushButton("Edit")
-        self.import_button = CroProPushButton("Import")
-        self.note_list = NoteList()
-        self.note_type_selection_combo = NameIdComboBox()
-        self.init_ui()
-
-    def init_ui(self):
-        central_widget = QWidget(self)
-        central_widget.setLayout(self.make_main_layout())
-        self.setWindowTitle(ADDON_NAME)
-        self.setCentralWidget(central_widget)
-        self.setMinimumSize(900, 480)
-
-    def make_main_layout(self) -> QLayout:
-        main_vbox = QVBoxLayout()
-        main_vbox.addWidget(self.search_bar)
-        main_vbox.addWidget(self.remote_search_bar)
-        main_vbox.addWidget(self.search_result_label)
-        main_vbox.addWidget(self.note_list)
-        main_vbox.addLayout(self.status_bar)
-        main_vbox.addLayout(self.make_input_row())
-        return main_vbox
-
-    def make_input_row(self) -> QLayout:
-        import_row = QHBoxLayout()
-        import_row.addWidget(QLabel("Into Profile:"))
-        import_row.addWidget(self.into_profile_label)
-        import_row.addWidget(QLabel("Deck:"))
-        import_row.addWidget(self.current_profile_deck_combo)
-        import_row.addWidget(QLabel("Map to Note Type:"))
-        import_row.addWidget(self.note_type_selection_combo)
-        import_row.addWidget(self.edit_button)
-        import_row.addWidget(self.import_button)
-        return import_row
 
 
 #############################################################################
@@ -123,7 +69,7 @@ class MainDialogUI(QMainWindow):
 
 
 class WindowState:
-    def __init__(self, window: MainDialogUI):
+    def __init__(self, window: MainWindowUI):
         self._window = window
         self._json_filepath = WINDOW_STATE_FILE_PATH
         self._map: dict[str, CroProComboBox] = {
@@ -197,7 +143,7 @@ class SearchLock:
     Until a search operation finishes, don't allow subsequent searches.
     """
 
-    def __init__(self, cropro: MainDialogUI):
+    def __init__(self, cropro: MainWindowUI):
         self._cropro = cropro
         self._searching = False
 
@@ -210,9 +156,9 @@ class SearchLock:
         return self._searching
 
 
-class MainDialog(MainDialogUI):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class CroProMainWindow(MainWindowUI):
+    def __init__(self, parent: QWidget):
+        super().__init__(parent, window_title=ADDON_NAME)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
         self.web_search_client = CroProWebSearchClient()
@@ -530,7 +476,7 @@ class MainDialog(MainDialogUI):
 
 def init():
     # init dialog
-    d = mw._cropro_main_dialog = MainDialog(parent=mw)
+    d = mw._cropro_main_dialog = CroProMainWindow(parent=mw)
     # get AJT menu
     root_menu = menu_root_entry()
     # create a new menu item
