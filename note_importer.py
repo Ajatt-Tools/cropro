@@ -1,30 +1,32 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org> and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import collections
 import concurrent.futures
 import dataclasses
 import enum
 import math
 import os.path
 from collections.abc import Iterable
-from collections.abc import Sequence
 from copy import deepcopy
 from typing import NamedTuple, Optional
+from collections.abc import MutableSequence
 
 from anki.cards import Card
-from anki.collection import Collection, AddNoteRequest
+from anki.collection import Collection, AddNoteRequest, OpChanges
 from anki.decks import DeckId
 from anki.models import NoteType
 from anki.notes import Note
 from anki.utils import join_fields
-from aqt import gui_hooks
 from aqt import mw
 from aqt.qt import *
 
 from .collection_manager import NameId, NO_MODEL, CollectionManager
 from .config import config
 from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
+
+MAX_WORKERS = 5
+CroProAnyNote = Union[Note, RemoteNote]
+CroProNoteList = MutableSequence[CroProAnyNote]
 
 
 @enum.unique
@@ -36,21 +38,26 @@ class NoteCreateStatus(enum.Enum):
 
 @dataclasses.dataclass
 class NoteCreateResult:
-    note: Union[Note, RemoteNote]
+    note: CroProAnyNote
     status: NoteCreateStatus
 
 
-class ImportResultCounter(collections.Counter[NoteCreateStatus, int]):
+class ImportResultCounter(dict[NoteCreateStatus, CroProNoteList]):
+    def __init__(self):
+        super().__init__()
+        for name in NoteCreateStatus:
+            self[name] = []
+
     @property
-    def successes(self) -> int:
+    def successes(self) -> CroProNoteList:
         return self[NoteCreateStatus.success]
 
     @property
-    def duplicates(self) -> int:
+    def duplicates(self) -> CroProNoteList:
         return self[NoteCreateStatus.dupe]
 
     @property
-    def errors(self) -> int:
+    def errors(self) -> CroProNoteList:
         return self[NoteCreateStatus.connection_error]
 
 
@@ -162,7 +169,7 @@ def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWeb
 
 
 def construct_new_note(
-    other_note: Union[Note, RemoteNote],
+    other_note: CroProAnyNote,
     other_col: Collection,
     model: NameId,
     deck: NameId,
@@ -205,22 +212,28 @@ class NoteImporter:
     def __init__(self, col_mgr: CollectionManager, web_client: CroProWebSearchClient):
         self._col_mgr = col_mgr
         self._web_client = web_client
+        self._counter = ImportResultCounter()
+
+    def move_results(self) -> ImportResultCounter:
+        ret, self._counter = self._counter, ImportResultCounter()
+        return ret
 
     def import_notes(
         self,
-        notes: Sequence[Union[Note, RemoteNote]],
+        col: Collection,
+        notes: CroProNoteList,
         model: NameId,
         deck: NameId,
-    ) -> ImportResultCounter:
+    ) -> OpChanges:
         self._web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
 
         if config.search_the_web and model == NO_MODEL:
             raise NoteTypeUnavailable()
 
-        results = ImportResultCounter()
+        pos = col.add_custom_undo_entry(f"Import {len(notes)} notes")
         requests: list[AddNoteRequest] = []
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = [
                 executor.submit(
                     construct_new_note,
@@ -237,12 +250,8 @@ class NoteImporter:
                 result: NoteCreateResult = future.result()
                 if result.status == NoteCreateStatus.success:
                     requests.append(AddNoteRequest(note=result.note, deck_id=DeckId(deck.id)))
-                results[result.status] += 1
+                self._counter[result.status].append(result.note)
 
-        mw.col.add_notes(requests)  # new notes have changed their ids
+        col.add_notes(requests)  # new notes have changed their ids
 
-        if config.call_add_cards_hook:
-            for request in requests:
-                gui_hooks.add_cards_did_add_note(request.note)
-
-        return results
+        return col.merge_undo_entries(pos)

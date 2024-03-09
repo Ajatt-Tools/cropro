@@ -26,7 +26,7 @@ import aqt
 from anki.models import NotetypeDict
 from anki.notes import NoteId
 from aqt import AnkiQt
-from aqt.operations import QueryOp
+from aqt.operations import QueryOp, CollectionOp
 from aqt.qt import *
 from aqt.utils import (
     showInfo,
@@ -429,16 +429,35 @@ class CroProMainWindow(MainWindowUI):
 
         logDebug(f"importing {len(notes)} notes")
 
-        try:
-            results = self._importer.import_notes(notes, model=self.current_model(), deck=self.current_deck())
-        except NoteTypeUnavailable:
-            nag_about_note_type()
-            return
-        else:
-            self.status_bar.set_import_status(results)
+        def on_failure(ex: Exception) -> None:
+            logDebug("import failed")
+            if isinstance(ex, NoteTypeUnavailable):
+                nag_about_note_type()
+                return
+            raise ex
 
-        mw.reset()
-        logDebug("import finished")
+        def on_success(_):
+            results = self._importer.move_results()
+            self.status_bar.set_import_status(results)
+            if config.call_add_cards_hook:
+                for result in results.successes:
+                    gui_hooks.add_cards_did_add_note(result.note)
+            logDebug("import finished")
+
+        (
+            CollectionOp(
+                parent=self,
+                op=lambda col: self._importer.import_notes(
+                    col=col,
+                    notes=notes,
+                    model=self.current_model(),
+                    deck=self.current_deck(),
+                ),
+            )
+            .success(on_success)
+            .failure(on_failure)
+            .run_in_background()
+        )
 
     def new_edit_win(self):
         if len(selected_notes := self.note_list.selected_notes()) > 0:

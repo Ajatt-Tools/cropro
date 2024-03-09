@@ -6,7 +6,7 @@ from typing import NamedTuple
 
 from aqt.qt import *
 
-from ..note_importer import ImportResultCounter, NoteCreateStatus
+from ..note_importer import ImportResultCounter
 
 
 class NGetTextVariant(NamedTuple):
@@ -67,16 +67,13 @@ class StatusBar(QHBoxLayout):
         self._error_label.hide()
 
     def set_import_status(self, results: ImportResultCounter):
-        self._success_label.set_count(results.successes)
-        self._dupes_label.set_count(results.duplicates)
-        self._error_label.set_count(results.errors)
-
-    def set_import_count(self, success_count: int = 0, dupe_count: int = 0):
-        self.set_import_status(
-            ImportResultCounter(
-                {
-                    NoteCreateStatus.success: success_count,
-                    NoteCreateStatus.dupe: dupe_count,
-                }
-            )
+        return self.set_import_count(
+            len(results.successes),
+            len(results.duplicates),
+            len(results.errors),
         )
+
+    def set_import_count(self, success_count: int = 0, dupe_count: int = 0, error_count: int = 0):
+        self._success_label.set_count(success_count)
+        self._dupes_label.set_count(dupe_count)
+        self._error_label.set_count(error_count)
