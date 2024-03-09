@@ -168,49 +168,9 @@ def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWeb
             new_note[file.field_name] = file.as_anki_ref()
 
 
-def construct_new_note(
-    other_note: CroProAnyNote,
-    other_col: Collection,
-    model: NameId,
-    deck: NameId,
-    web_client: CroProWebSearchClient,
-) -> NoteCreateResult:
-    matching_model = get_matching_model(model, other_note.note_type())
-    new_note = Note(mw.col, matching_model)
-    new_note.note_type()["did"] = deck.id
-
-    # populate the new note's fields by copying them from the other note.
-    for key in new_note.keys():
-        if key in other_note:
-            new_note[key] = other_note[key].strip()
-
-    # copy field tags into new other_note object
-    if config.copy_tags:
-        new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
-
-    # check if note is dupe of existing one
-    if config.skip_duplicates and new_note.dupeOrEmpty():
-        return NoteCreateResult(new_note, NoteCreateStatus.dupe)
-
-    if isinstance(other_note, RemoteNote):
-        try:
-            download_media(new_note, other_note, web_client)
-        except CroProWebClientException:
-            return NoteCreateResult(new_note, NoteCreateStatus.connection_error)
-    else:
-        copy_media_files(new_note, other_note)
-        if tag := config.tag_original_notes:
-            other_note.add_tag(tag)
-            other_note.flush()
-        if config.copy_card_data:
-            import_card_info(new_note, other_note, other_col)
-
-    return NoteCreateResult(new_note, NoteCreateStatus.success)
-
-
 class NoteImporter:
     def __init__(self, col_mgr: CollectionManager, web_client: CroProWebSearchClient):
-        self._col_mgr = col_mgr
+        self._other_col = col_mgr
         self._web_client = web_client
         self._counter = ImportResultCounter()
 
@@ -236,12 +196,11 @@ class NoteImporter:
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = [
                 executor.submit(
-                    construct_new_note,
+                    self._construct_new_note,
+                    col=col,
                     other_note=note,
-                    other_col=self._col_mgr.col,
                     model=model,
                     deck=deck,
-                    web_client=self._web_client,
                 )
                 for note in notes
             ]
@@ -255,3 +214,42 @@ class NoteImporter:
         col.add_notes(requests)  # new notes have changed their ids
 
         return col.merge_undo_entries(pos)
+
+    def _construct_new_note(
+        self,
+        col: Collection,
+        other_note: CroProAnyNote,
+        model: NameId,
+        deck: NameId,
+    ) -> NoteCreateResult:
+        matching_model = get_matching_model(model, other_note.note_type())
+        new_note = Note(col, matching_model)
+        new_note.note_type()["did"] = deck.id
+
+        # populate the new note's fields by copying them from the other note.
+        for key in new_note.keys():
+            if key in other_note:
+                new_note[key] = other_note[key].strip()
+
+        # copy field tags into new other_note object
+        if config.copy_tags:
+            new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
+
+        # check if note is dupe of existing one
+        if config.skip_duplicates and new_note.dupeOrEmpty():
+            return NoteCreateResult(new_note, NoteCreateStatus.dupe)
+
+        if isinstance(other_note, RemoteNote):
+            try:
+                download_media(new_note, other_note, self._web_client)
+            except CroProWebClientException:
+                return NoteCreateResult(new_note, NoteCreateStatus.connection_error)
+        else:
+            copy_media_files(new_note, other_note)
+            if tag := config.tag_original_notes:
+                other_note.add_tag(tag)
+                other_note.flush()
+            if config.copy_card_data:
+                import_card_info(new_note, other_note, col_diff(col, self._other_col.col))
+
+        return NoteCreateResult(new_note, NoteCreateStatus.success)
