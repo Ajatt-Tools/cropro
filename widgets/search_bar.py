@@ -19,8 +19,9 @@ class ColSearchBar(QWidget):
     # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, ankimw: AnkiQt):
         super().__init__()
+        self.mw = ankimw
         self.other_profile_names_combo = CroProComboBox()
         self.selected_profile_changed = self.other_profile_names_combo.currentIndexChanged
         self.other_profile_deck_combo = NameIdComboBox()

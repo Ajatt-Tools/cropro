@@ -25,6 +25,7 @@ from collections.abc import Sequence
 import aqt
 from anki.models import NotetypeDict
 from anki.notes import NoteId
+from aqt import AnkiQt
 from aqt.operations import QueryOp
 from aqt.qt import *
 from aqt.utils import (
@@ -157,8 +158,8 @@ class SearchLock:
 
 
 class CroProMainWindow(MainWindowUI):
-    def __init__(self, parent: QWidget):
-        super().__init__(parent, window_title=ADDON_NAME)
+    def __init__(self, ankimw: AnkiQt):
+        super().__init__(ankimw=ankimw, window_title=ADDON_NAME)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
         self.web_search_client = CroProWebSearchClient()
@@ -476,7 +477,7 @@ class CroProMainWindow(MainWindowUI):
 
 def init():
     # init dialog
-    d = mw._cropro_main_dialog = CroProMainWindow(parent=mw)
+    d = mw._cropro_main_dialog = CroProMainWindow(ankimw=mw)
     # get AJT menu
     root_menu = menu_root_entry()
     # create a new menu item

@@ -1,7 +1,7 @@
 # Copyright: Ajatt-Tools and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-
+from aqt import AnkiQt
 from aqt.qt import *
 
 from .note_list import NoteList
@@ -18,10 +18,10 @@ WIN_MIN_HEIGHT = 480
 class MainWindowUI(QMainWindow):
     name = "cropro_dialog"
 
-    def __init__(self, parent: QWidget, window_title: str):
-        super().__init__(parent)
+    def __init__(self, ankimw: AnkiQt, window_title: str):
+        super().__init__(parent=ankimw)
         self.setWindowTitle(window_title)
-        self.search_bar = ColSearchBar()
+        self.search_bar = ColSearchBar(ankimw=ankimw)
         self.remote_search_bar = RemoteSearchBar()
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
