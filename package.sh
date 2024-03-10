@@ -4,6 +4,10 @@
 
 set -euxo pipefail
 
+readonly NC='\033[0m'
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+
 readonly addon_name=ajt_cropro
 readonly manifest=manifest.json
 readonly root_dir=$(git rev-parse --show-toplevel)
@@ -11,6 +15,15 @@ readonly branch=$(git branch --show-current)
 readonly zip_name=${addon_name}_${branch}.ankiaddon
 readonly target=${1:-ankiweb} # ankiweb or github
 export root_dir branch
+
+check_installed() {
+	for exe in git zip zipmerge; do
+		if ! command -v "$exe" >/dev/null; then
+			echo -e "${RED}Missing dependency:${NC} $exe"
+			exit 1
+		fi
+	done
+}
 
 git_archive() {
 	run_archive() {
@@ -35,14 +48,20 @@ git_archive() {
 	fi
 }
 
-cd -- "$root_dir" || exit 1
-rm -- ./"$zip_name" 2>/dev/null || true
+main() {
+	check_installed
 
-git_archive
+	cd -- "$root_dir" || exit 1
+	rm -v -- ./*.ankiaddon 2>/dev/null || true
 
-# shellcheck disable=SC2016
-git submodule foreach 'git archive HEAD --prefix=$path/ --format=zip --output "$root_dir/${path}_${branch}.zip"'
+	git_archive
 
-zipmerge ./"$zip_name" ./*.zip
-rm -- ./*.zip ./"$manifest" 2>/dev/null || true
-echo "Done."
+	# shellcheck disable=SC2016
+	git submodule foreach 'git archive HEAD --prefix="${sm_path}/" --format=zip --output "${root_dir}/${sm_path}_${sha1}.zip"'
+
+	zipmerge ./"$zip_name" ./*.zip
+	rm -v -- ./*.zip ./"$manifest" 2>/dev/null || true
+	echo -e "${GREEN}Done.${NC}"
+}
+
+main "$@"
