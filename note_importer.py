@@ -10,6 +10,7 @@ from collections.abc import Iterable
 from collections.abc import MutableSequence
 from copy import deepcopy
 from typing import NamedTuple, Optional
+from collections.abc import Sequence
 
 from anki.cards import Card
 from anki.collection import Collection, AddNoteRequest, OpChanges
@@ -26,8 +27,6 @@ from .config import config
 from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
 
 MAX_WORKERS = 5
-CroProAnyNote = Union[Note, RemoteNote]
-CroProNoteList = MutableSequence[CroProAnyNote]
 
 
 @enum.unique
@@ -39,26 +38,26 @@ class NoteCreateStatus(enum.Enum):
 
 @dataclasses.dataclass
 class NoteCreateResult:
-    note: CroProAnyNote
+    note: Note
     status: NoteCreateStatus
 
 
-class ImportResultCounter(dict[NoteCreateStatus, CroProNoteList]):
+class ImportResultCounter(dict[NoteCreateStatus, MutableSequence[Note]]):
     def __init__(self):
         super().__init__()
         for name in NoteCreateStatus:
             self[name] = []
 
     @property
-    def successes(self) -> CroProNoteList:
+    def successes(self) -> Sequence[Note]:
         return self[NoteCreateStatus.success]
 
     @property
-    def duplicates(self) -> CroProNoteList:
+    def duplicates(self) -> Sequence[Note]:
         return self[NoteCreateStatus.dupe]
 
     @property
-    def errors(self) -> CroProNoteList:
+    def errors(self) -> Sequence[Note]:
         return self[NoteCreateStatus.connection_error]
 
 
@@ -184,7 +183,7 @@ class NoteImporter:
     def import_notes(
         self,
         col: Collection,
-        notes: CroProNoteList,
+        notes: Sequence[Union[Note, RemoteNote]],
         model: NameId,
         deck: NameId,
     ) -> OpChanges:
@@ -221,7 +220,7 @@ class NoteImporter:
     def _construct_new_note(
         self,
         col: Collection,
-        other_note: CroProAnyNote,
+        other_note: Union[Note, RemoteNote],
         model: NameId,
         deck: NameId,
     ) -> NoteCreateResult:
