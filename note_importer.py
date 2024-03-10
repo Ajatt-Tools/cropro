@@ -8,12 +8,13 @@ import math
 import os.path
 from collections.abc import Iterable
 from collections.abc import MutableSequence
+from collections.abc import Sequence
 from copy import deepcopy
 from typing import NamedTuple, Optional
-from collections.abc import Sequence
 
 from anki.cards import Card
 from anki.collection import Collection, AddNoteRequest, OpChanges
+from anki.consts import CARD_TYPE_REV
 from anki.decks import DeckId
 from anki.models import NoteType
 from anki.notes import Note
@@ -155,7 +156,7 @@ def import_card_info(new_note: Note, other_note: Note):
         new_card.reps = other_card.reps
         new_card.left = other_card.left
 
-        if new_card.type == 2:  # 2=review
+        if new_card.type == CARD_TYPE_REV:
             # due is integer day, relative to the collection's creation time
             new_card.due += col_diff(new_note.col, other_note.col)
 
