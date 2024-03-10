@@ -443,8 +443,9 @@ class CroProMainWindow(MainWindowUI):
             results = self._importer.move_results()
             self.status_bar.set_import_status(results)
             if config.call_add_cards_hook:
-                for result in results.successes:
-                    gui_hooks.add_cards_did_add_note(result.note)
+                for note in results.successes:
+                    if note.id > 0:
+                        gui_hooks.add_cards_did_add_note(note)
             logDebug("import finished")
 
         (
