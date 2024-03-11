@@ -307,7 +307,9 @@ class CroProMainWindow(MainWindowUI):
 
     def open_other_col(self):
         selected_profile_name = self.search_bar.selected_profile_name()
-
+        if not selected_profile_name:
+            # there are no collections in the combobox
+            return
         if not self.other_col.is_opened or selected_profile_name != self.other_col.name:
             self.reset_cropro_status()
             self.other_col.open_collection(selected_profile_name)
