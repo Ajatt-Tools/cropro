@@ -310,7 +310,7 @@ class CroProMainWindow(MainWindowUI):
 
         if not self.other_col.is_opened or selected_profile_name != self.other_col.name:
             self.reset_cropro_status()
-            self.other_col.open(selected_profile_name)
+            self.other_col.open_collection(selected_profile_name)
             self.populate_other_profile_decks()
 
     def reset_cropro_status(self):

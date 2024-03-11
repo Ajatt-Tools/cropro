@@ -71,7 +71,7 @@ class CollectionManager:
         self._current_name = None
         self._opened_cols.clear()
 
-    def open(self, name: str) -> None:
+    def open_collection(self, name: str) -> None:
         assert name != mw.col.name(), "Can't open the current collection as other collection."
         if name not in self._opened_cols:
             self._opened_cols[name] = Collection(os.path.join(mw.pm.base, name, "collection.anki2"))
