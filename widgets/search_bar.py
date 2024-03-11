@@ -28,6 +28,7 @@ class ColSearchBar(QWidget):
         self._filter_button = CroProPushButton("Filter")
         self.selected_profile_changed = self._other_profile_names_combo.currentIndexChanged
         self._setup_layout()
+        self.setEnabled(False)  # disallow search until profiles and decks are set.
         self._connect_elements()
 
     @property
@@ -122,6 +123,7 @@ class ColSearchBar(QWidget):
         qconnect(self._other_profile_deck_combo.currentIndexChanged, handle_search_requested)
         qconnect(self._filter_button.clicked, handle_search_requested)
         qconnect(self._search_term_edit.editingFinished, handle_search_requested)
+        qconnect(self.selected_profile_changed, lambda row_idx: self.setEnabled(row_idx >= 0))
 
 
 # Debug
