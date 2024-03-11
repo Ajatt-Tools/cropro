@@ -127,7 +127,7 @@ class WindowState:
         restoreGeom(self._window, self._window.name, adjustSize=True)
 
 
-def nag_about_note_type() -> int:
+def nag_about_note_type(parent) -> int:
     return showInfo(
         title="Note importer",
         text="Note type must be assigned when importing from the Internet.\n\n"
@@ -135,6 +135,7 @@ def nag_about_note_type() -> int:
         f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK}).",
         type="critical",
         textFormat="markdown",
+        parent=parent or mw,
     )
 
 
@@ -252,11 +253,13 @@ class CroProMainWindow(MainWindowUI):
                 text=f"## Target note type has fields:\n\n{names}",
                 textFormat="markdown",
                 title=ADDON_NAME,
+                parent=self,
             )
         else:
             showWarning(
                 text="Target note type is not assigned.",
                 title=ADDON_NAME,
+                parent=self,
             )
 
     def get_target_note_type(self) -> Optional[NotetypeDict]:
@@ -280,7 +283,7 @@ class CroProMainWindow(MainWindowUI):
         other_profile_names: list[str] = get_other_profile_names()
         if not other_profile_names:
             msg: str = "This add-on only works if you have multiple profiles."
-            showInfo(msg)
+            showInfo(msg, title=ADDON_NAME)
             logDebug(msg)
             self.hide()
             return
@@ -435,7 +438,7 @@ class CroProMainWindow(MainWindowUI):
         def on_failure(ex: Exception) -> None:
             logDebug("import failed")
             if isinstance(ex, NoteTypeUnavailable):
-                nag_about_note_type()
+                nag_about_note_type(self)
                 return
             raise ex
 
