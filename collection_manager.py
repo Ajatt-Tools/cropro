@@ -72,9 +72,12 @@ class CollectionManager:
         self._opened_cols.clear()
 
     def open_collection(self, name: str) -> None:
+        assert name, "Name can't be empty."
         assert name != mw.col.name(), "Can't open the current collection as other collection."
         if name not in self._opened_cols:
-            self._opened_cols[name] = Collection(os.path.join(mw.pm.base, name, "collection.anki2"))
+            col_file_path = os.path.join(mw.pm.base, name, "collection.anki2")
+            assert os.path.isfile(col_file_path), "Collection file must exist."
+            self._opened_cols[name] = Collection(col_file_path)
         self._current_name = name
 
     def deck_names_and_ids(self) -> list[NameId]:
