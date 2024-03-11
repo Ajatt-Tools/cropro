@@ -393,7 +393,8 @@ class CroProMainWindow(MainWindowUI):
         if not (search_text or config.allow_empty_search):
             return
 
-        if not self.search_bar.decks_populated():
+        if not (self.search_bar.selected_profile_name() and self.search_bar.decks_populated()):
+            # the user has only one profile or the combo boxes haven't been populated.
             return
 
         def search_notes(_col) -> Sequence[NoteId]:
