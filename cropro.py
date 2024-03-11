@@ -322,6 +322,9 @@ class CroProMainWindow(MainWindowUI):
         logDebug("cleared search results")
 
     def populate_other_profile_decks(self):
+        if not self.other_col.is_opened:
+            # there's nothing to fill.
+            return
         logDebug("populating other profile decks...")
         self.search_bar.set_decks(
             [
