@@ -22,31 +22,31 @@ class ColSearchBar(QWidget):
     def __init__(self, ankimw: AnkiQt):
         super().__init__()
         self.mw = ankimw
-        self.other_profile_names_combo = CroProComboBox()
-        self.selected_profile_changed = self.other_profile_names_combo.currentIndexChanged
-        self.other_profile_deck_combo = NameIdComboBox()
-        self.search_term_edit = CroProLineEdit()
-        self.filter_button = CroProPushButton("Filter")
+        self._other_profile_names_combo = CroProComboBox()
+        self._other_profile_deck_combo = NameIdComboBox()
+        self._search_term_edit = CroProLineEdit()
+        self._filter_button = CroProPushButton("Filter")
+        self.selected_profile_changed = self._other_profile_names_combo.currentIndexChanged
         self._setup_layout()
         self._connect_elements()
 
     def search_text(self) -> str:
-        return self.search_term_edit.text().strip()
+        return self._search_term_edit.text().strip()
 
     def current_deck(self) -> NameId:
-        return self.other_profile_deck_combo.current_item()
+        return self._other_profile_deck_combo.current_item()
 
     def decks_populated(self) -> bool:
-        return self.other_profile_deck_combo.count() > 0
+        return self._other_profile_deck_combo.count() > 0
 
     def clear_all(self) -> None:
         """
         Clear contents of all widgets in the search bar.
         Called when profile opens to ensure that there's no conflicting data from the previously opened profile.
         """
-        self.other_profile_names_combo.clear()
-        self.other_profile_deck_combo.clear()
-        self.search_term_edit.clear()
+        self._other_profile_names_combo.clear()
+        self._other_profile_deck_combo.clear()
+        self._search_term_edit.clear()
 
     def needs_to_repopulate_profile_names(self) -> bool:
         """
@@ -55,8 +55,8 @@ class ColSearchBar(QWidget):
         2) If it happens to contain the current profile name, the user has switched profiles.
         """
         return (
-            self.other_profile_names_combo.count() == 0
-            or self.other_profile_names_combo.findText(self.mw.pm.name) != -1
+            self._other_profile_names_combo.count() == 0
+            or self._other_profile_names_combo.findText(self.mw.pm.name) != -1
         )
 
     def set_profile_names(self, other_profile_names: list[str]):
@@ -64,45 +64,45 @@ class ColSearchBar(QWidget):
         Populate profile selector with a list of profile names, excluding the current profile.
         """
         assert self.mw.pm.name not in other_profile_names
-        self.other_profile_names_combo.clear()
-        self.other_profile_names_combo.addItems(other_profile_names)
+        self._other_profile_names_combo.clear()
+        self._other_profile_names_combo.addItems(other_profile_names)
 
     def selected_profile_name(self) -> str:
         """
         The name of the other collection to search notes in (and import notes from).
         """
-        return self.other_profile_names_combo.currentText()
+        return self._other_profile_names_combo.currentText()
 
     def set_decks(self, decks: Iterable[NameId]):
         """
         A list of decks to search in.
         The user can limit search to a certain deck in the other collection.
         """
-        return self.other_profile_deck_combo.set_items(decks)
+        return self._other_profile_deck_combo.set_items(decks)
 
     def set_focus(self):
-        self.search_term_edit.setFocus()
+        self._search_term_edit.setFocus()
 
     def _setup_layout(self) -> None:
         self.setLayout(layout := QVBoxLayout())
         layout.addLayout(self._make_other_profile_settings_box())
         layout.addLayout(self._make_filter_row())
-        self.search_term_edit.setPlaceholderText("<text to filter by>")
+        self._search_term_edit.setPlaceholderText("<text to filter by>")
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.set_focus()
 
     def _make_other_profile_settings_box(self) -> QLayout:
         layout = QHBoxLayout()
         layout.addWidget(QLabel("Import From Profile:"))
-        layout.addWidget(self.other_profile_names_combo)
+        layout.addWidget(self._other_profile_names_combo)
         layout.addWidget(QLabel("Deck:"))
-        layout.addWidget(self.other_profile_deck_combo)
+        layout.addWidget(self._other_profile_deck_combo)
         return layout
 
     def _make_filter_row(self) -> QLayout:
         layout = QHBoxLayout()
-        layout.addWidget(self.search_term_edit)
-        layout.addWidget(self.filter_button)
+        layout.addWidget(self._search_term_edit)
+        layout.addWidget(self._filter_button)
         return layout
 
     def _connect_elements(self):
@@ -111,9 +111,9 @@ class ColSearchBar(QWidget):
                 # noinspection PyUnresolvedReferences
                 self.search_requested.emit(text)
 
-        qconnect(self.other_profile_deck_combo.currentIndexChanged, handle_search_requested)
-        qconnect(self.filter_button.clicked, handle_search_requested)
-        qconnect(self.search_term_edit.editingFinished, handle_search_requested)
+        qconnect(self._other_profile_deck_combo.currentIndexChanged, handle_search_requested)
+        qconnect(self._filter_button.clicked, handle_search_requested)
+        qconnect(self._search_term_edit.editingFinished, handle_search_requested)
 
 
 # Debug
