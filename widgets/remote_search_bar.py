@@ -77,15 +77,15 @@ class RemoteSearchBar(QWidget):
         return self._keyword_edit.clear()
 
     @property
-    def category_combo(self) -> CroProComboBox:
+    def category_combo(self) -> QComboBox:
         return self._category_combo
 
     @property
-    def sort_combo(self) -> CroProComboBox:
+    def sort_combo(self) -> QComboBox:
         return self._sort_combo
 
     @property
-    def jlpt_level_combo(self) -> CroProComboBox:
+    def jlpt_level_combo(self) -> QComboBox:
         return self._jlpt_level_combo
 
     def search_text(self) -> str:

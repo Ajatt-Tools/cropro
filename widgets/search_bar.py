@@ -30,6 +30,14 @@ class ColSearchBar(QWidget):
         self._setup_layout()
         self._connect_elements()
 
+    @property
+    def other_profile_names_combo(self) -> QComboBox:
+        return self._other_profile_names_combo
+
+    @property
+    def other_profile_deck_combo(self) -> QComboBox:
+        return self._other_profile_deck_combo
+
     def search_text(self) -> str:
         return self._search_term_edit.text().strip()
 
