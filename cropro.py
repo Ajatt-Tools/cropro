@@ -219,6 +219,8 @@ class CroProMainWindow(MainWindowUI):
 
         # Help menu
         help_menu = menu_bar.addMenu("&Help")
+        help_menu.addAction("Guide", lambda: openLink(ADDON_GUIDE_LINK))
+        help_menu.addSeparator()
         help_menu.addAction("Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
         help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
