@@ -19,6 +19,10 @@ jobs:
           fetch-depth: 1
           submodules: "recursive"
 
+      - name: Install zipmerge
+        run: |
+          sudo apt-get install -y zipmerge
+
       - name: "Create zip"
         run: |
           ./package.sh --target github
