@@ -1,0 +1,33 @@
+name: "tagged-release"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: "Create zip"
+        run: |
+          ./package.sh --target github
+
+      - name: "Create release"
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: false
+          make_latest: true
+          generate_release_notes: true
+          name: "CroPro ${{github.ref_name}}"
+          files: |
+            *.ankiaddon
