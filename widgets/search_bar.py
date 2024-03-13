@@ -42,6 +42,9 @@ class ColSearchBar(QWidget):
     def search_text(self) -> str:
         return self._search_term_edit.text().strip()
 
+    def set_search_text(self, search_text: str) -> None:
+        return self._search_term_edit.setText(search_text)
+
     def current_deck(self) -> NameId:
         return self._other_profile_deck_combo.current_item()
 

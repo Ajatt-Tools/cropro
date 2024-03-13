@@ -73,9 +73,6 @@ class RemoteSearchBar(QWidget):
         self._setup_layout()
         self._connect_elements()
 
-    def clear_search_text(self) -> None:
-        return self._keyword_edit.clear()
-
     @property
     def category_combo(self) -> QComboBox:
         return self._category_combo
@@ -90,6 +87,12 @@ class RemoteSearchBar(QWidget):
 
     def search_text(self) -> str:
         return self._keyword_edit.text().strip()
+
+    def set_search_text(self, search_text: str) -> None:
+        return self._keyword_edit.setText(search_text)
+
+    def clear_search_text(self) -> None:
+        return self._keyword_edit.clear()
 
     def get_request_args(self) -> dict[str, str]:
         args = {}

@@ -26,6 +26,7 @@ import aqt
 from anki.models import NotetypeDict
 from anki.notes import NoteId
 from aqt import AnkiQt
+from aqt.browser import Browser
 from aqt.operations import QueryOp, CollectionOp
 from aqt.qt import *
 from aqt.utils import (
@@ -523,6 +524,19 @@ class CroProMainWindow(MainWindowUI):
         self.populate_current_profile_decks()
         self.populate_note_type_selection_combo()
 
+    def search_for(self, search_text: str) -> None:
+        self.show()
+        self.setFocus()
+        self.visible_search_bar().set_search_text(search_text)
+        self.visible_search_bar().search_requested.emit(search_text)
+
+    def setup_browser_menu(self, browser: Browser) -> None:
+        """Add a browser entry"""
+        # This is the "Go" menu.
+        browser.form.menuJump.addSeparator()
+        action = browser.form.menuJump.addAction(f"Look up in {ADDON_NAME_SHORT}")
+        qconnect(action.triggered, lambda: self.search_for(browser.current_search()))
+
 
 ######################################################################
 # Entry point
@@ -543,3 +557,5 @@ def init():
     # react to anki's state changes
     gui_hooks.profile_will_close.append(d.on_profile_will_close)
     gui_hooks.profile_did_open.append(d.on_profile_did_open)
+    # add an action to the Browser's "Go" menu.
+    gui_hooks.browser_menus_did_init.append(d.setup_browser_menu)
