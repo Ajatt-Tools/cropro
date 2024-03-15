@@ -85,8 +85,9 @@ main > * {
 button.cropro__play_button {
     --side: 32px;
 
-    display: inline-block;
+    display: block;
     width: var(--side);
+    height: var(--side);
     aspect-ratio: 1/1;
     background-color: #eef0f2;
     color: #292c31;
