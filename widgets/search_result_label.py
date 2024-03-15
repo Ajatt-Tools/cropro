@@ -11,8 +11,7 @@ from aqt.qt import *
 class CropProExceptionProtocol(typing.Protocol):
     response: typing.Optional[requests.Response]
 
-    def what(self) -> str:
-        ...
+    def what(self) -> str: ...
 
 
 class SearchResultLabel(QLabel):
