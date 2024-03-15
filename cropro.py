@@ -175,21 +175,9 @@ class CroProMainWindow(MainWindowUI):
         self._add_tooltips()
 
     def _add_global_shortcuts(self):
-        self.addAction(
-            "Focus search bar",
-            QKeySequence("Ctrl+k"),
-            lambda: self.visible_search_bar().set_focus(),
-        )
-        self.addAction(
-            "Import",
-            QKeySequence("Ctrl+i"),
-            lambda: self.import_button.click(),
-        )
-        self.addAction(
-            "Select list",
-            QKeySequence("Ctrl+l"),
-            lambda: self.note_list.set_focus(),
-        )
+        QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.visible_search_bar().set_focus())  # type: ignore
+        QShortcut(QKeySequence("Ctrl+i"), self, activated=lambda: self.import_button.click())  # type: ignore
+        QShortcut(QKeySequence("Ctrl+l"), self, activated=lambda: self.note_list.set_focus())  # type: ignore
 
     def _add_tooltips(self):
         self.import_button.setToolTip("Add a new card (Ctrl+I)")
