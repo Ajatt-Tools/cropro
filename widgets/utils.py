@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from collections.abc import Iterable
+from collections.abc import Sequence
 
 from aqt.qt import *
 
@@ -49,6 +50,10 @@ class CroProComboBox(QComboBox):
         self.setMaximumHeight(WIDGET_MIN_HEIGHT)
         self.setMinimumWidth(COMBO_MIN_WIDTH)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+    def set_texts(self, texts: Sequence[str]):
+        self.clear()
+        self.addItems(texts)
 
     def all_texts(self) -> Iterable[str]:
         """Returns an iterable of all items stored in the combo box."""

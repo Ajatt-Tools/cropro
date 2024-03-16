@@ -3,6 +3,7 @@
 
 
 from collections.abc import Iterable
+from collections.abc import Sequence
 
 from aqt import AnkiQt
 from aqt.qt import *
@@ -71,13 +72,12 @@ class ColSearchBar(QWidget):
             or self._other_profile_names_combo.findText(self.mw.pm.name) != -1
         )
 
-    def set_profile_names(self, other_profile_names: list[str]):
+    def set_profile_names(self, other_profile_names: Sequence[str]):
         """
         Populate profile selector with a list of profile names, excluding the current profile.
         """
         assert self.mw.pm.name not in other_profile_names
-        self._other_profile_names_combo.clear()
-        self._other_profile_names_combo.addItems(other_profile_names)
+        self._other_profile_names_combo.set_texts(other_profile_names)
 
     def selected_profile_name(self) -> str:
         """
