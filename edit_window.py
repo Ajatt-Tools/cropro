@@ -1,31 +1,33 @@
 # Copyright: Ajatt-Tools and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import Protocol, Optional
+from typing import Protocol, Optional, cast
 
 import anki.notes
 import aqt
 from anki.notes import Note, NoteId
 from aqt import mw, gui_hooks, addcards
 from aqt.qt import *
+from aqt.utils import tooltip
 
-from .collection_manager import CollectionManager
+from .collection_manager import CollectionManager, NameId
 from .common import LogDebug
 from .config import config
 from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
 from .widgets.note_list import NoteList
 from .widgets.status_bar import StatusBar
-from .widgets.utils import NameIdComboBox, CroProComboBox
 
 logDebug = LogDebug()
 
 
 class CropProWindowProtocol(Protocol):
-    current_profile_deck_combo: NameIdComboBox
-    note_type_selection_combo: CroProComboBox
     other_col: CollectionManager
     note_list: NoteList
     status_bar: StatusBar
+
+    def current_deck(self) -> NameId: ...
+
+    def current_model(self) -> NameId: ...
 
 
 def current_add_dialog() -> Optional[addcards.AddCards]:
@@ -44,7 +46,11 @@ class AddDialogLauncher:
         gui_hooks.add_cards_will_add_note.append(self.on_add_import)
 
     def create_window(self, other_note: Optional[Note] = None) -> NoteId:
+        assert mw, "Main window must exist."
+
         if not isinstance(other_note, Note):
+            # TODO edit remote notes.
+            tooltip("Not implemented", parent=cast(QWidget, self.cropro))
             return NoteId(0)
 
         if other_note is None:
@@ -55,14 +61,14 @@ class AddDialogLauncher:
         self.other_note = other_note
         logDebug("Preparing add window")
 
-        if self.cropro.current_profile_deck_combo.currentData() is None:
-            raise Exception(f"deck was not found: {self.cropro.current_profile_deck_combo.currentData()}")
+        if self.cropro.current_deck().id is None:
+            raise Exception(f"deck was not found: {self.cropro.current_deck()}")
 
-        mw.col.decks.select(self.cropro.current_profile_deck_combo.currentData())
+        mw.col.decks.select(self.cropro.current_deck().id)
 
-        model = get_matching_model(self.cropro.note_type_selection_combo.currentData(), other_note.note_type())
+        model = get_matching_model(self.cropro.current_model(), other_note.note_type())
 
-        mw.col.models.setCurrent(model)
+        mw.col.models.set_current(model)
         mw.col.models.update(model)
 
         self.new_note = anki.notes.Note(mw.col, model)
@@ -83,8 +89,8 @@ class AddDialogLauncher:
             other_note.add_tag(config.tag_original_notes)
             other_note.flush()
 
-        if current_add_dialog() is not None:
-            current_add_dialog().closeWithCallback(self._open_window)
+        if d := current_add_dialog():
+            d.closeWithCallback(self._open_window)
         else:
             self._open_window()
 
