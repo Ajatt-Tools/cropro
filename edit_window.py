@@ -10,7 +10,7 @@ from aqt import mw, gui_hooks, addcards
 from aqt.qt import *
 from aqt.utils import tooltip
 
-from .collection_manager import CollectionManager, NameId
+from .collection_manager import NameId
 from .common import LogDebug
 from .config import config
 from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
@@ -21,7 +21,6 @@ logDebug = LogDebug()
 
 
 class CropProWindowProtocol(Protocol):
-    other_col: CollectionManager
     note_list: NoteList
     status_bar: StatusBar
 
