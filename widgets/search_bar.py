@@ -17,6 +17,9 @@ except ImportError:
 
 
 class ColSearchBar(QWidget):
+    """
+    Search bar and search options (profile selector, deck selector, search bar, search button).
+    """
     # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
