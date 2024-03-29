@@ -175,7 +175,7 @@ class CroProMainWindow(MainWindowUI):
         self._add_tooltips()
 
     def _add_global_shortcuts(self):
-        QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.visible_search_bar().set_focus())  # type: ignore
+        QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.visible_search_bar().bar.focus_search_edit())  # type: ignore
         QShortcut(QKeySequence("Ctrl+i"), self, activated=lambda: self.import_button.click())  # type: ignore
         QShortcut(QKeySequence("Ctrl+l"), self, activated=lambda: self.note_list.set_focus())  # type: ignore
 
@@ -216,7 +216,7 @@ class CroProMainWindow(MainWindowUI):
         help_menu.addAction("Create sentence bank: subs2srs", lambda: openLink(SUBS2SRS_LINK))
 
     def _send_query_to_browser(self):
-        search_text = self.visible_search_bar().search_text()
+        search_text = self.visible_search_bar().bar.search_text()
         if not search_text:
             return tooltip("Nothing to do.", parent=self)
         browser = aqt.dialogs.open("Browser", mw)
@@ -485,11 +485,11 @@ class CroProMainWindow(MainWindowUI):
     def _activate_enabled_search_bar(self):
         if config.search_the_web:
             self.remote_search_bar.show()
-            self.remote_search_bar.set_focus()
+            self.remote_search_bar.bar.focus_search_edit()
             self.search_bar.hide()
         else:
             self.search_bar.show()
-            self.search_bar.set_focus()
+            self.search_bar.bar.focus_search_edit()
             self.remote_search_bar.hide()
 
     def _open_cropro_settings(self):
@@ -503,7 +503,7 @@ class CroProMainWindow(MainWindowUI):
     def on_profile_did_open(self):
         # clean state from the previous profile if it was set.
         self.search_bar.clear_all()
-        self.remote_search_bar.clear_search_text()
+        self.remote_search_bar.bar.clear_search_text()
         self.note_list.clear_notes()
         # setup search bar
         self.populate_other_profile_names()
@@ -515,7 +515,7 @@ class CroProMainWindow(MainWindowUI):
     def search_for(self, search_text: str) -> None:
         self.show()
         self.setFocus()
-        self.visible_search_bar().set_search_text(search_text)
+        self.visible_search_bar().bar.set_search_text(search_text)
         self.visible_search_bar().search_requested.emit(search_text)
 
     def setup_browser_menu(self, browser: Browser) -> None:

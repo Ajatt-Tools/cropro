@@ -6,12 +6,15 @@ from collections.abc import Sequence
 
 from aqt.qt import *
 
+
 try:
+    from .search_bar import CroProSearchBar
     from ..remote_search import get_request_url
     from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
 except ImportError:
     from utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
     from remote_search import get_request_url
+    from search_bar import CroProSearchBar
 
 
 @dataclasses.dataclass
@@ -42,7 +45,6 @@ class RemoteSearchBar(QWidget):
 
     def __init__(self):
         super().__init__()
-        self._keyword_edit = CroProLineEdit()  # keyword
         self._category_combo = new_combo_box(
             [
                 RemoteComboBoxItem(None, "all"),
@@ -69,7 +71,7 @@ class RemoteSearchBar(QWidget):
             key="jlpt",
         )
 
-        self._search_button = CroProPushButton("Search")
+        self.bar = CroProSearchBar()
         self._setup_layout()
         self._connect_elements()
 
@@ -85,18 +87,9 @@ class RemoteSearchBar(QWidget):
     def jlpt_level_combo(self) -> QComboBox:
         return self._jlpt_level_combo
 
-    def search_text(self) -> str:
-        return self._keyword_edit.text().strip()
-
-    def set_search_text(self, search_text: str) -> None:
-        return self._keyword_edit.setText(search_text)
-
-    def clear_search_text(self) -> None:
-        return self._keyword_edit.clear()
-
     def get_request_args(self) -> dict[str, str]:
         args = {}
-        if keyword := self.search_text():
+        if keyword := self.bar.search_text():
             args["keyword"] = keyword
             for widget in (self._sort_combo, self._category_combo, self._jlpt_level_combo):
                 if param := widget.currentData().http_arg:
@@ -106,16 +99,12 @@ class RemoteSearchBar(QWidget):
     def get_request_url(self) -> str:
         return get_request_url(self.get_request_args())
 
-    def set_focus(self):
-        self._keyword_edit.setFocus()
-
     def _setup_layout(self) -> None:
         self.setLayout(layout := QVBoxLayout())
         layout.addLayout(self._make_search_settings_box())
-        layout.addLayout(self._make_filter_row())
-        self._keyword_edit.setPlaceholderText("<text to search the Web>")
+        layout.addWidget(self.bar)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
-        self.set_focus()
+        self.bar.focus_search_edit()
 
     def _make_search_settings_box(self) -> QLayout:
         layout = QHBoxLayout()
@@ -127,20 +116,13 @@ class RemoteSearchBar(QWidget):
         layout.addWidget(self._jlpt_level_combo)
         return layout
 
-    def _make_filter_row(self) -> QLayout:
-        layout = QHBoxLayout()
-        layout.addWidget(self._keyword_edit)
-        layout.addWidget(self._search_button)
-        return layout
-
     def _connect_elements(self):
         def handle_search_requested():
             if self.get_request_url():
                 # noinspection PyUnresolvedReferences
-                self.search_requested.emit(self.search_text())
+                self.search_requested.emit(self.bar.search_text())
 
-        qconnect(self._search_button.clicked, handle_search_requested)
-        qconnect(self._keyword_edit.editingFinished, handle_search_requested)
+        qconnect(self.bar.search_requested, handle_search_requested)
 
 
 # Debug

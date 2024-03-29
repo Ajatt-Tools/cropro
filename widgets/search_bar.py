@@ -16,10 +16,54 @@ except ImportError:
     from collection_manager import NameId
 
 
+class CroProSearchBar(QWidget):
+    """
+    Shows a search bar and a submit button.
+    """
+    # noinspection PyArgumentList
+    search_requested = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self._search_term_edit = CroProLineEdit()
+        self._search_button = CroProPushButton("Search")
+        self._setup_layout()
+        self._connect_elements()
+
+    def focus_search_edit(self) -> None:
+        return self._search_term_edit.setFocus()
+
+    def search_text(self) -> str:
+        return self._search_term_edit.text().strip()
+
+    def set_search_text(self, search_text: str) -> None:
+        return self._search_term_edit.setText(search_text.strip())
+
+    def clear_search_text(self) -> None:
+        return self._search_term_edit.clear()
+
+    def _setup_layout(self) -> None:
+        self._search_term_edit.setPlaceholderText("<text to filter by>")
+        layout = QHBoxLayout()
+        layout.addWidget(self._search_term_edit)
+        layout.addWidget(self._search_button)
+        self.setLayout(layout)
+
+    def _connect_elements(self):
+        def handle_search_requested():
+            if text := self.search_text():
+                # noinspection PyUnresolvedReferences
+                self.search_requested.emit(text)
+
+        qconnect(self._search_button.clicked, handle_search_requested)
+        qconnect(self._search_term_edit.editingFinished, handle_search_requested)
+
+
 class ColSearchBar(QWidget):
     """
     Search bar and search options (profile selector, deck selector, search bar, search button).
     """
+
     # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
@@ -28,8 +72,7 @@ class ColSearchBar(QWidget):
         self.mw = ankimw
         self._other_profile_names_combo = CroProComboBox()
         self._other_profile_deck_combo = NameIdComboBox()
-        self._search_term_edit = CroProLineEdit()
-        self._filter_button = CroProPushButton("Filter")
+        self.bar = CroProSearchBar()
         self.selected_profile_changed = self._other_profile_names_combo.currentIndexChanged
         self._setup_layout()
         self.setEnabled(False)  # disallow search until profiles and decks are set.
@@ -42,12 +85,6 @@ class ColSearchBar(QWidget):
     @property
     def other_profile_deck_combo(self) -> QComboBox:
         return self._other_profile_deck_combo
-
-    def search_text(self) -> str:
-        return self._search_term_edit.text().strip()
-
-    def set_search_text(self, search_text: str) -> None:
-        return self._search_term_edit.setText(search_text)
 
     def current_deck(self) -> NameId:
         return self._other_profile_deck_combo.current_item()
@@ -62,7 +99,7 @@ class ColSearchBar(QWidget):
         """
         self._other_profile_names_combo.clear()
         self._other_profile_deck_combo.clear()
-        self._search_term_edit.clear()
+        self.bar.clear_search_text()
 
     def needs_to_repopulate_profile_names(self) -> bool:
         """
@@ -96,13 +133,12 @@ class ColSearchBar(QWidget):
         return self._other_profile_deck_combo.set_items(decks)
 
     def set_focus(self):
-        self._search_term_edit.setFocus()
+        self.bar.focus_search_edit()
 
     def _setup_layout(self) -> None:
         self.setLayout(layout := QVBoxLayout())
         layout.addLayout(self._make_other_profile_settings_box())
-        layout.addLayout(self._make_filter_row())
-        self._search_term_edit.setPlaceholderText("<text to filter by>")
+        layout.addWidget(self.bar)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.set_focus()
 
@@ -114,21 +150,14 @@ class ColSearchBar(QWidget):
         layout.addWidget(self._other_profile_deck_combo)
         return layout
 
-    def _make_filter_row(self) -> QLayout:
-        layout = QHBoxLayout()
-        layout.addWidget(self._search_term_edit)
-        layout.addWidget(self._filter_button)
-        return layout
-
     def _connect_elements(self):
         def handle_search_requested():
-            if text := self.search_text():
+            if text := self.bar.search_text():
                 # noinspection PyUnresolvedReferences
                 self.search_requested.emit(text)
 
         qconnect(self._other_profile_deck_combo.currentIndexChanged, handle_search_requested)
-        qconnect(self._filter_button.clicked, handle_search_requested)
-        qconnect(self._search_term_edit.editingFinished, handle_search_requested)
+        qconnect(self.bar.search_requested, handle_search_requested)
         qconnect(self.selected_profile_changed, lambda row_idx: self.setEnabled(row_idx >= 0))
 
 
