@@ -114,6 +114,7 @@ class RemoteSearchBar(QWidget):
         layout.addWidget(self._sort_combo)
         layout.addWidget(QLabel("JLPT:"))
         layout.addWidget(self._jlpt_level_combo)
+        layout.setContentsMargins(0, 0, 0, 0)
         return layout
 
     def _connect_elements(self):

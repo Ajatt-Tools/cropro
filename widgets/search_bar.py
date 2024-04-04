@@ -48,6 +48,7 @@ class CroProSearchBar(QWidget):
         layout = QHBoxLayout()
         layout.addWidget(self._search_term_edit)
         layout.addWidget(self._search_button)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
     def _connect_elements(self):
@@ -76,6 +77,7 @@ class ColSearchOptions(QWidget):
         layout.addWidget(self._other_profile_names_combo)
         layout.addWidget(QLabel("Deck:"))
         layout.addWidget(self._other_profile_deck_combo)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
     @property
