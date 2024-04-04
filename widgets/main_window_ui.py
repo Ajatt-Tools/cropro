@@ -6,7 +6,7 @@ from aqt.qt import *
 
 from .note_list import NoteList
 from .remote_search_bar import RemoteSearchBar
-from .search_bar import ColSearchBar
+from .search_bar import ColSearchWidget
 from .search_result_label import SearchResultLabel
 from .status_bar import StatusBar
 from .utils import ProfileNameLabel, NameIdComboBox, CroProPushButton
@@ -21,7 +21,7 @@ class MainWindowUI(QMainWindow):
     def __init__(self, ankimw: AnkiQt, window_title: str):
         super().__init__(parent=ankimw)
         self.setWindowTitle(window_title)
-        self.search_bar = ColSearchBar(ankimw=ankimw)
+        self.search_bar = ColSearchWidget(ankimw=ankimw)
         self.remote_search_bar = RemoteSearchBar()
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()

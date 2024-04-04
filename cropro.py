@@ -59,7 +59,7 @@ from .remote_search import CroProWebSearchClient, RemoteNote, CroProWebClientExc
 from .settings_dialog import open_cropro_settings
 from .widgets.main_window_ui import MainWindowUI
 from .widgets.remote_search_bar import RemoteSearchBar
-from .widgets.search_bar import ColSearchBar
+from .widgets.search_bar import ColSearchWidget
 from .widgets.utils import CroProComboBox
 
 logDebug = LogDebug()
@@ -76,8 +76,8 @@ class WindowState:
         self._json_filepath = WINDOW_STATE_FILE_PATH
         self._map: dict[str, CroProComboBox] = {
             # Search bar settings
-            "from_profile": self._window.search_bar.other_profile_names_combo,
-            "from_deck": self._window.search_bar.other_profile_deck_combo,
+            "from_profile": self._window.search_bar.opts.other_profile_names_combo,
+            "from_deck": self._window.search_bar.opts.other_profile_deck_combo,
             "to_deck": self._window.current_profile_deck_combo,
             "note_type": self._window.note_type_selection_combo,
             # Web search settings
@@ -183,7 +183,7 @@ class CroProMainWindow(MainWindowUI):
         self.import_button.setToolTip("Add a new card (Ctrl+I)")
         self.edit_button.setToolTip("Edit card before adding")
 
-    def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchBar]:
+    def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchWidget]:
         w = self.remote_search_bar if config.search_the_web else self.search_bar
         assert w.isVisible(), "Widget must be visible."
         return w
@@ -259,14 +259,14 @@ class CroProMainWindow(MainWindowUI):
             return mw.col.models.get(selected_note_type.id)
 
     def connect_elements(self):
-        qconnect(self.search_bar.selected_profile_changed, self.open_other_col)
+        qconnect(self.search_bar.opts.selected_profile_changed, self.open_other_col)
         qconnect(self.search_bar.search_requested, self.perform_local_search)
         qconnect(self.remote_search_bar.search_requested, self.perform_remote_search)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
 
     def populate_other_profile_names(self) -> None:
-        if not self.search_bar.needs_to_repopulate_profile_names():
+        if not self.search_bar.opts.opts.needs_to_repopulate_profile_names():
             return
 
         logDebug("populating other profiles.")
@@ -279,7 +279,7 @@ class CroProMainWindow(MainWindowUI):
             self.hide()
             return
 
-        self.search_bar.set_profile_names(other_profile_names)
+        self.search_bar.opts.set_profile_names(other_profile_names)
 
     def populate_note_type_selection_combo(self):
         """
@@ -297,7 +297,7 @@ class CroProMainWindow(MainWindowUI):
         self.current_profile_deck_combo.set_items(sorted_decks_and_ids(mw.col))
 
     def open_other_col(self):
-        selected_profile_name = self.search_bar.selected_profile_name()
+        selected_profile_name = self.search_bar.opts.selected_profile_name()
         if not selected_profile_name:
             # there are no collections in the combobox
             return
@@ -317,7 +317,7 @@ class CroProMainWindow(MainWindowUI):
             # there's nothing to fill.
             return
         logDebug("populating other profile decks...")
-        self.search_bar.set_decks(
+        self.search_bar.opts.set_decks(
             [
                 WHOLE_COLLECTION,  # the "whole collection" option goes first
                 *self.other_col.deck_names_and_ids(),
@@ -387,12 +387,12 @@ class CroProMainWindow(MainWindowUI):
         if not (search_text or config.allow_empty_search):
             return
 
-        if not (self.search_bar.selected_profile_name() and self.search_bar.decks_populated()):
+        if not (self.search_bar.opts.selected_profile_name() and self.search_bar.opts.decks_populated()):
             # the user has only one profile or the combo boxes haven't been populated.
             return
 
         def search_notes(_col) -> Sequence[NoteId]:
-            return self.other_col.find_notes(self.search_bar.current_deck(), search_text)
+            return self.other_col.find_notes(self.search_bar.opts.current_deck(), search_text)
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
             self.note_list.set_notes(
