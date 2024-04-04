@@ -266,7 +266,7 @@ class CroProMainWindow(MainWindowUI):
         qconnect(self.import_button.clicked, self.do_import)
 
     def populate_other_profile_names(self) -> None:
-        if not self.search_bar.opts.opts.needs_to_repopulate_profile_names():
+        if not self.search_bar.opts.needs_to_repopulate_profile_names():
             return
 
         logDebug("populating other profiles.")
