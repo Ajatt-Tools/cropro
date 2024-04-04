@@ -302,6 +302,7 @@ class CroProMainWindow(MainWindowUI):
             # there are no collections in the combobox
             return
         if not self.other_col.is_opened or selected_profile_name != self.other_col.name:
+            # the selected collection is not opened yet
             self.reset_cropro_status()
             self.other_col.open_collection(selected_profile_name)
             self.populate_other_profile_decks()
