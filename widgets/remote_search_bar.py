@@ -35,7 +35,7 @@ def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]], key: str)
     return b
 
 
-class RemoteSearchBar(QWidget):
+class RemoteSearchWidget(QWidget):
     """
     Search bar for https://docs.immersionkit.com/public%20api/search/
     """
@@ -134,7 +134,7 @@ class App(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Test")
-        self.search_bar = RemoteSearchBar()
+        self.search_bar = RemoteSearchWidget()
         self.initUI()
         qconnect(self.search_bar.search_requested, self.on_search_requested)
 

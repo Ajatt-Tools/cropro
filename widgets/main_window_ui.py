@@ -5,7 +5,7 @@ from aqt import AnkiQt
 from aqt.qt import *
 
 from .note_list import NoteList
-from .remote_search_bar import RemoteSearchBar
+from .remote_search_bar import RemoteSearchWidget
 from .search_bar import ColSearchWidget
 from .search_result_label import SearchResultLabel
 from .status_bar import StatusBar
@@ -22,7 +22,7 @@ class MainWindowUI(QMainWindow):
         super().__init__(parent=ankimw)
         self.setWindowTitle(window_title)
         self.search_bar = ColSearchWidget(ankimw=ankimw)
-        self.remote_search_bar = RemoteSearchBar()
+        self.remote_search_bar = RemoteSearchWidget()
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()

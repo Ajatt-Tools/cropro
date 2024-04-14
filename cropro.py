@@ -58,7 +58,7 @@ from .note_importer import NoteTypeUnavailable, NoteImporter
 from .remote_search import CroProWebSearchClient, RemoteNote, CroProWebClientException
 from .settings_dialog import open_cropro_settings
 from .widgets.main_window_ui import MainWindowUI
-from .widgets.remote_search_bar import RemoteSearchBar
+from .widgets.remote_search_bar import RemoteSearchWidget
 from .widgets.search_bar import ColSearchWidget
 from .widgets.utils import CroProComboBox
 
@@ -183,7 +183,7 @@ class CroProMainWindow(MainWindowUI):
         self.import_button.setToolTip("Add a new card (Ctrl+I)")
         self.edit_button.setToolTip("Edit card before adding")
 
-    def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchWidget]:
+    def visible_search_bar(self) -> Union[RemoteSearchWidget, ColSearchWidget]:
         w = self.remote_search_bar if config.search_the_web else self.search_bar
         assert w.isVisible(), "Widget must be visible."
         return w
