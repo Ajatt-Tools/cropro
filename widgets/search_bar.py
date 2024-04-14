@@ -1,19 +1,24 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
-
-from collections.abc import Iterable
-from collections.abc import Sequence
+from types import SimpleNamespace
+from typing import cast
 
 from aqt import AnkiQt
 from aqt.qt import *
 
+
 try:
+    from .col_search_opts import ColSearchOptions
+    from .remote_search_opts import RemoteSearchOptions
+    from ..remote_search import get_request_url
     from .utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
     from ..collection_manager import NameId
 except ImportError:
     from utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
     from collection_manager import NameId
+    from remote_search_opts import RemoteSearchOptions
+    from remote_search import get_request_url
+    from col_search_opts import ColSearchOptions
 
 
 class CroProSearchBar(QWidget):
@@ -61,76 +66,7 @@ class CroProSearchBar(QWidget):
         qconnect(self._search_term_edit.editingFinished, handle_search_requested)
 
 
-class ColSearchOptions(QWidget):
-    def __init__(self, ankimw: AnkiQt):
-        super().__init__()
-        self.ankimw = ankimw
-        self._other_profile_names_combo = CroProComboBox()
-        self._other_profile_deck_combo = NameIdComboBox()
-        self.selected_profile_changed = self._other_profile_names_combo.currentIndexChanged
-        self.selected_deck_changed = self._other_profile_deck_combo.currentIndexChanged
-        self._setup_layout()
-
-    def _setup_layout(self) -> None:
-        layout = QHBoxLayout()
-        layout.addWidget(QLabel("Import From Profile:"))
-        layout.addWidget(self._other_profile_names_combo)
-        layout.addWidget(QLabel("Deck:"))
-        layout.addWidget(self._other_profile_deck_combo)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
-
-    @property
-    def other_profile_names_combo(self) -> QComboBox:
-        return self._other_profile_names_combo
-
-    @property
-    def other_profile_deck_combo(self) -> QComboBox:
-        return self._other_profile_deck_combo
-
-    def current_deck(self) -> NameId:
-        return self._other_profile_deck_combo.current_item()
-
-    def decks_populated(self) -> bool:
-        return self._other_profile_deck_combo.count() > 0
-
-    def clear_combos(self) -> None:
-        self._other_profile_names_combo.clear()
-        self._other_profile_deck_combo.clear()
-
-    def needs_to_repopulate_profile_names(self) -> bool:
-        """
-        The content of the profile name selector is outdated and the combo box needs to be repopulated.
-        1) If the combo box is empty, the window is opened for the first time.
-        2) If it happens to contain the current profile name, the user has switched profiles.
-        """
-        return (
-            self._other_profile_names_combo.count() == 0
-            or self._other_profile_names_combo.findText(self.ankimw.pm.name) != -1
-        )
-
-    def set_profile_names(self, other_profile_names: Sequence[str]):
-        """
-        Populate profile selector with a list of profile names, excluding the current profile.
-        """
-        assert self.ankimw.pm.name not in other_profile_names
-        self._other_profile_names_combo.set_texts(other_profile_names)
-
-    def selected_profile_name(self) -> str:
-        """
-        The name of the other collection to search notes in (and import notes from).
-        """
-        return self._other_profile_names_combo.currentText()
-
-    def set_decks(self, decks: Iterable[NameId]):
-        """
-        A list of decks to search in.
-        The user can limit search to a certain deck in the other collection.
-        """
-        return self._other_profile_deck_combo.set_items(decks)
-
-
-class ColSearchWidget(QWidget):
+class CroProSearchWidget(QWidget):
     """
     Search bar and search options (profile selector, deck selector, search bar, search button).
     """
@@ -142,10 +78,19 @@ class ColSearchWidget(QWidget):
         super().__init__()
         self.ankimw = ankimw
         self.opts = ColSearchOptions(ankimw)
+        self.remote_opts = RemoteSearchOptions()
         self.bar = CroProSearchBar()
         self._setup_layout()
-        self.setEnabled(False)  # disallow search until profiles and decks are set.
         self._connect_elements()
+        self._web_mode = False
+        self.setEnabled(False)  # disallow search until profiles and decks are set.
+
+    def set_web_mode(self, is_web: bool) -> None:
+        self._web_mode = is_web
+        self.remote_opts.setVisible(is_web)
+        self.opts.setVisible(not is_web)
+        self.setEnabled(is_web or self.opts.other_profile_names_combo.count() > 0)
+        self.bar.focus_search_edit()
 
     def clear_all(self) -> None:
         """
@@ -155,15 +100,28 @@ class ColSearchWidget(QWidget):
         self.opts.clear_combos()
         self.bar.clear_search_text()
 
-    def set_focus(self):
-        self.bar.focus_search_edit()
-
     def _setup_layout(self) -> None:
         self.setLayout(layout := QVBoxLayout())
         layout.addWidget(self.opts)
+        layout.addWidget(self.remote_opts)
         layout.addWidget(self.bar)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
-        self.set_focus()
+        self.bar.focus_search_edit()
+
+    def get_request_args(self) -> dict[str, str]:
+        assert self._web_mode, "Web mode must be enabled."
+        args = {}
+        widgets = (
+            self.remote_opts.sort_combo,
+            self.remote_opts.category_combo,
+            self.remote_opts.jlpt_level_combo,
+        )
+        if keyword := self.bar.search_text():
+            args["keyword"] = keyword
+            for widget in widgets:
+                if param := widget.currentData().http_arg:
+                    args[widget.key] = param
+        return args
 
     def _connect_elements(self):
         def handle_search_requested():
@@ -173,7 +131,7 @@ class ColSearchWidget(QWidget):
 
         qconnect(self.opts.selected_deck_changed, handle_search_requested)
         qconnect(self.bar.search_requested, handle_search_requested)
-        qconnect(self.opts.selected_profile_changed, lambda row_idx: self.setEnabled(row_idx >= 0))
+        qconnect(self.opts.selected_profile_changed, lambda row_idx: self.setEnabled(row_idx >= 0 or self._web_mode))
 
 
 # Debug
@@ -188,8 +146,7 @@ class App(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Test")
-        # noinspection PyTypeChecker
-        self.search_bar = ColSearchWidget(None)
+        self.search_bar = CroProSearchWidget(cast(AnkiQt, SimpleNamespace(pm=SimpleNamespace(name="Dummy"))))
         self.initUI()
         qconnect(self.search_bar.search_requested, on_search_requested)
         # self.search_bar.set_profile_names(["User 1", "subs2srs", "dumpster"])

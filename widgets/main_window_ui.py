@@ -5,8 +5,7 @@ from aqt import AnkiQt
 from aqt.qt import *
 
 from .note_list import NoteList
-from .remote_search_bar import RemoteSearchWidget
-from .search_bar import ColSearchWidget
+from .search_bar import CroProSearchWidget
 from .search_result_label import SearchResultLabel
 from .status_bar import StatusBar
 from .utils import ProfileNameLabel, NameIdComboBox, CroProPushButton
@@ -21,8 +20,7 @@ class MainWindowUI(QMainWindow):
     def __init__(self, ankimw: AnkiQt, window_title: str):
         super().__init__(parent=ankimw)
         self.setWindowTitle(window_title)
-        self.search_bar = ColSearchWidget(ankimw=ankimw)
-        self.remote_search_bar = RemoteSearchWidget()
+        self.search_bar = CroProSearchWidget(ankimw=ankimw)
         self.status_bar = StatusBar()
         self.search_result_label = SearchResultLabel()
         self.into_profile_label = ProfileNameLabel()
@@ -42,7 +40,6 @@ class MainWindowUI(QMainWindow):
     def make_main_layout(self) -> QLayout:
         main_vbox = QVBoxLayout()
         main_vbox.addWidget(self.search_bar)
-        main_vbox.addWidget(self.remote_search_bar)
         main_vbox.addWidget(self.search_result_label)
         main_vbox.addWidget(self.note_list)
         main_vbox.addLayout(self.status_bar)
