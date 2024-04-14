@@ -81,9 +81,9 @@ class WindowState:
             "to_deck": self._window.current_profile_deck_combo,
             "note_type": self._window.note_type_selection_combo,
             # Web search settings
-            "web_category": self._window.remote_search_bar.category_combo,
-            "web_sort_by": self._window.remote_search_bar.sort_combo,
-            "web_jlpt_level": self._window.remote_search_bar.jlpt_level_combo,
+            "web_category": self._window.remote_search_bar.opts.category_combo,
+            "web_sort_by": self._window.remote_search_bar.opts.sort_combo,
+            "web_jlpt_level": self._window.remote_search_bar.opts.jlpt_level_combo,
         }
         self._state = defaultdict(dict)
 

@@ -4,8 +4,8 @@
 import dataclasses
 from collections.abc import Sequence
 
+from aqt import AnkiQt
 from aqt.qt import *
-
 
 try:
     from .search_bar import CroProSearchBar
@@ -35,14 +35,7 @@ def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]], key: str)
     return b
 
 
-class RemoteSearchWidget(QWidget):
-    """
-    Search bar for https://docs.immersionkit.com/public%20api/search/
-    """
-
-    # noinspection PyArgumentList
-    search_requested = pyqtSignal(str)
-
+class RemoteSearchOptions(QWidget):
     def __init__(self):
         super().__init__()
         self._category_combo = new_combo_box(
@@ -70,10 +63,18 @@ class RemoteSearchWidget(QWidget):
             ],
             key="jlpt",
         )
-
-        self.bar = CroProSearchBar()
         self._setup_layout()
-        self._connect_elements()
+
+    def _setup_layout(self) -> None:
+        layout = QHBoxLayout()
+        layout.addWidget(QLabel("Category:"))
+        layout.addWidget(self._category_combo)
+        layout.addWidget(QLabel("Sort:"))
+        layout.addWidget(self._sort_combo)
+        layout.addWidget(QLabel("JLPT:"))
+        layout.addWidget(self._jlpt_level_combo)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
 
     @property
     def category_combo(self) -> QComboBox:
@@ -87,11 +88,27 @@ class RemoteSearchWidget(QWidget):
     def jlpt_level_combo(self) -> QComboBox:
         return self._jlpt_level_combo
 
+
+class RemoteSearchWidget(QWidget):
+    """
+    Search bar for https://docs.immersionkit.com/public%20api/search/
+    """
+
+    # noinspection PyArgumentList
+    search_requested = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.opts = RemoteSearchOptions()
+        self.bar = CroProSearchBar()
+        self._setup_layout()
+        self._connect_elements()
+
     def get_request_args(self) -> dict[str, str]:
         args = {}
         if keyword := self.bar.search_text():
             args["keyword"] = keyword
-            for widget in (self._sort_combo, self._category_combo, self._jlpt_level_combo):
+            for widget in (self.opts.sort_combo, self.opts.category_combo, self.opts.jlpt_level_combo):
                 if param := widget.currentData().http_arg:
                     args[widget.key] = param
         return args
@@ -101,21 +118,10 @@ class RemoteSearchWidget(QWidget):
 
     def _setup_layout(self) -> None:
         self.setLayout(layout := QVBoxLayout())
-        layout.addLayout(self._make_search_settings_box())
+        layout.addWidget(self.opts)
         layout.addWidget(self.bar)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.bar.focus_search_edit()
-
-    def _make_search_settings_box(self) -> QLayout:
-        layout = QHBoxLayout()
-        layout.addWidget(QLabel("Category:"))
-        layout.addWidget(self._category_combo)
-        layout.addWidget(QLabel("Sort:"))
-        layout.addWidget(self._sort_combo)
-        layout.addWidget(QLabel("JLPT:"))
-        layout.addWidget(self._jlpt_level_combo)
-        layout.setContentsMargins(0, 0, 0, 0)
-        return layout
 
     def _connect_elements(self):
         def handle_search_requested():
