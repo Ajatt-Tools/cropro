@@ -316,10 +316,12 @@ class CroProMainWindow(MainWindowUI):
             ]
         )
 
-    def _should_abort_search(self, is_web: bool) -> bool:
-        return self._search_lock.is_searching() or config.search_the_web is not is_web or self.isVisible() is False
+    def _should_abort_search(self) -> bool:
+        return self._search_lock.is_searching() or not self.isVisible()
 
     def perform_search(self, search_text: str):
+        if self._should_abort_search():
+            return
         if config.search_the_web:
             return self.perform_remote_search(search_text)
         else:
@@ -329,9 +331,6 @@ class CroProMainWindow(MainWindowUI):
         """
         Search notes on a remote server.
         """
-        if self._should_abort_search(is_web=True):
-            return
-
         self._ensure_enabled_search_mode()
         self.reset_cropro_status()
 
@@ -375,9 +374,6 @@ class CroProMainWindow(MainWindowUI):
         """
         Search notes in a different Anki collection.
         """
-        if self._should_abort_search(is_web=False):
-            return
-
         self._ensure_enabled_search_mode()
         self.reset_cropro_status()
         self.open_other_col()
