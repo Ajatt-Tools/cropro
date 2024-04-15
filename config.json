@@ -8,6 +8,8 @@
   ],
   "skip_duplicates": true,
   "copy_tags": true,
+  "allow_empty_search": false,
+
   "preview_on_right_side": true,
   "search_the_web": false,
   "show_extended_filters": true,
@@ -16,7 +18,6 @@
   "import_source_info": false,
   "fetch_anki_card_media": false,
 
-  "allow_empty_search": false,
   "copy_card_data": false,
 
   "timeout_seconds": 60,
