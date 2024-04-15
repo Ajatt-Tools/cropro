@@ -15,8 +15,8 @@
   "import_source_info": false,
   "fetch_anki_card_media": false,
   "copy_card_data": false,
+  "call_add_cards_hook": false,
   "timeout_seconds": 60,
   "enable_debug_log": false,
-  "search_the_web": false,
-  "call_add_cards_hook": false
+  "search_the_web": false
 }
