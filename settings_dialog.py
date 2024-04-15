@@ -63,7 +63,6 @@ class CroProSettingsDialog(QDialog):
 
     def _create_tabs(self) -> None:
         self.tab_view.addTab(self._make_general_tab(), "General")
-        self.tab_view.addTab(self._make_online_tab(), "Online Search")
         self.tab_view.addTab(self._make_local_tab(), "Local Search")
         self.tab_view.addTab(self._make_hl_tab(), "High Level")
 
@@ -77,12 +76,6 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.checkboxes["preview_on_right_side"])
         layout.addRow(self.checkboxes["search_the_web"])
         layout.addRow(self.checkboxes["show_extended_filters"])
-        return widget
-
-    def _make_online_tab(self) -> QWidget:
-        widget = QWidget()
-        widget.setLayout(layout := QFormLayout())
-        layout.addRow(self.checkboxes["import_source_info"])
         return widget
 
     def _make_local_tab(self) -> QWidget:

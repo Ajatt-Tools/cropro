@@ -20,13 +20,6 @@
 </details>
 
 <details>
-    <summary>Web Search</summary>
-    <ul>
-        <li><code>import_source_info</code> | If enabled, adds a field regarding name, episode or similar</li>
-    </ul>
-</details>
-
-<details>
     <summary>Local Search</summary>
     <ul>
         <li><code>allow_empty_search</code> | Search notes even if the search field is emtpy. Will show EVERY card you got (very slow)</li>

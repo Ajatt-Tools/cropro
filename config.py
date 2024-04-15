@@ -118,9 +118,4 @@ class CroProConfig(AddonConfigManager):
     def show_extended_filters(self, value: bool) -> None:
         self["show_extended_filters"] = bool(value)
 
-    @property
-    def import_source_info(self) -> bool:
-        return self["import_source_info"]
-
-
 config = CroProConfig()
