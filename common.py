@@ -58,9 +58,7 @@ class LogDebug:
         return self.write(*args, **kwargs)
 
     def read(self):
-        if not self._logfile:
-            return ""
-        with open(self._logfile.name, 'r') as lf:
+        with open(DEBUG_LOG_FILE_PATH, 'r', encoding='utf-8') as lf:
             return lf.read()
 
     def close(self):
