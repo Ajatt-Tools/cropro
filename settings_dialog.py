@@ -3,6 +3,7 @@
 
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
+from aqt.webview import AnkiWebView
 
 from .ajt_common.about_menu import tweak_window
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
@@ -14,7 +15,7 @@ from .widgets.utils import CroProSpinBox
 def make_checkboxes() -> dict[str, QCheckBox]:
     return {key: QCheckBox(key.replace("_", " ").capitalize()) for key in config.bool_keys()}
 
-
+BUT_HELP = QDialogButtonBox.StandardButton.Help
 BUT_OK = QDialogButtonBox.StandardButton.Ok
 BUT_CANCEL = QDialogButtonBox.StandardButton.Cancel
 
@@ -25,12 +26,15 @@ class CroProSettingsDialog(QDialog):
     def __init__(self, *args, **kwargs) -> None:
         QDialog.__init__(self, *args, **kwargs)
         disable_help_button(self)
+        self.tab_view = QTabWidget()
         self.checkboxes = make_checkboxes()
-        self.tag_edit = QLineEdit(config.tag_original_notes)
-        self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.max_displayed_notes)
+        self.tag_edit = QLineEdit(config.exported_tag)
+        self.npp_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.notes_per_page)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
-        self.button_box = QDialogButtonBox(BUT_OK | BUT_CANCEL)
+        self.button_box = QDialogButtonBox((BUT_HELP | BUT_OK | BUT_CANCEL) if config.show_help_buttons
+                                            else (BUT_OK | BUT_CANCEL))
+        self.create_tabs()
         self._setup_ui()
         self.connect_widgets()
         self.add_tooltips()
@@ -38,33 +42,70 @@ class CroProSettingsDialog(QDialog):
         tweak_window(self)
         restoreGeom(self, self.name, adjustSize=True)
 
+    def create_tabs(self) -> None:
+        self.tab_view.addTab(self._make_general_tab(), "General")
+        self.tab_view.addTab(self._make_online_tab(), "Online Search")
+        self.tab_view.addTab(self._make_local_tab(), "Local Search")
+        self.tab_view.addTab(self._make_hl_tab(), "High Level")
+
+    def _make_general_tab(self) -> QLayout:
+        widget = QWidget()
+        layout = QFormLayout()
+        layout.addRow("Notes per page", self.npp_edit)
+        layout.addRow(self.hidden_fields)
+        layout.addRow(self.checkboxes['skip_duplicates'])
+        layout.addRow(self.checkboxes['copy_tags'])
+        layout.addRow(self.checkboxes['show_note_preview'])
+        layout.addRow(self.checkboxes['search_online'])
+        layout.addRow(self.checkboxes['show_extended_filters'])
+        layout.addRow(self.checkboxes['show_help_buttons'])
+        widget.setLayout(layout)
+        return widget
+
+    def _make_online_tab(self) -> QLayout:
+        widget = QWidget()
+        layout = QFormLayout()
+        layout.addRow(self.checkboxes['import_source_info'])
+        layout.addRow(self.checkboxes['fetch_anki_card_media'])
+        widget.setLayout(layout)
+        return widget
+
+    def _make_local_tab(self) -> QLayout:
+        widget = QWidget()
+        layout = QFormLayout()
+        layout.addRow(self.checkboxes['allow_empty_search'])
+        layout.addRow(self.checkboxes['copy_card_data'])
+        layout.addRow("Tag original cards with", self.tag_edit)
+        widget.setLayout(layout)
+        return widget
+
+    def _make_hl_tab(self) -> QLayout:
+        widget = QWidget()
+        layout = QFormLayout()
+        layout.addRow("Web download timeout", self.web_timeout_spinbox)
+        layout.addRow(self.checkboxes['enable_debug_log'])
+        layout.addRow(self.checkboxes['call_add_cards_hook'])
+        widget.setLayout(layout)
+        return widget
+
     def _setup_ui(self) -> None:
         self.setMinimumWidth(300)
         self.setWindowTitle(f"{ADDON_NAME} Settings")
         self.setLayout(self._make_layout())
 
+        for key, checkbox in self.checkboxes.items():
+            checkbox.setChecked(config[key])
+
     def _make_layout(self) -> QLayout:
         layout = QVBoxLayout()
-        layout.addLayout(self._make_form())
-        layout.addStretch()
+        layout.addWidget(self.tab_view)
         layout.addWidget(self.button_box)
-        return layout
-
-    def _make_form(self) -> QLayout:
-        layout = QFormLayout()
-        layout.addRow("Max displayed notes", self.max_notes_edit)
-        layout.addRow("Tag original cards with", self.tag_edit)
-        layout.addRow("Web download timeout", self.web_timeout_spinbox)
-        layout.addRow(self.hidden_fields)
-
-        for key, checkbox in self.checkboxes.items():
-            layout.addRow(checkbox)
-            checkbox.setChecked(config[key])
         return layout
 
     def connect_widgets(self):
         qconnect(self.button_box.accepted, self.accept)
         qconnect(self.button_box.rejected, self.reject)
+        qconnect(self.button_box.helpRequested, self.show_help)
 
     def add_tooltips(self) -> None:
         self.tag_edit.setToolTip(
@@ -100,23 +141,51 @@ class CroProSettingsDialog(QDialog):
             "Enable this for compatibility with other add-ons\n"
             "that evaluate notes upon creation."
         )
-        self.checkboxes["preview_on_right_side"].setToolTip(
+        self.checkboxes["show_note_preview"].setToolTip(
             "When a note is selected,\n" "show a preview on the right side of the window."
         )
         self.checkboxes["allow_empty_search"].setToolTip(
             "Show a list of notes from the other collection\n" "even when the search bar is empty."
         )
-        self.checkboxes["search_the_web"].setToolTip(
+        self.checkboxes["search_online"].setToolTip(
             "Instead of searching notes in a local profile,\n" "search the Internet instead."
         )
+
+    def show_help(self):
+        help_win = QDialog(parent=self)
+        help_win.setWindowModality(Qt.WindowModality.NonModal)
+        help_win.setWindowTitle(ADDON_NAME+" Settings Help")
+        
+        size_policy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        size_policy.setHorizontalStretch(0)
+        size_policy.setVerticalStretch(0)
+        size_policy.setHeightForWidth(help_win.sizePolicy().hasHeightForWidth())
+        help_win.setSizePolicy(size_policy)
+        help_win.setMinimumSize(240, 320)
+        layout = QVBoxLayout()
+
+        webview = AnkiWebView(parent=help_win)
+        webview.setProperty("url", QUrl("about:blank"))
+        with open(os.path.join(os.path.dirname(__file__), 'config.md')) as c_help:
+            webview.stdHtml(c_help.read(), js=[])
+        webview.setMinimumSize(320, 480)
+        webview.disable_zoom()
+        layout.addWidget(webview)
+
+        but = QPushButton("Ok")
+        qconnect(but.clicked, help_win.accept)
+        but.setFixedHeight(32)
+
+        help_win.setLayout(layout)
+        help_win.exec()
 
     def done(self, result: int) -> None:
         saveGeom(self, self.name)
         return super().done(result)
 
     def accept(self) -> None:
-        config.max_displayed_notes = self.max_notes_edit.value()
-        config.tag_original_notes = self.tag_edit.text()
+        config.notes_per_page = self.npp_edit.value()
+        config.exported_tag = self.tag_edit.text()
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
         for key, checkbox in self.checkboxes.items():

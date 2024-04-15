@@ -184,7 +184,7 @@ class CroProMainWindow(MainWindowUI):
         self.edit_button.setToolTip("Edit card before adding")
 
     def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchWidget]:
-        w = self.remote_search_bar if config.search_the_web else self.search_bar
+        w = self.remote_search_bar if config.search_online else self.search_bar
         assert w.isVisible(), "Widget must be visible."
         return w
 
@@ -199,7 +199,7 @@ class CroProMainWindow(MainWindowUI):
         toggle_web_search_act = tools_menu.addAction("Search the web")
         toggle_web_search_act.setCheckable(True)
         qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
-        qconnect(tools_menu.aboutToShow, lambda: toggle_web_search_act.setChecked(config.search_the_web))
+        qconnect(tools_menu.aboutToShow, lambda: toggle_web_search_act.setChecked(config.search_online))
 
         tools_menu.addAction("Send query to Browser", self._send_query_to_browser)
 
@@ -227,11 +227,11 @@ class CroProMainWindow(MainWindowUI):
         """
         In case the checkbox has been toggled, remember the setting.
         """
-        if checked == config.search_the_web:
+        if checked == config.search_online:
             # State hasn't changed.
             return
         logDebug(f"Web search option changed to {checked}")
-        config.search_the_web = checked
+        config.search_online = checked
         self._activate_enabled_search_bar()
         self.reset_cropro_status()
         # save config to disk to remember checkbox state.
@@ -326,7 +326,7 @@ class CroProMainWindow(MainWindowUI):
         )
 
     def _should_abort_search(self, is_web: bool) -> bool:
-        return self._search_lock.is_searching() or config.search_the_web is not is_web or self.isVisible() is False
+        return self._search_lock.is_searching() or config.search_online is not is_web or self.isVisible() is False
 
     def perform_remote_search(self, search_text: str):
         """
@@ -346,11 +346,11 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(
-                notes[: config.max_displayed_notes],
+                notes[: config.notes_per_page],
                 hide_fields=config.hidden_fields,
-                previewer_enabled=config.preview_on_right_side,
+                previewer_enabled=config.show_note_preview,
             )
-            self.search_result_label.set_search_result(notes, config.max_displayed_notes)
+            self.search_result_label.set_search_result(notes, config.notes_per_page)
             self._search_lock.set_searching(False)
 
         def on_exception(exception: Exception) -> None:
@@ -397,11 +397,11 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
             self.note_list.set_notes(
-                map(self.other_col.get_note, note_ids[: config.max_displayed_notes]),
+                map(self.other_col.get_note, note_ids[: config.notes_per_page]),
                 hide_fields=config.hidden_fields,
-                previewer_enabled=config.preview_on_right_side,
+                previewer_enabled=config.show_note_preview,
             )
-            self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
+            self.search_result_label.set_search_result(note_ids, config.notes_per_page)
             self._search_lock.set_searching(False)
 
         self._search_lock.set_searching(True)
@@ -484,7 +484,7 @@ class CroProMainWindow(MainWindowUI):
         return super().closeEvent(event)
 
     def _activate_enabled_search_bar(self):
-        if config.search_the_web:
+        if config.search_online:
             self.remote_search_bar.show()
             self.remote_search_bar.bar.focus_search_edit()
             self.search_bar.hide()
@@ -495,7 +495,7 @@ class CroProMainWindow(MainWindowUI):
 
     def _open_cropro_settings(self):
         open_cropro_settings(parent=self)
-        self._activate_enabled_search_bar()  # the "search_the_web" setting may have changed
+        self._activate_enabled_search_bar()  # the "search_online" setting may have changed
 
     def on_profile_will_close(self):
         self.close()

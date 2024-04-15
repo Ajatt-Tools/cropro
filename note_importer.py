@@ -190,7 +190,7 @@ class NoteImporter:
     ) -> OpChanges:
         self._web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
 
-        if config.search_the_web and model == NO_MODEL:
+        if config.search_online and model == NO_MODEL:
             raise NoteTypeUnavailable()
 
         pos = col.add_custom_undo_entry(f"{ADDON_NAME_SHORT}: import {len(notes)} notes")
@@ -249,7 +249,7 @@ class NoteImporter:
                 return NoteCreateResult(new_note, NoteCreateStatus.connection_error)
         else:
             copy_media_files(new_note, other_note)
-            if tag := config.tag_original_notes:
+            if tag := config.exported_tag:
                 other_note.add_tag(tag)
                 other_note.flush()
             if config.copy_card_data:

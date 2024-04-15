@@ -1,6 +1,5 @@
 {
-  "max_displayed_notes": 500,
-  "exported_tag": "cropro_exported",
+  "notes_per_page": 100,
   "hidden_fields": [
     "furigana",
     "image",
@@ -8,11 +7,19 @@
   ],
   "skip_duplicates": true,
   "copy_tags": true,
+  "show_note_preview": true,
+  "search_online": false,
+  "show_extended_filters": true,
+  "show_help_buttons": true,
+
+  "import_source_info": false,
+  "fetch_anki_card_media": false,
+
   "allow_empty_search": false,
-  "preview_on_right_side": true,
   "copy_card_data": false,
-  "call_add_cards_hook": false,
+  "exported_tag": "cropro_exported",
+  
+  "timeout_seconds": 60,
   "enable_debug_log": false,
-  "search_the_web": false,
-  "timeout_seconds": 60
+  "call_add_cards_hook": false
 }
