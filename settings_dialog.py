@@ -75,7 +75,6 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.checkboxes["copy_tags"])
         layout.addRow(self.checkboxes["preview_on_right_side"])
         layout.addRow(self.checkboxes["search_the_web"])
-        layout.addRow(self.checkboxes["show_extended_filters"])
         return widget
 
     def _make_local_tab(self) -> QWidget:

@@ -107,15 +107,4 @@ class CroProConfig(AddonConfigManager):
         """
         return self["call_add_cards_hook"]
 
-    @property
-    def show_extended_filters(self) -> bool:
-        """
-        Whether to show the filters on the top.
-        """
-        return self["show_extended_filters"]
-
-    @show_extended_filters.setter
-    def show_extended_filters(self, value: bool) -> None:
-        self["show_extended_filters"] = bool(value)
-
 config = CroProConfig()

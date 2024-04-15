@@ -14,6 +14,5 @@
   "call_add_cards_hook": false,
   "enable_debug_log": false,
   "search_the_web": false,
-  "timeout_seconds": 60,
-  "show_extended_filters": true
+  "timeout_seconds": 60
 }
