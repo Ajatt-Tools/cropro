@@ -1,10 +1,13 @@
 <h2>Cross-Profile Search and Import</h2>
 
-<b>Anki needs to be restarted after changing the config.</b>
+<p>
+<i>Anki needs to be restarted after changing the config file directly.</i>
+</p>
 
-<h3>List of options:</h3>
+<h3>List of options</h3>
 
-<details><summary>General</summary>
+<details>
+    <summary>General</summary>
     <ul>
         <li><code>max_displayed_notes</code> | how many search result to display on one page</li>
         <li><code>hidden_fields</code> | contents of fields that contain these keywords won't be shown.</li>
@@ -16,21 +19,27 @@
         <li><code>show_help_buttons</code> | Toggles all those help buttons shown</li>
     </ul>
 </details>
-<details><summary>Web Search</summary>
+
+<details>
+    <summary>Web Search</summary>
     <ul>
         <li><code>import_source_info</code> | If enabled, adds a field regarding name, episode or similar</li>
         <li><code>fetch_anki_card_media</code> | If enabled, the the media content shown on cards will be loaded from the internet, instead of from local storage.<br/>
     For converting back to local, see <a href="https://ankiweb.net/shared/info/1293255374">this addon</a></li>
     </ul>
 </details>
-<details><summary>Local Search</summary>
+
+<details>
+    <summary>Local Search</summary>
     <ul>
         <li><code>allow_empty_search</code> | Search notes even if the search field is emtpy. Will show EVERY card you got (very slow)</li>
         <li><code>copy_card_data</code> | Copies data like due date</li>
         <li><code>exported_tag</code> | Tag added to other profile's cards when imported</li>
     </ul>
 </details>
-<details><summary>High level settings</summary>
+
+<details>
+<summary>High level settings</summary>
     <ul>
         <li><code>timeout_seconds</code> | How many seconds should we try to find cards online before giving up</li>
         <li><code>enable_debug_log</code> | print debug information to <code>stdout</code> and to a log file.<br/>
@@ -39,7 +48,8 @@
     For addon evaluation purposes. (<a href="https://ankiweb.net/shared/info/1207537045">example</a>)</li>
     </ul>
 </details>
-<br/>
-If you enjoy this add-on, please consider supporting my work by
-<b><a href="https://www.patreon.com/tatsumoto_ren">pledging your support on Patreon</a></b>.
+
+<p>If you enjoy this add-on, please consider supporting my work by
+<b><a href="https://tatsumoto.neocities.org/blog/donating-to-tatsumoto.html">making a donation</a></b>.
 Thank you so much!
+</p>

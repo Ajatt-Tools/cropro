@@ -6,7 +6,7 @@ from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText
 from aqt.webview import AnkiWebView
 
 from .ajt_common.about_menu import tweak_window
-from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH, LogDebug
+from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH, LogDebug, CONFIG_MD_PATH
 from .config import config
 from .widgets.item_edit import ItemEditBox
 from .widgets.utils import CroProSpinBox
@@ -159,7 +159,8 @@ class CroProSettingsDialog(QDialog):
     def show_help(self):
         help_win = QDialog(parent=self)
         help_win.setWindowModality(Qt.WindowModality.NonModal)
-        help_win.setWindowTitle(ADDON_NAME + " Settings Help")
+        help_win.setWindowTitle(f"{ADDON_NAME} - Settings Help")
+        help_win.setLayout(QVBoxLayout())
 
         size_policy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         size_policy.setHorizontalStretch(0)
@@ -167,21 +168,19 @@ class CroProSettingsDialog(QDialog):
         size_policy.setHeightForWidth(help_win.sizePolicy().hasHeightForWidth())
         help_win.setSizePolicy(size_policy)
         help_win.setMinimumSize(240, 320)
-        layout = QVBoxLayout()
 
         webview = AnkiWebView(parent=help_win)
         webview.setProperty("url", QUrl("about:blank"))
-        with open(os.path.join(os.path.dirname(__file__), "config.md")) as c_help:
+        with open(CONFIG_MD_PATH) as c_help:
             webview.stdHtml(c_help.read(), js=[])
         webview.setMinimumSize(320, 480)
         webview.disable_zoom()
-        layout.addWidget(webview)
+        help_win.layout().addWidget(webview)
 
-        but = QPushButton("Ok")
-        qconnect(but.clicked, help_win.accept)
-        but.setFixedHeight(32)
+        button_box = QDialogButtonBox(BUT_OK)
+        help_win.layout().addWidget(button_box)
+        qconnect(button_box.accepted, help_win.accept)
 
-        help_win.setLayout(layout)
         help_win.exec()
 
     def done(self, result: int) -> None:
