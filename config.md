@@ -6,7 +6,7 @@
 
 <details><summary>General</summary>
     <ul>
-        <li><code>notes_per_page</code> | how many search result to display on one page</li>
+        <li><code>max_displayed_notes</code> | how many search result to display on one page</li>
         <li><code>hidden_fields</code> | contents of fields that contain these keywords won't be shown.</li>
         <li><code>skip_duplicates</code> | Skips cards, which are already existent in the collection</li>
         <li><code>copy_tags</code> | Adds the category in case of web search and tags in all cases as anki tags</li>

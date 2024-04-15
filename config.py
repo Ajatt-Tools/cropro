@@ -8,12 +8,12 @@ from .ajt_common.addon_config import AddonConfigManager
 
 class CroProConfig(AddonConfigManager):
     @property
-    def notes_per_page(self) -> int:
-        return self["notes_per_page"]
+    def max_displayed_notes(self) -> int:
+        return self["max_displayed_notes"]
 
-    @notes_per_page.setter
-    def notes_per_page(self, new_value: int) -> None:
-        self["notes_per_page"] = new_value
+    @max_displayed_notes.setter
+    def max_displayed_notes(self, new_value: int) -> None:
+        self["max_displayed_notes"] = new_value
 
     @property
     def hidden_fields(self) -> list[str]:

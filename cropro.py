@@ -342,11 +342,11 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(
-                notes[: config.notes_per_page],
+                notes[: config.max_displayed_notes],
                 hide_fields=config.hidden_fields,
                 previewer_enabled=config.show_note_preview,
             )
-            self.search_result_label.set_search_result(notes, config.notes_per_page)
+            self.search_result_label.set_search_result(notes, config.max_displayed_notes)
             self._search_lock.set_searching(False)
 
         def on_exception(exception: Exception) -> None:
@@ -390,11 +390,11 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
             self.note_list.set_notes(
-                map(self.other_col.get_note, note_ids[: config.notes_per_page]),
+                map(self.other_col.get_note, note_ids[: config.max_displayed_notes]),
                 hide_fields=config.hidden_fields,
                 previewer_enabled=config.show_note_preview,
             )
-            self.search_result_label.set_search_result(note_ids, config.notes_per_page)
+            self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
             self._search_lock.set_searching(False)
 
         self._search_lock.set_searching(True)
