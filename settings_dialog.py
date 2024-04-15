@@ -5,8 +5,8 @@ from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText
 from aqt.webview import AnkiWebView
 
-from .ajt_common.utils import ui_translate
 from .ajt_common.about_menu import tweak_window
+from .ajt_common.utils import ui_translate
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH, LogDebug, CONFIG_MD_PATH
 from .config import config
 from .widgets.item_edit import ItemEditBox
@@ -69,7 +69,7 @@ class CroProSettingsDialog(QDialog):
 
     def _make_general_tab(self) -> QWidget:
         widget = QWidget()
-        layout = QFormLayout()
+        widget.setLayout(layout := QFormLayout())
         layout.addRow("Max displayed notes", self.max_notes_edit)
         layout.addRow(self.hidden_fields)
         layout.addRow(self.checkboxes["skip_duplicates"])
@@ -77,36 +77,32 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.checkboxes["preview_on_right_side"])
         layout.addRow(self.checkboxes["search_the_web"])
         layout.addRow(self.checkboxes["show_extended_filters"])
-        widget.setLayout(layout)
         return widget
 
     def _make_online_tab(self) -> QWidget:
         widget = QWidget()
-        layout = QFormLayout()
+        widget.setLayout(layout := QFormLayout())
         layout.addRow(self.checkboxes["import_source_info"])
         layout.addRow(self.checkboxes["fetch_anki_card_media"])
-        widget.setLayout(layout)
         return widget
 
     def _make_local_tab(self) -> QWidget:
         widget = QWidget()
-        layout = QFormLayout()
+        widget.setLayout(layout := QFormLayout())
         layout.addRow(self.checkboxes["allow_empty_search"])
         layout.addRow(self.checkboxes["copy_card_data"])
         layout.addRow("Tag original cards with", self.tag_edit)
-        widget.setLayout(layout)
         return widget
 
     def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
-        layout = QFormLayout()
+        widget.setLayout(layout := QFormLayout())
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
         layout.addRow(self.checkboxes["enable_debug_log"])
         show_log_b = QPushButton("Show log")
         qconnect(show_log_b.clicked, lambda: showText(LogDebug().read(), parent=self, copyBtn=True))
         layout.addRow(show_log_b)
         layout.addRow(self.checkboxes["call_add_cards_hook"])
-        widget.setLayout(layout)
         return widget
 
     def connect_widgets(self):
