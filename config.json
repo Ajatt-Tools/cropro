@@ -16,6 +16,5 @@
   "search_the_web": false,
   "timeout_seconds": 60,
   "show_extended_filters": true,
-  "import_source_info": false,
-  "fetch_anki_card_media": false
+  "import_source_info": false
 }

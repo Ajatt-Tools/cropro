@@ -83,7 +83,6 @@ class CroProSettingsDialog(QDialog):
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
         layout.addRow(self.checkboxes["import_source_info"])
-        layout.addRow(self.checkboxes["fetch_anki_card_media"])
         return widget
 
     def _make_local_tab(self) -> QWidget:

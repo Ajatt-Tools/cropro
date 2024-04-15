@@ -23,8 +23,6 @@
     <summary>Web Search</summary>
     <ul>
         <li><code>import_source_info</code> | If enabled, adds a field regarding name, episode or similar</li>
-        <li><code>fetch_anki_card_media</code> | If enabled, the the media content shown on cards will be loaded from the internet, instead of from local storage.<br/>
-    For converting back to local, see <a href="https://ankiweb.net/shared/info/1293255374">this addon</a></li>
     </ul>
 </details>
 

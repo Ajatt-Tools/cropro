@@ -122,9 +122,5 @@ class CroProConfig(AddonConfigManager):
     def import_source_info(self) -> bool:
         return self["import_source_info"]
 
-    @property
-    def fetch_anki_card_media(self) -> bool:
-        return self["fetch_anki_card_media"]
-
 
 config = CroProConfig()
