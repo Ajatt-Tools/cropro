@@ -4,6 +4,7 @@
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button
 
+from .ajt_common.utils import ui_translate
 from .ajt_common.about_menu import tweak_window
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
 from .config import config
@@ -12,7 +13,14 @@ from .widgets.utils import CroProSpinBox
 
 
 def make_checkboxes() -> dict[str, QCheckBox]:
-    return {key: QCheckBox(key.replace("_", " ").capitalize()) for key in config.bool_keys()}
+    """
+    Create checkboxes and set initial checked states to the values in the config.
+    """
+    d = {}
+    for key in config.bool_keys():
+        d[key] = QCheckBox(ui_translate(key))
+        d[key].setChecked(config[key])
+    return d
 
 
 BUT_OK = QDialogButtonBox.StandardButton.Ok
@@ -59,7 +67,6 @@ class CroProSettingsDialog(QDialog):
 
         for key, checkbox in self.checkboxes.items():
             layout.addRow(checkbox)
-            checkbox.setChecked(config[key])
         return layout
 
     def connect_widgets(self):
