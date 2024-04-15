@@ -59,7 +59,7 @@ class LogDebug:
 
     def read(self) -> str:
         try:
-            with open(DEBUG_LOG_FILE_PATH, 'r', encoding='utf-8') as lf:
+            with open(DEBUG_LOG_FILE_PATH, encoding="utf-8") as lf:
                 return lf.read()
         except FileNotFoundError:
             return ""

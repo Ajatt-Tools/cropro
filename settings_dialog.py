@@ -15,6 +15,7 @@ from .widgets.utils import CroProSpinBox
 def make_checkboxes() -> dict[str, QCheckBox]:
     return {key: QCheckBox(key.replace("_", " ").capitalize()) for key in config.bool_keys()}
 
+
 BUT_HELP = QDialogButtonBox.StandardButton.Help
 BUT_OK = QDialogButtonBox.StandardButton.Ok
 BUT_CANCEL = QDialogButtonBox.StandardButton.Cancel
@@ -32,8 +33,9 @@ class CroProSettingsDialog(QDialog):
         self.npp_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.max_displayed_notes)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
-        self.button_box = QDialogButtonBox((BUT_HELP | BUT_OK | BUT_CANCEL) if config.show_help_buttons
-                                            else (BUT_OK | BUT_CANCEL))
+        self.button_box = QDialogButtonBox(
+            (BUT_HELP | BUT_OK | BUT_CANCEL) if config.show_help_buttons else (BUT_OK | BUT_CANCEL)
+        )
         self.create_tabs()
         self._setup_ui()
         self.connect_widgets()
@@ -53,28 +55,28 @@ class CroProSettingsDialog(QDialog):
         layout = QFormLayout()
         layout.addRow("Notes per page", self.npp_edit)
         layout.addRow(self.hidden_fields)
-        layout.addRow(self.checkboxes['skip_duplicates'])
-        layout.addRow(self.checkboxes['copy_tags'])
-        layout.addRow(self.checkboxes['preview_on_right_side'])
-        layout.addRow(self.checkboxes['search_the_web'])
-        layout.addRow(self.checkboxes['show_extended_filters'])
-        layout.addRow(self.checkboxes['show_help_buttons'])
+        layout.addRow(self.checkboxes["skip_duplicates"])
+        layout.addRow(self.checkboxes["copy_tags"])
+        layout.addRow(self.checkboxes["preview_on_right_side"])
+        layout.addRow(self.checkboxes["search_the_web"])
+        layout.addRow(self.checkboxes["show_extended_filters"])
+        layout.addRow(self.checkboxes["show_help_buttons"])
         widget.setLayout(layout)
         return widget
 
     def _make_online_tab(self) -> QWidget:
         widget = QWidget()
         layout = QFormLayout()
-        layout.addRow(self.checkboxes['import_source_info'])
-        layout.addRow(self.checkboxes['fetch_anki_card_media'])
+        layout.addRow(self.checkboxes["import_source_info"])
+        layout.addRow(self.checkboxes["fetch_anki_card_media"])
         widget.setLayout(layout)
         return widget
 
     def _make_local_tab(self) -> QWidget:
         widget = QWidget()
         layout = QFormLayout()
-        layout.addRow(self.checkboxes['allow_empty_search'])
-        layout.addRow(self.checkboxes['copy_card_data'])
+        layout.addRow(self.checkboxes["allow_empty_search"])
+        layout.addRow(self.checkboxes["copy_card_data"])
         layout.addRow("Tag original cards with", self.tag_edit)
         widget.setLayout(layout)
         return widget
@@ -83,11 +85,11 @@ class CroProSettingsDialog(QDialog):
         widget = QWidget()
         layout = QFormLayout()
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
-        layout.addRow(self.checkboxes['enable_debug_log'])
+        layout.addRow(self.checkboxes["enable_debug_log"])
         show_log_b = QPushButton("Show log")
         qconnect(show_log_b.clicked, lambda: showText(LogDebug().read(), parent=self, copyBtn=True))
         layout.addRow(show_log_b)
-        layout.addRow(self.checkboxes['call_add_cards_hook'])
+        layout.addRow(self.checkboxes["call_add_cards_hook"])
         widget.setLayout(layout)
         return widget
 
@@ -157,7 +159,7 @@ class CroProSettingsDialog(QDialog):
     def show_help(self):
         help_win = QDialog(parent=self)
         help_win.setWindowModality(Qt.WindowModality.NonModal)
-        help_win.setWindowTitle(ADDON_NAME+" Settings Help")
+        help_win.setWindowTitle(ADDON_NAME + " Settings Help")
 
         size_policy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         size_policy.setHorizontalStretch(0)
@@ -169,7 +171,7 @@ class CroProSettingsDialog(QDialog):
 
         webview = AnkiWebView(parent=help_win)
         webview.setProperty("url", QUrl("about:blank"))
-        with open(os.path.join(os.path.dirname(__file__), 'config.md')) as c_help:
+        with open(os.path.join(os.path.dirname(__file__), "config.md")) as c_help:
             webview.stdHtml(c_help.read(), js=[])
         webview.setMinimumSize(320, 480)
         webview.disable_zoom()
