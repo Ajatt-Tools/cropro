@@ -5,6 +5,7 @@ from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText
 from aqt.webview import AnkiWebView
 
+from .ajt_common.utils import ui_translate
 from .ajt_common.about_menu import tweak_window
 from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH, LogDebug, CONFIG_MD_PATH
 from .config import config
@@ -13,7 +14,7 @@ from .widgets.utils import CroProSpinBox
 
 
 def make_checkboxes() -> dict[str, QCheckBox]:
-    return {key: QCheckBox(key.replace("_", " ").capitalize()) for key in config.bool_keys()}
+    return {key: QCheckBox(ui_translate(key)) for key in config.bool_keys()}
 
 
 BUT_HELP = QDialogButtonBox.StandardButton.Help
