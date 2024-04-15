@@ -38,11 +38,11 @@ class CroProConfig(AddonConfigManager):
         return self["copy_tags"]
 
     @property
-    def show_note_preview(self) -> bool:
+    def preview_on_right_side(self) -> bool:
         """
         Whether to preview notes or not.
         """
-        return self["show_note_preview"]
+        return self["preview_on_right_side"]
 
     @property
     def search_online(self) -> bool:

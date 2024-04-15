@@ -55,7 +55,7 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.hidden_fields)
         layout.addRow(self.checkboxes['skip_duplicates'])
         layout.addRow(self.checkboxes['copy_tags'])
-        layout.addRow(self.checkboxes['show_note_preview'])
+        layout.addRow(self.checkboxes['preview_on_right_side'])
         layout.addRow(self.checkboxes['search_online'])
         layout.addRow(self.checkboxes['show_extended_filters'])
         layout.addRow(self.checkboxes['show_help_buttons'])
@@ -144,7 +144,7 @@ class CroProSettingsDialog(QDialog):
             "Enable this for compatibility with other add-ons\n"
             "that evaluate notes upon creation."
         )
-        self.checkboxes["show_note_preview"].setToolTip(
+        self.checkboxes["preview_on_right_side"].setToolTip(
             "When a note is selected,\n" "show a preview on the right side of the window."
         )
         self.checkboxes["allow_empty_search"].setToolTip(

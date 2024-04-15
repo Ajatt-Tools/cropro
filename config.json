@@ -8,7 +8,7 @@
   ],
   "skip_duplicates": true,
   "copy_tags": true,
-  "show_note_preview": true,
+  "preview_on_right_side": true,
   "search_online": false,
   "show_extended_filters": true,
   "show_help_buttons": true,
