@@ -57,9 +57,12 @@ class LogDebug:
     def __call__(self, *args, **kwargs):
         return self.write(*args, **kwargs)
 
-    def read(self):
-        with open(DEBUG_LOG_FILE_PATH, 'r', encoding='utf-8') as lf:
-            return lf.read()
+    def read(self) -> str:
+        try:
+            with open(DEBUG_LOG_FILE_PATH, 'r', encoding='utf-8') as lf:
+                return lf.read()
+        except FileNotFoundError:
+            return ""
 
     def close(self):
         if self._logfile and not self._logfile.closed:
