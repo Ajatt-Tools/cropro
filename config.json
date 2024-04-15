@@ -10,13 +10,13 @@
   "copy_tags": true,
   "allow_empty_search": false,
   "preview_on_right_side": true,
-  "show_extended_filters": true,
-  "show_help_buttons": true,
-  "import_source_info": false,
-  "fetch_anki_card_media": false,
   "copy_card_data": false,
   "call_add_cards_hook": false,
   "enable_debug_log": false,
   "search_the_web": false,
-  "timeout_seconds": 60
+  "timeout_seconds": 60,
+  "show_extended_filters": true,
+  "show_help_buttons": true,
+  "import_source_info": false,
+  "fetch_anki_card_media": false
 }
