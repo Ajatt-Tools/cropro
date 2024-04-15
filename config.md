@@ -16,7 +16,6 @@
         <li><code>search_online</code> | Toggle between local profile's and immersion kit's search</li>
         <li><code>show_note_preview</code> | Toggles the preview on the right side when having a card selected</li>
         <li><code>show_extended_filters</code> | Toggles the filter list shown at the top</li>
-        <li><code>show_help_buttons</code> | Toggles all those help buttons shown</li>
     </ul>
 </details>
 

@@ -119,10 +119,6 @@ class CroProConfig(AddonConfigManager):
         self["show_extended_filters"] = bool(value)
 
     @property
-    def show_help_buttons(self) -> bool:
-        return self["show_help_buttons"]
-
-    @property
     def import_source_info(self) -> bool:
         return self["import_source_info"]
 

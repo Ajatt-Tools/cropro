@@ -41,9 +41,7 @@ class CroProSettingsDialog(QDialog):
         self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.max_displayed_notes)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
-        self.button_box = QDialogButtonBox(
-            (BUT_HELP | BUT_OK | BUT_CANCEL) if config.show_help_buttons else (BUT_OK | BUT_CANCEL)
-        )
+        self.button_box = QDialogButtonBox(BUT_HELP | BUT_OK | BUT_CANCEL)
         self._create_tabs()
         self._setup_ui()
         self.connect_widgets()
@@ -79,7 +77,6 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.checkboxes["preview_on_right_side"])
         layout.addRow(self.checkboxes["search_the_web"])
         layout.addRow(self.checkboxes["show_extended_filters"])
-        layout.addRow(self.checkboxes["show_help_buttons"])
         widget.setLayout(layout)
         return widget
 
