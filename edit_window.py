@@ -83,9 +83,9 @@ class AddDialogLauncher:
         if "tags" in other_note and config.copy_tags:
             self.new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
 
-        if config.tag_original_notes:
+        if config.exported_tag:
             assert other_note.id, "Other note must be in the database."
-            other_note.add_tag(config.tag_original_notes)
+            other_note.add_tag(config.exported_tag)
             other_note.flush()
 
         if d := current_add_dialog():

@@ -8,15 +8,15 @@ from .ajt_common.addon_config import AddonConfigManager
 
 class CroProConfig(AddonConfigManager):
     @property
-    def tag_original_notes(self) -> Optional[str]:
+    def exported_tag(self) -> Optional[str]:
         """
         Tag that is added to original notes (in the other profile)
         to mark that they have been copied to the current profile.
         """
         return self["exported_tag"].strip()
 
-    @tag_original_notes.setter
-    def tag_original_notes(self, new_value: str) -> None:
+    @exported_tag.setter
+    def exported_tag(self, new_value: str) -> None:
         self["exported_tag"] = new_value.strip()
 
     @property
@@ -106,6 +106,5 @@ class CroProConfig(AddonConfigManager):
         Call the `add_cards_did_add_note` hook after a note is imported.
         """
         return self["call_add_cards_hook"]
-
 
 config = CroProConfig()

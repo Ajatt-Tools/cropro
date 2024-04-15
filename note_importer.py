@@ -249,7 +249,7 @@ class NoteImporter:
                 return NoteCreateResult(new_note, NoteCreateStatus.connection_error)
         else:
             copy_media_files(new_note, other_note)
-            if tag := config.tag_original_notes:
+            if tag := config.exported_tag:
                 other_note.add_tag(tag)
                 other_note.flush()
             if config.copy_card_data:
