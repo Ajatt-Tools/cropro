@@ -48,7 +48,7 @@ class CroProSettingsDialog(QDialog):
         self.tab_view.addTab(self._make_local_tab(), "Local Search")
         self.tab_view.addTab(self._make_hl_tab(), "High Level")
 
-    def _make_general_tab(self) -> QLayout:
+    def _make_general_tab(self) -> QWidget:
         widget = QWidget()
         layout = QFormLayout()
         layout.addRow("Notes per page", self.npp_edit)
@@ -62,7 +62,7 @@ class CroProSettingsDialog(QDialog):
         widget.setLayout(layout)
         return widget
 
-    def _make_online_tab(self) -> QLayout:
+    def _make_online_tab(self) -> QWidget:
         widget = QWidget()
         layout = QFormLayout()
         layout.addRow(self.checkboxes['import_source_info'])
@@ -70,7 +70,7 @@ class CroProSettingsDialog(QDialog):
         widget.setLayout(layout)
         return widget
 
-    def _make_local_tab(self) -> QLayout:
+    def _make_local_tab(self) -> QWidget:
         widget = QWidget()
         layout = QFormLayout()
         layout.addRow(self.checkboxes['allow_empty_search'])
@@ -79,7 +79,7 @@ class CroProSettingsDialog(QDialog):
         widget.setLayout(layout)
         return widget
 
-    def _make_hl_tab(self) -> QLayout:
+    def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
         layout = QFormLayout()
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
@@ -158,7 +158,7 @@ class CroProSettingsDialog(QDialog):
         help_win = QDialog(parent=self)
         help_win.setWindowModality(Qt.WindowModality.NonModal)
         help_win.setWindowTitle(ADDON_NAME+" Settings Help")
-        
+
         size_policy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
         size_policy.setHorizontalStretch(0)
         size_policy.setVerticalStretch(0)
