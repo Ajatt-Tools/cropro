@@ -50,8 +50,6 @@ class LogDebug:
             return
         if not self._logfile:
             print(f"{ADDON_NAME_SHORT} debug: opening log file {DEBUG_LOG_FILE_PATH}")
-            # clear before writing to avoid large logfiles and their consequences
-            open(DEBUG_LOG_FILE_PATH, 'w').close()
             self._logfile = open(DEBUG_LOG_FILE_PATH, "a")
         self._logfile.write(f"{msg}\n")
         self._logfile.flush()
