@@ -36,7 +36,7 @@ class CroProSettingsDialog(QDialog):
         self.button_box = QDialogButtonBox(
             (BUT_HELP | BUT_OK | BUT_CANCEL) if config.show_help_buttons else (BUT_OK | BUT_CANCEL)
         )
-        self.create_tabs()
+        self._create_tabs()
         self._setup_ui()
         self.connect_widgets()
         self.add_tooltips()
@@ -44,7 +44,21 @@ class CroProSettingsDialog(QDialog):
         tweak_window(self)
         restoreGeom(self, self.name, adjustSize=True)
 
-    def create_tabs(self) -> None:
+    def _setup_ui(self) -> None:
+        self.setMinimumWidth(300)
+        self.setWindowTitle(f"{ADDON_NAME} Settings")
+        self.setLayout(self._make_layout())
+
+        for key, checkbox in self.checkboxes.items():
+            checkbox.setChecked(config[key])
+
+    def _make_layout(self) -> QLayout:
+        layout = QVBoxLayout()
+        layout.addWidget(self.tab_view)
+        layout.addWidget(self.button_box)
+        return layout
+
+    def _create_tabs(self) -> None:
         self.tab_view.addTab(self._make_general_tab(), "General")
         self.tab_view.addTab(self._make_online_tab(), "Online Search")
         self.tab_view.addTab(self._make_local_tab(), "Local Search")
@@ -92,20 +106,6 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.checkboxes["call_add_cards_hook"])
         widget.setLayout(layout)
         return widget
-
-    def _setup_ui(self) -> None:
-        self.setMinimumWidth(300)
-        self.setWindowTitle(f"{ADDON_NAME} Settings")
-        self.setLayout(self._make_layout())
-
-        for key, checkbox in self.checkboxes.items():
-            checkbox.setChecked(config[key])
-
-    def _make_layout(self) -> QLayout:
-        layout = QVBoxLayout()
-        layout.addWidget(self.tab_view)
-        layout.addWidget(self.button_box)
-        return layout
 
     def connect_widgets(self):
         qconnect(self.button_box.accepted, self.accept)
