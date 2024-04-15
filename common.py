@@ -1,6 +1,6 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org> and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-# TODO
+
 import os
 from typing import Optional, TextIO
 
@@ -50,12 +50,20 @@ class LogDebug:
             return
         if not self._logfile:
             print(f"{ADDON_NAME_SHORT} debug: opening log file {DEBUG_LOG_FILE_PATH}")
+            # clear before writing to avoid large logfiles and their consequences
+            open(DEBUG_LOG_FILE_PATH, 'w').close()
             self._logfile = open(DEBUG_LOG_FILE_PATH, "a")
         self._logfile.write(f"{msg}\n")
         self._logfile.flush()
 
     def __call__(self, *args, **kwargs):
         return self.write(*args, **kwargs)
+
+    def read(self):
+        if not self._logfile:
+            return ""
+        with open(self._logfile.name, 'r') as lf:
+            return lf.read()
 
     def close(self):
         if self._logfile and not self._logfile.closed:

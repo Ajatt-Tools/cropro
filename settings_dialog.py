@@ -2,11 +2,11 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom, disable_help_button
+from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText
 from aqt.webview import AnkiWebView
 
 from .ajt_common.about_menu import tweak_window
-from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH
+from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH, LogDebug
 from .config import config
 from .widgets.item_edit import ItemEditBox
 from .widgets.utils import CroProSpinBox
@@ -84,6 +84,9 @@ class CroProSettingsDialog(QDialog):
         layout = QFormLayout()
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
         layout.addRow(self.checkboxes['enable_debug_log'])
+        show_log_b = QPushButton("Show log")
+        qconnect(show_log_b.clicked, lambda: showText(LogDebug().read(), parent=self, copyBtn=True))
+        layout.addRow(show_log_b)
         layout.addRow(self.checkboxes['call_add_cards_hook'])
         widget.setLayout(layout)
         return widget

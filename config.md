@@ -39,9 +39,7 @@
     For addon evaluation purposes. (<a href="https://ankiweb.net/shared/info/1207537045">example</a>)</li>
     </ul>
 </details>
-<br>
----
-
+<br/>
 If you enjoy this add-on, please consider supporting my work by
 <b><a href="https://www.patreon.com/tatsumoto_ren">pledging your support on Patreon</a></b>.
 Thank you so much!
