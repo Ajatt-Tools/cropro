@@ -191,7 +191,7 @@ class CroProMainWindow(MainWindowUI):
         toggle_web_search_act = tools_menu.addAction("Search the web")
         toggle_web_search_act.setCheckable(True)
         qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
-        qconnect(tools_menu.aboutToShow, lambda: toggle_web_search_act.setChecked(config.search_online))
+        qconnect(tools_menu.aboutToShow, lambda: toggle_web_search_act.setChecked(config.search_the_web))
 
         tools_menu.addAction("Send query to Browser", self._send_query_to_browser)
 
@@ -219,11 +219,11 @@ class CroProMainWindow(MainWindowUI):
         """
         In case the checkbox has been toggled, remember the setting.
         """
-        if checked == config.search_online:
+        if checked == config.search_the_web:
             # State hasn't changed.
             return
         logDebug(f"Web search option changed to {checked}")
-        config.search_online = checked
+        config.search_the_web = checked
         self._ensure_enabled_search_mode()
         self.reset_cropro_status()
         # save config to disk to remember checkbox state.
@@ -477,11 +477,11 @@ class CroProMainWindow(MainWindowUI):
         return super().closeEvent(event)
 
     def _ensure_enabled_search_mode(self):
-        self.search_bar.set_web_mode(config.search_online)
+        self.search_bar.set_web_mode(config.search_the_web)
 
     def _open_cropro_settings(self):
         open_cropro_settings(parent=self)
-        self._ensure_enabled_search_mode()  # the "search_online" setting may have changed
+        self._ensure_enabled_search_mode()  # the "search_the_web" setting may have changed
 
     def on_profile_will_close(self):
         self.close()

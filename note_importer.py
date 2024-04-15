@@ -190,7 +190,7 @@ class NoteImporter:
     ) -> OpChanges:
         self._web_client.set_timeout(config.timeout_seconds)  # update timeout if the user has changed it.
 
-        if config.search_online and model == NO_MODEL:
+        if config.search_the_web and model == NO_MODEL:
             raise NoteTypeUnavailable()
 
         pos = col.add_custom_undo_entry(f"{ADDON_NAME_SHORT}: import {len(notes)} notes")

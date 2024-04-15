@@ -56,7 +56,7 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.checkboxes['skip_duplicates'])
         layout.addRow(self.checkboxes['copy_tags'])
         layout.addRow(self.checkboxes['preview_on_right_side'])
-        layout.addRow(self.checkboxes['search_online'])
+        layout.addRow(self.checkboxes['search_the_web'])
         layout.addRow(self.checkboxes['show_extended_filters'])
         layout.addRow(self.checkboxes['show_help_buttons'])
         widget.setLayout(layout)
@@ -150,7 +150,7 @@ class CroProSettingsDialog(QDialog):
         self.checkboxes["allow_empty_search"].setToolTip(
             "Show a list of notes from the other collection\n" "even when the search bar is empty."
         )
-        self.checkboxes["search_online"].setToolTip(
+        self.checkboxes["search_the_web"].setToolTip(
             "Instead of searching notes in a local profile,\n" "search the Internet instead."
         )
 

@@ -45,15 +45,15 @@ class CroProConfig(AddonConfigManager):
         return self["preview_on_right_side"]
 
     @property
-    def search_online(self) -> bool:
+    def search_the_web(self) -> bool:
         """
         Whether to search the web or a local collection.
         """
-        return self["search_online"]
+        return self["search_the_web"]
 
-    @search_online.setter
-    def search_online(self, value: bool) -> None:
-        self["search_online"] = bool(value)
+    @search_the_web.setter
+    def search_the_web(self, value: bool) -> None:
+        self["search_the_web"] = bool(value)
 
     @property
     def show_extended_filters(self) -> bool:
