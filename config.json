@@ -9,18 +9,14 @@
   "skip_duplicates": true,
   "copy_tags": true,
   "allow_empty_search": false,
-
   "preview_on_right_side": true,
-  "search_the_web": false,
   "show_extended_filters": true,
   "show_help_buttons": true,
-
   "import_source_info": false,
   "fetch_anki_card_media": false,
-
   "copy_card_data": false,
-
   "timeout_seconds": 60,
   "enable_debug_log": false,
+  "search_the_web": false,
   "call_add_cards_hook": false
 }
