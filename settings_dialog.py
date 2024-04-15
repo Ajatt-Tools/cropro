@@ -14,7 +14,14 @@ from .widgets.utils import CroProSpinBox
 
 
 def make_checkboxes() -> dict[str, QCheckBox]:
-    return {key: QCheckBox(ui_translate(key)) for key in config.bool_keys()}
+    """
+    Create checkboxes and set initial checked states to the values in the config.
+    """
+    d = {}
+    for key in config.bool_keys():
+        d[key] = QCheckBox(ui_translate(key))
+        d[key].setChecked(config[key])
+    return d
 
 
 BUT_HELP = QDialogButtonBox.StandardButton.Help
@@ -49,9 +56,6 @@ class CroProSettingsDialog(QDialog):
         self.setMinimumWidth(300)
         self.setWindowTitle(f"{ADDON_NAME} Settings")
         self.setLayout(self._make_layout())
-
-        for key, checkbox in self.checkboxes.items():
-            checkbox.setChecked(config[key])
 
     def _make_layout(self) -> QLayout:
         layout = QVBoxLayout()
