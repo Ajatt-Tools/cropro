@@ -58,8 +58,6 @@ from .note_importer import NoteTypeUnavailable, NoteImporter
 from .remote_search import CroProWebSearchClient, RemoteNote, CroProWebClientException
 from .settings_dialog import open_cropro_settings
 from .widgets.main_window_ui import MainWindowUI
-from .widgets.remote_search_bar import RemoteSearchBar
-from .widgets.search_bar import ColSearchWidget
 from .widgets.utils import CroProComboBox
 
 logDebug = LogDebug()
@@ -81,9 +79,9 @@ class WindowState:
             "to_deck": self._window.current_profile_deck_combo,
             "note_type": self._window.note_type_selection_combo,
             # Web search settings
-            "web_category": self._window.remote_search_bar.category_combo,
-            "web_sort_by": self._window.remote_search_bar.sort_combo,
-            "web_jlpt_level": self._window.remote_search_bar.jlpt_level_combo,
+            "web_category": self._window.search_bar.remote_opts.category_combo,
+            "web_sort_by": self._window.search_bar.remote_opts.sort_combo,
+            "web_jlpt_level": self._window.search_bar.remote_opts.jlpt_level_combo,
         }
         self._state = defaultdict(dict)
 
@@ -153,7 +151,6 @@ class SearchLock:
     def set_searching(self, searching: bool) -> None:
         self._searching = searching
         self._cropro.search_bar.setDisabled(searching)
-        self._cropro.remote_search_bar.setDisabled(searching)
 
     def is_searching(self) -> bool:
         return self._searching
@@ -175,18 +172,13 @@ class CroProMainWindow(MainWindowUI):
         self._add_tooltips()
 
     def _add_global_shortcuts(self):
-        QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.visible_search_bar().bar.focus_search_edit())  # type: ignore
+        QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.search_bar.bar.focus_search_edit())  # type: ignore
         QShortcut(QKeySequence("Ctrl+i"), self, activated=lambda: self.import_button.click())  # type: ignore
         QShortcut(QKeySequence("Ctrl+l"), self, activated=lambda: self.note_list.set_focus())  # type: ignore
 
     def _add_tooltips(self):
         self.import_button.setToolTip("Add a new card (Ctrl+I)")
         self.edit_button.setToolTip("Edit card before adding")
-
-    def visible_search_bar(self) -> Union[RemoteSearchBar, ColSearchWidget]:
-        w = self.remote_search_bar if config.search_online else self.search_bar
-        assert w.isVisible(), "Widget must be visible."
-        return w
 
     def setup_menubar(self):
         menu_bar: QMenuBar = self.menuBar()
@@ -216,7 +208,7 @@ class CroProMainWindow(MainWindowUI):
         help_menu.addAction("Create sentence bank: subs2srs", lambda: openLink(SUBS2SRS_LINK))
 
     def _send_query_to_browser(self):
-        search_text = self.visible_search_bar().bar.search_text()
+        search_text = self.search_bar.bar.search_text()
         if not search_text:
             return tooltip("Nothing to do.", parent=self)
         browser = aqt.dialogs.open("Browser", mw)
@@ -232,7 +224,7 @@ class CroProMainWindow(MainWindowUI):
             return
         logDebug(f"Web search option changed to {checked}")
         config.search_online = checked
-        self._activate_enabled_search_bar()
+        self._ensure_enabled_search_mode()
         self.reset_cropro_status()
         # save config to disk to remember checkbox state.
         config.write_config()
@@ -260,8 +252,7 @@ class CroProMainWindow(MainWindowUI):
 
     def connect_elements(self):
         qconnect(self.search_bar.opts.selected_profile_changed, self.open_other_col)
-        qconnect(self.search_bar.search_requested, self.perform_local_search)
-        qconnect(self.remote_search_bar.search_requested, self.perform_remote_search)
+        qconnect(self.search_bar.search_requested, self.perform_search)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
 
@@ -325,24 +316,29 @@ class CroProMainWindow(MainWindowUI):
             ]
         )
 
-    def _should_abort_search(self, is_web: bool) -> bool:
-        return self._search_lock.is_searching() or config.search_online is not is_web or self.isVisible() is False
+    def _should_abort_search(self) -> bool:
+        return self._search_lock.is_searching() or not self.isVisible()
+
+    def perform_search(self, search_text: str):
+        if self._should_abort_search():
+            return
+        if config.search_the_web:
+            return self.perform_remote_search(search_text)
+        else:
+            return self.perform_local_search(search_text)
 
     def perform_remote_search(self, search_text: str):
         """
         Search notes on a remote server.
         """
-        if self._should_abort_search(is_web=True):
-            return
-
-        self._activate_enabled_search_bar()
+        self._ensure_enabled_search_mode()
         self.reset_cropro_status()
 
         if not search_text:
             return
 
         def search_notes(_col) -> Sequence[RemoteNote]:
-            return self.web_search_client.search_notes(self.remote_search_bar.get_request_args())
+            return self.web_search_client.search_notes(self.search_bar.get_request_args())
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(
@@ -378,10 +374,7 @@ class CroProMainWindow(MainWindowUI):
         """
         Search notes in a different Anki collection.
         """
-        if self._should_abort_search(is_web=False):
-            return
-
-        self._activate_enabled_search_bar()
+        self._ensure_enabled_search_mode()
         self.reset_cropro_status()
         self.open_other_col()
 
@@ -475,7 +468,7 @@ class CroProMainWindow(MainWindowUI):
         self.status_bar.hide_counters()
         self.into_profile_label.setText(mw.pm.name or "Unknown")
         self.window_state.restore()
-        self._activate_enabled_search_bar()
+        self._ensure_enabled_search_mode()
         return super().showEvent(event)
 
     def closeEvent(self, event: QCloseEvent) -> None:
@@ -483,19 +476,12 @@ class CroProMainWindow(MainWindowUI):
         self.window_state.save()
         return super().closeEvent(event)
 
-    def _activate_enabled_search_bar(self):
-        if config.search_online:
-            self.remote_search_bar.show()
-            self.remote_search_bar.bar.focus_search_edit()
-            self.search_bar.hide()
-        else:
-            self.search_bar.show()
-            self.search_bar.bar.focus_search_edit()
-            self.remote_search_bar.hide()
+    def _ensure_enabled_search_mode(self):
+        self.search_bar.set_web_mode(config.search_online)
 
     def _open_cropro_settings(self):
         open_cropro_settings(parent=self)
-        self._activate_enabled_search_bar()  # the "search_online" setting may have changed
+        self._ensure_enabled_search_mode()  # the "search_online" setting may have changed
 
     def on_profile_will_close(self):
         self.close()
@@ -504,7 +490,6 @@ class CroProMainWindow(MainWindowUI):
     def on_profile_did_open(self):
         # clean state from the previous profile if it was set.
         self.search_bar.clear_all()
-        self.remote_search_bar.bar.clear_search_text()
         self.note_list.clear_notes()
         # setup search bar
         self.populate_other_profile_names()
@@ -516,8 +501,8 @@ class CroProMainWindow(MainWindowUI):
     def search_for(self, search_text: str) -> None:
         self.show()
         self.setFocus()
-        self.visible_search_bar().bar.set_search_text(search_text)
-        self.visible_search_bar().search_requested.emit(search_text)
+        self.search_bar.bar.set_search_text(search_text)
+        self.search_bar.search_requested.emit(search_text)
 
     def setup_browser_menu(self, browser: Browser) -> None:
         """Add a browser entry"""
