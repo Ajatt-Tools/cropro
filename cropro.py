@@ -21,11 +21,12 @@ import json
 import os.path
 from collections import defaultdict
 from collections.abc import Sequence
+from typing import Optional
 
 import aqt
 from anki.models import NotetypeDict
 from anki.notes import NoteId
-from aqt import AnkiQt
+from aqt import AnkiQt, gui_hooks
 from aqt.browser import Browser
 from aqt.operations import QueryOp, CollectionOp
 from aqt.qt import *
@@ -119,7 +120,7 @@ class WindowState:
         return False
 
     def restore(self):
-        if self._ensure_loaded() and (profile_settings := self._state.get(mw.pm.name)):
+        if self._ensure_loaded() and (profile_settings := self._state.get(aqt.mw.pm.name)):
             for key, widget in self._map.items():
                 if value := profile_settings.get(key):
                     widget.setCurrentText(value)
