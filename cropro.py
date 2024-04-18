@@ -82,6 +82,9 @@ class WindowState:
             "web_category": self._window.search_bar.remote_opts.category_combo,
             "web_sort_by": self._window.search_bar.remote_opts.sort_combo,
             "web_jlpt_level": self._window.search_bar.remote_opts.jlpt_level_combo,
+            "web_wanikani_level": self._window.search_bar.remote_opts.wanikani_level_combo,
+            "web_min_length": self._window.search_bar.remote_opts.min_length_spinbox,
+            "web_max_lenght": self._window.search_bar.remote_opts.max_length_spinbox,
         }
         self._state = defaultdict(dict)
 

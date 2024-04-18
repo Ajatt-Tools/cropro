@@ -115,6 +115,9 @@ class CroProSearchWidget(QWidget):
             self.remote_opts.sort_combo,
             self.remote_opts.category_combo,
             self.remote_opts.jlpt_level_combo,
+            self.remote_opts.wanikani_level_combo,
+            self.remote_opts.min_length_spinbox,
+            self.remote_opts.max_length_spinbox,
         )
         if keyword := self.bar.search_text():
             args["keyword"] = keyword
