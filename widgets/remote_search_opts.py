@@ -68,31 +68,19 @@ class RemoteSearchOptions(QWidget):
             RemoteComboBoxItem(None, "all"),
             *map(str, range(1, 61)),
         ], key="wanikani")
-        self._min_length_spinbox = CroProSpinBox(0, 200, 1, 0)
-        self._max_length_spinbox = CroProSpinBox(0, 500, 1, 0)
         self._setup_layout()
 
     def _setup_layout(self) -> None:
-        top_layout = QVBoxLayout()
-        layout_row1 = QHBoxLayout()
-        layout_row1.addWidget(QLabel("Category:"))
-        layout_row1.addWidget(self._category_combo)
-        layout_row1.addWidget(QLabel("Sort:"))
-        layout_row1.addWidget(self._sort_combo)
-        layout_row1.addWidget(QLabel("JLPT:"))
-        layout_row1.addWidget(self._jlpt_level_combo)
-        layout_row2 = QHBoxLayout()
-        layout_row2.addWidget(QLabel("WaniKani:"))
-        layout_row2.addWidget(self._wanikani_level_combo)
-        layout_row2.addWidget(QLabel("Min. Length:"))
-        layout_row2.addWidget(self._min_length_spinbox)
-        layout_row2.addWidget(QLabel("Max. Length:"))
-        layout_row2.addWidget(self._max_length_spinbox)
-        layout_row1.setContentsMargins(0, 0, 0, 0)
-        layout_row2.setContentsMargins(0, 0, 0, 0)
-        top_layout.addLayout(layout_row1)
-        top_layout.addLayout(layout_row2)
-        self.setLayout(top_layout)
+        layout_row = QHBoxLayout()
+        layout_row.addWidget(QLabel("Category:"))
+        layout_row.addWidget(self._category_combo)
+        layout_row.addWidget(QLabel("Sort:"))
+        layout_row.addWidget(self._sort_combo)
+        layout_row.addWidget(QLabel("JLPT:"))
+        layout_row.addWidget(self._jlpt_level_combo)
+        layout_row.addWidget(QLabel("WaniKani:"))
+        layout_row.addWidget(self._wanikani_level_combo)
+        self.setLayout(layout_row)
 
     @property
     def category_combo(self) -> QComboBox:
@@ -109,14 +97,6 @@ class RemoteSearchOptions(QWidget):
     @property
     def wanikani_level_combo(self) -> QComboBox:
         return self._wanikani_level_combo
-
-    @property
-    def min_length_spinbox(self) -> QSpinBox:
-        return self._min_length_spinbox
-
-    @property
-    def max_length_spinbox(self) -> QSpinBox:
-        return self._max_length_spinbox
 
 
 # Debug
@@ -141,8 +121,6 @@ class App(QWidget):
         print(self.search_opts.sort_combo.currentText())
         print(self.search_opts.jlpt_level_combo.currentText())
         print(self.search_opts.wanikani_level_combo.currentText())
-        print(self.search_opts.min_length_spinbox.value())
-        print(self.search_opts.max_length_spinbox.value())
 
 
 def main():

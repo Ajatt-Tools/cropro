@@ -39,6 +39,28 @@ class CroProConfig(AddonConfigManager):
         self["search_the_web"] = bool(value)
 
     @property
+    def sentence_min_length(self) -> bool:
+        """
+        Minimum count of letters in the sentence for the card to be shown
+        """
+        return self["sentence_min_length"]
+
+    @sentence_min_length.setter
+    def sentence_min_length(self, new_value: int) -> None:
+        self["sentence_min_length"] = new_value
+
+    @property
+    def sentence_max_length(self) -> bool:
+        """
+        Maximum count of letters in the sentence for the card to be shown
+        """
+        return self["sentence_max_length"]
+
+    @sentence_max_length.setter
+    def sentence_max_length(self, new_value: int) -> None:
+        self["sentence_max_length"] = new_value
+
+    @property
     def max_displayed_notes(self) -> int:
         """
         The note list will not show more notes than this value.

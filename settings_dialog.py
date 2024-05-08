@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from aqt.qt import *
+from aqt import Qt
 from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText
 from aqt.webview import AnkiWebView
 
@@ -41,6 +42,8 @@ class CroProSettingsDialog(QDialog):
         self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.max_displayed_notes)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
+        self.sentence_min_length = CroProSpinBox(min_val=0, max_val=196, step=1, value=config.sentence_min_length)  # Currently longest sentence has a length of 196 letters (Shirokuma Cafe Outro full sub)
+        self.sentence_max_length = CroProSpinBox(min_val=0, max_val=197, step=1, value=config.sentence_max_length)
         self.button_box = QDialogButtonBox(BUT_HELP | BUT_OK | BUT_CANCEL)
         self._create_tabs()
         self._setup_ui()
@@ -51,7 +54,7 @@ class CroProSettingsDialog(QDialog):
         restoreGeom(self, self.name, adjustSize=True)
 
     def _setup_ui(self) -> None:
-        self.setMinimumWidth(300)
+        self.setMinimumWidth(350)
         self.setWindowTitle(f"{ADDON_NAME} Settings")
         self.setLayout(self._make_layout())
 
@@ -64,6 +67,7 @@ class CroProSettingsDialog(QDialog):
     def _create_tabs(self) -> None:
         self.tab_view.addTab(self._make_general_tab(), "General")
         self.tab_view.addTab(self._make_local_tab(), "Local Search")
+        self.tab_view.addTab(self._make_web_tab(), "Web Search")
         self.tab_view.addTab(self._make_hl_tab(), "High Level")
 
     def _make_general_tab(self) -> QWidget:
@@ -84,6 +88,19 @@ class CroProSettingsDialog(QDialog):
         layout.addRow(self.checkboxes["copy_card_data"])
         layout.addRow("Tag original cards with", self.tag_edit)
         return widget
+
+    def _make_web_tab(self) -> QWidget:
+        widget = QWidget()
+        widget.setLayout(layout := QFormLayout())
+        length_layout = QHBoxLayout()
+        length_layout.addWidget(QLabel("From"))
+        length_layout.addWidget(self.sentence_min_length)
+        length_layout.addWidget(QLabel("To"))
+        length_layout.addWidget(self.sentence_max_length)
+        length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
+        layout.addRow("Sentence Length", length_layout)
+        return widget
+
 
     def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
@@ -113,6 +130,8 @@ class CroProSettingsDialog(QDialog):
             "Hide fields whose names contain these words.\n" "Press space or comma to commit."
         )
         self.web_timeout_spinbox.setToolTip("Give up trying to connect to the remote server after this many seconds.")
+        self.sentence_min_length.setToolTip("0 = No limit")
+        self.sentence_max_length.setToolTip("0 = No limit")
         self.checkboxes["copy_card_data"].setToolTip(
             "Copy scheduling information of cards created from imported notes,\n"
             "such as due date, interval, queue, type, etc."
@@ -181,6 +200,10 @@ class CroProSettingsDialog(QDialog):
         config.exported_tag = self.tag_edit.text()
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
+        config.sentence_min_length = self.sentence_min_length.value()
+        config.sentence_max_length = self.sentence_max_length.value() \
+            if self.sentence_max_length.value() > self.sentence_min_length.value()\
+                 or self.sentence_max_length.value() == 0 else self.sentence_min_length.value() +1
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
         config.write_config()
