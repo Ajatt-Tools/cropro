@@ -12,7 +12,7 @@ import anki.httpclient
 import requests
 
 IMAGE_FIELD_NAME = "Image"
-AUDIO_FIELD_NAME = "SentAudio"
+AUDIO_FIELD_NAME = "Audio"
 API_URL = "https://api.immersionkit.com/look_up_dictionary?"
 
 
@@ -81,12 +81,13 @@ class RemoteNote:
             AUDIO_FIELD_NAME: RemoteMediaInfo(AUDIO_FIELD_NAME, self.sound_url, MediaType.sound),
         }
         self._mapping = {
-            "SentKanji": self.sent_kanji,
-            "SentFurigana": self.sent_furigana,
-            "SentEng": self.sent_eng,
+            "Expression": self.sent_kanji,
+            "Reading": self.sent_furigana,
+            "English": self.sent_eng,
             AUDIO_FIELD_NAME: self.audio.as_anki_ref(),
             IMAGE_FIELD_NAME: self.image.as_anki_ref(),
             "Notes": self.notes,
+            "tags": self.tags,
         }
 
     @property
@@ -125,7 +126,7 @@ class RemoteNote:
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict):
         return RemoteNote(
-            tags=json_dict["tags"],
+            tags=[tag.replace(r'\s:', '_') for tag in [*json_dict["tags"], json_dict["category"]]],
             image_url=json_dict["image_url"],
             sound_url=json_dict["sound_url"],
             sent_kanji=json_dict["sentence"],
