@@ -61,15 +61,15 @@ class CroProConfig(AddonConfigManager):
         self["sentence_max_length"] = new_value
 
     @property
-    def max_displayed_notes(self) -> int:
+    def notes_per_page(self) -> int:
         """
-        The note list will not show more notes than this value.
+        How many search results to display on one page
         """
-        return self["max_displayed_notes"]
+        return self["notes_per_page"]
 
-    @max_displayed_notes.setter
-    def max_displayed_notes(self, new_value: int) -> None:
-        self["max_displayed_notes"] = new_value
+    @notes_per_page.setter
+    def notes_per_page(self, new_value: int) -> None:
+        self["notes_per_page"] = new_value
 
     @property
     def timeout_seconds(self) -> int:
