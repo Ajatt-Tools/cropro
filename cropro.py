@@ -351,12 +351,7 @@ class CroProMainWindow(MainWindowUI):
                 previewer_enabled=config.preview_on_right_side,
             )
 
-            self.page_prev.setEnabled(False)
-            if len(notes) > config.notes_per_page:
-                self.page_skip.setEnabled(True)
-            self.note_list.current_page = 1
-            self.search_result_label.set_search_result(notes, config.notes_per_page)
-            self._search_lock.set_searching(False)
+            self.finish_search()
 
         def on_exception(exception: Exception) -> None:
             self._search_lock.set_searching(False)
@@ -399,13 +394,13 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
             self.note_list.set_notes(
-                map(self.other_col.get_note, note_ids),
+                list(map(self.other_col.get_note, note_ids)),
                 config.notes_per_page,
                 hide_fields=config.hidden_fields,
                 previewer_enabled=config.preview_on_right_side,
             )
-            self.search_result_label.set_search_result(note_ids, config.notes_per_page)
-            self._search_lock.set_searching(False)
+            
+            self.finish_search()
 
         self._search_lock.set_searching(True)
         (
@@ -418,6 +413,14 @@ class CroProMainWindow(MainWindowUI):
             .with_progress("Searching notes...")
             .run_in_background()
         )
+    
+    def finish_search(self):
+        self.page_prev.setEnabled(False)
+        if len(self.note_list.current_notes) > config.notes_per_page:
+            self.page_skip.setEnabled(True)
+        self.note_list.current_page = 1
+        self.search_result_label.set_search_result(self.note_list.current_notes, config.notes_per_page)
+        self._search_lock.set_searching(False)
 
     def change_page(self, is_skip_page: bool = True):
         page_boundary = self.note_list.change_page(config.notes_per_page, config.hidden_fields, is_skip_page=is_skip_page)
