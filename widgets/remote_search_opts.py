@@ -71,16 +71,16 @@ class RemoteSearchOptions(QWidget):
         self._setup_layout()
 
     def _setup_layout(self) -> None:
-        layout_row = QHBoxLayout()
-        layout_row.addWidget(QLabel("Category:"))
-        layout_row.addWidget(self._category_combo)
-        layout_row.addWidget(QLabel("Sort:"))
-        layout_row.addWidget(self._sort_combo)
-        layout_row.addWidget(QLabel("JLPT:"))
-        layout_row.addWidget(self._jlpt_level_combo)
-        layout_row.addWidget(QLabel("WaniKani:"))
-        layout_row.addWidget(self._wanikani_level_combo)
-        self.setLayout(layout_row)
+        layout = QHBoxLayout()
+        layout.addWidget(QLabel("Category:"))
+        layout.addWidget(self._category_combo)
+        layout.addWidget(QLabel("Sort:"))
+        layout.addWidget(self._sort_combo)
+        layout.addWidget(QLabel("JLPT:"))
+        layout.addWidget(self._jlpt_level_combo)
+        layout.addWidget(QLabel("WaniKani:"))
+        layout.addWidget(self._wanikani_level_combo)
+        self.setLayout(layout)
 
     @property
     def category_combo(self) -> QComboBox:
