@@ -3,15 +3,17 @@
 
 from aqt.qt import *
 from aqt import Qt
-from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText
+from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText, openFolder
 from aqt.webview import AnkiWebView
 
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.utils import ui_translate
-from .common import ADDON_NAME, DEBUG_LOG_FILE_PATH, LogDebug, CONFIG_MD_PATH
+from .common import ADDON_NAME, LogDebug, CONFIG_MD_PATH
 from .config import config
 from .widgets.item_edit import ItemEditBox
 from .widgets.utils import CroProSpinBox
+
+logDebug = LogDebug()
 
 
 def make_checkboxes() -> dict[str, QCheckBox]:
@@ -107,10 +109,17 @@ class CroProSettingsDialog(QDialog):
         widget.setLayout(layout := QFormLayout())
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
         layout.addRow(self.checkboxes["enable_debug_log"])
-        show_log_b = QPushButton("Show log")
-        qconnect(show_log_b.clicked, lambda: showText(LogDebug().read(), parent=self, copyBtn=True))
-        layout.addRow(show_log_b)
         layout.addRow(self.checkboxes["call_add_cards_hook"])
+        layout.addRow(hbox := QHBoxLayout())
+
+        show_log_b = QPushButton("Show log")
+        qconnect(show_log_b.clicked, lambda: showText(logDebug.read_contents(), parent=self, copyBtn=True))
+        hbox.addWidget(show_log_b)
+
+        open_dir_b = QPushButton("Open folder")
+        qconnect(open_dir_b.clicked, lambda: openFolder(str(logDebug.cropro_log_dir())))
+        hbox.addWidget(open_dir_b)
+
         return widget
 
     def connect_widgets(self):
@@ -138,7 +147,6 @@ class CroProSettingsDialog(QDialog):
         )
         self.checkboxes["enable_debug_log"].setToolTip(
             "Write events related to this add-on to the log file.\n"
-            f"The file can be found at: {DEBUG_LOG_FILE_PATH}\n"
             "Most users don't need to keep this option enabled."
         )
         self.checkboxes["skip_duplicates"].setToolTip(
