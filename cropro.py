@@ -305,6 +305,8 @@ class CroProMainWindow(MainWindowUI):
         self.status_bar.hide_counters()
         self.search_result_label.hide_count()
         self.note_list.clear_notes()
+        self.page_prev.setEnabled(False)
+        self.page_skip.setEnabled(False)
         logDebug("cleared search results")
 
     def populate_other_profile_decks(self):
