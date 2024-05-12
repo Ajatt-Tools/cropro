@@ -83,6 +83,7 @@ class RemoteSearchOptions(QWidget):
         layout.addWidget(self._jlpt_level_combo)
         layout.addWidget(QLabel("WaniKani:"))
         layout.addWidget(self._wanikani_level_combo)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
     @property
