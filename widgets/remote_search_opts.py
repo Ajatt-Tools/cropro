@@ -64,10 +64,13 @@ class RemoteSearchOptions(QWidget):
             ],
             key="jlpt",
         )
-        self._wanikani_level_combo = new_combo_box([
-            RemoteComboBoxItem(None, "all"),
-            *map(str, range(1, 61)),
-        ], key="wanikani")
+        self._wanikani_level_combo = new_combo_box(
+            [
+                RemoteComboBoxItem(None, "all"),
+                *map(str, range(1, 61)),
+            ],
+            key="wanikani",
+        )
         self._setup_layout()
 
     def _setup_layout(self) -> None:

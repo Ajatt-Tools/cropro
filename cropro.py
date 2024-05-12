@@ -340,7 +340,9 @@ class CroProMainWindow(MainWindowUI):
             return
 
         def search_notes(_col) -> Sequence[RemoteNote]:
-            return self.web_search_client.search_notes(self.search_bar.get_request_args(config.sentence_min_length, config.sentence_max_length))
+            return self.web_search_client.search_notes(
+                self.search_bar.get_request_args(config.sentence_min_length, config.sentence_max_length)
+            )
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(

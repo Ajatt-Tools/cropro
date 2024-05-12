@@ -103,7 +103,6 @@ class CroProSettingsDialog(QDialog):
         layout.addRow("Sentence Length", length_layout)
         return widget
 
-
     def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
@@ -209,9 +208,12 @@ class CroProSettingsDialog(QDialog):
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
         config.sentence_min_length = self.sentence_min_length.value()
-        config.sentence_max_length = self.sentence_max_length.value() \
-            if self.sentence_max_length.value() > self.sentence_min_length.value()\
-                 or self.sentence_max_length.value() == 0 else self.sentence_min_length.value() +1
+        config.sentence_max_length = (
+            self.sentence_max_length.value()
+            if self.sentence_max_length.value() > self.sentence_min_length.value()
+            or self.sentence_max_length.value() == 0
+            else self.sentence_min_length.value() + 1
+        )
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
         config.write_config()

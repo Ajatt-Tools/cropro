@@ -129,4 +129,5 @@ class CroProConfig(AddonConfigManager):
         """
         return self["call_add_cards_hook"]
 
+
 config = CroProConfig()
