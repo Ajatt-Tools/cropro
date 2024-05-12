@@ -122,9 +122,9 @@ class CroProSearchWidget(QWidget):
             for widget in widgets:
                 if param := widget.currentData().http_arg:
                     args[widget.key] = param
-            if min_length: 
+            if min_length > 0:
                 args["min_length"] = min_length
-            if max_length:
+            if max_length > 0:
                 args["max_length"] = max_length
         return args
 
