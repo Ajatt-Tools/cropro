@@ -93,9 +93,11 @@ class NotePreviewer(AnkiWebView):
 
     mw.addonManager.setWebExports(__name__, r"(img|web)/.*\.(js|css|html|png|svg)")
 
+    _note: Optional[Union[Note, RemoteNote]]
+
     def __init__(self, parent: QWidget):
         super().__init__(parent)
-        self._note: Optional[Union[Note, RemoteNote]] = None
+        self._note = None
         self.set_title("Note previewer")
         self.disable_zoom()
         self.setProperty("url", QUrl("about:blank"))
