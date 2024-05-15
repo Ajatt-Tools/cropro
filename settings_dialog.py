@@ -56,6 +56,8 @@ class CroProSettingsDialog(QDialog):
         self.sentence_min_length = CroProSpinBox(min_val=0, max_val=500, step=1, value=config.sentence_min_length)
         self.sentence_max_length = CroProSpinBox(min_val=0, max_val=999, step=1, value=config.sentence_max_length)
         self._remote_fields = make_remote_field_combos()
+        self.preset_fields_ajt = QPushButton("Ajatt Field Preset")
+        self.preset_fields_srs = QPushButton("Standard Sub2Srs Preset")
         self.button_box = QDialogButtonBox(BUT_HELP | BUT_OK | BUT_CANCEL)
         self._create_tabs()
         self._setup_ui()
@@ -66,7 +68,7 @@ class CroProSettingsDialog(QDialog):
         restoreGeom(self, self.name, adjustSize=True)
 
     def _setup_ui(self) -> None:
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(370)
         self.setWindowTitle(f"{ADDON_NAME} Settings")
         self.setLayout(self._make_layout())
 
@@ -104,6 +106,7 @@ class CroProSettingsDialog(QDialog):
     def _make_web_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
+
         length_layout = QHBoxLayout()
         length_layout.addWidget(QLabel("From"))
         length_layout.addWidget(self.sentence_min_length)
@@ -111,8 +114,33 @@ class CroProSettingsDialog(QDialog):
         length_layout.addWidget(self.sentence_max_length)
         length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addRow("Sentence Length", length_layout)
+
+        field_name_group = QGroupBox("Field names")
+        field_name_group.setCheckable(False)
+        field_name_group.setLayout(names_layout := QFormLayout())
         for field_key, edit_widget in self._remote_fields.items():
-            layout.addRow(ui_translate(field_key).title(), edit_widget)
+            names_layout.addRow(ui_translate(field_key).title(), edit_widget)
+        preset_layout = QHBoxLayout()
+        preset_layout.addWidget(self.preset_fields_ajt)
+        qconnect(self.preset_fields_ajt.clicked, lambda: self.set_preset({
+            "sent_kanji": "SentKanji",
+            "sent_furigana": "SentFurigana",
+            "sent_eng": "SentEng",
+            "sent_audio": "SentAudio",
+            "image": "Image",
+            "notes": "Notes",
+        }))
+        preset_layout.addWidget(self.preset_fields_srs)
+        qconnect(self.preset_fields_srs.clicked, lambda: self.set_preset({
+            "sent_kanji": "Expression",
+            "sent_furigana": "Reading",
+            "sent_eng": "English",
+            "sent_audio": "Audio",
+            "image": "Image",
+            "notes": "ID",
+        }))
+        names_layout.addRow(preset_layout)
+        layout.addRow(field_name_group)
         return widget
 
     def _make_hl_tab(self) -> QWidget:
@@ -182,6 +210,10 @@ class CroProSettingsDialog(QDialog):
         self.checkboxes["search_the_web"].setToolTip(
             "Instead of searching notes in a local profile,\n" "search the Internet instead."
         )
+
+    def set_preset(self, name_dict: dict):
+        for field_key, edit_widget in self._remote_fields.items():
+            edit_widget.setCurrentText(name_dict[field_key])
 
     def show_help(self):
         help_win = QDialog(parent=self)
