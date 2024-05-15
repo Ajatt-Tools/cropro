@@ -16,5 +16,13 @@
   "search_the_web": false,
   "sentence_min_length": 0,
   "sentence_max_length": 0,
-  "timeout_seconds": 60
+  "timeout_seconds": 60,
+  "remote_fields": {
+    "sentence_kanji": "SentKanji",
+    "sentence_furigana": "SentFurigana",
+    "sentence_eng": "SentEng",
+    "sentence_audio": "SentAudio",
+    "image": "Image",
+    "notes": "Notes"
+  }
 }

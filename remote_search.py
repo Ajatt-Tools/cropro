@@ -10,9 +10,8 @@ from collections.abc import Iterable
 
 import anki.httpclient
 import requests
+from .config import config
 
-IMAGE_FIELD_NAME = "Image"
-AUDIO_FIELD_NAME = "SentAudio"
 API_URL = "https://api.immersionkit.com/look_up_dictionary?"
 
 
@@ -28,6 +27,7 @@ class ApiReturnExampleDict(TypedDict):
     sentence_with_furigana: str
     translation: str
     sentence_id: str
+    category: str
 
 
 @enum.unique
@@ -61,15 +61,19 @@ class RemoteMediaInfo:
         raise NotImplementedError(f"not implemented: {self.type}")
 
 
+def remote_tags_as_list(json_dict: ApiReturnExampleDict) -> list[str]:
+    return [tag.replace(r"\s:", "_") for tag in [*json_dict["tags"], json_dict["category"]]]
+
+
 @dataclasses.dataclass
 class RemoteNote:
     """
     Packs the response from the API into a familiar interface.
     """
 
-    sent_kanji: str
-    sent_furigana: str
-    sent_eng: str
+    sentence_kanji: str
+    sentence_furigana: str
+    sentence_eng: str
     image_url: str
     sound_url: str
     notes: str
@@ -77,25 +81,33 @@ class RemoteNote:
 
     def __post_init__(self):
         self._media = {
-            IMAGE_FIELD_NAME: RemoteMediaInfo(IMAGE_FIELD_NAME, self.image_url, MediaType.image),
-            AUDIO_FIELD_NAME: RemoteMediaInfo(AUDIO_FIELD_NAME, self.sound_url, MediaType.sound),
+            config.remote_fields.image: RemoteMediaInfo(
+                config.remote_fields.image,
+                self.image_url,
+                MediaType.image,
+            ),
+            config.remote_fields.sentence_audio: RemoteMediaInfo(
+                config.remote_fields.sentence_audio,
+                self.sound_url,
+                MediaType.sound,
+            ),
         }
         self._mapping = {
-            "SentKanji": self.sent_kanji,
-            "SentFurigana": self.sent_furigana,
-            "SentEng": self.sent_eng,
-            AUDIO_FIELD_NAME: self.audio.as_anki_ref(),
-            IMAGE_FIELD_NAME: self.image.as_anki_ref(),
-            "Notes": self.notes,
+            config.remote_fields.sentence_kanji: self.sentence_kanji,
+            config.remote_fields.sentence_furigana: self.sentence_furigana,
+            config.remote_fields.sentence_eng: self.sentence_eng,
+            config.remote_fields.sentence_audio: self.audio.as_anki_ref(),
+            config.remote_fields.image: self.image.as_anki_ref(),
+            config.remote_fields.notes: self.notes,
         }
 
     @property
     def image(self) -> RemoteMediaInfo:
-        return self._media[IMAGE_FIELD_NAME]
+        return self._media[config.remote_fields.image]
 
     @property
     def audio(self) -> RemoteMediaInfo:
-        return self._media[AUDIO_FIELD_NAME]
+        return self._media[config.remote_fields.sentence_audio]
 
     def __contains__(self, item) -> bool:
         return item in self._mapping
@@ -125,12 +137,12 @@ class RemoteNote:
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict):
         return RemoteNote(
-            tags=json_dict["tags"],
+            tags=remote_tags_as_list(json_dict),
             image_url=json_dict["image_url"],
             sound_url=json_dict["sound_url"],
-            sent_kanji=json_dict["sentence"],
-            sent_furigana=json_dict["sentence_with_furigana"],
-            sent_eng=json_dict["translation"],
+            sentence_kanji=json_dict["sentence"],
+            sentence_furigana=json_dict["sentence_with_furigana"],
+            sentence_eng=json_dict["translation"],
             notes=json_dict["sentence_id"],
         )
 

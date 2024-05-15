@@ -6,6 +6,7 @@ from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText, open
 from aqt.webview import AnkiWebView
 
 from .ajt_common.about_menu import tweak_window
+from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.utils import ui_translate
 from .common import ADDON_NAME, LogDebug, CONFIG_MD_PATH
 from .config import config
@@ -31,6 +32,14 @@ BUT_OK = QDialogButtonBox.StandardButton.Ok
 BUT_CANCEL = QDialogButtonBox.StandardButton.Cancel
 
 
+def make_remote_field_combos() -> dict[str, QComboBox]:
+    d = {}
+    for field_key, field_name in config.remote_fields.items():
+        d[field_key] = AnkiFieldSelector()
+        d[field_key].setCurrentText(field_name)
+    return d
+
+
 class CroProSettingsDialog(QDialog):
     name = "cropro_settings_dialog"
 
@@ -46,6 +55,7 @@ class CroProSettingsDialog(QDialog):
         # Currently, the longest sentence has a length of 196 letters (Shirokuma Cafe Outro full sub).
         self.sentence_min_length = CroProSpinBox(min_val=0, max_val=500, step=1, value=config.sentence_min_length)
         self.sentence_max_length = CroProSpinBox(min_val=0, max_val=999, step=1, value=config.sentence_max_length)
+        self._remote_fields = make_remote_field_combos()
         self.button_box = QDialogButtonBox(BUT_HELP | BUT_OK | BUT_CANCEL)
         self._create_tabs()
         self._setup_ui()
@@ -101,6 +111,8 @@ class CroProSettingsDialog(QDialog):
         length_layout.addWidget(self.sentence_max_length)
         length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addRow("Sentence Length", length_layout)
+        for field_key, edit_widget in self._remote_fields.items():
+            layout.addRow(ui_translate(field_key).title(), edit_widget)
         return widget
 
     def _make_hl_tab(self) -> QWidget:
@@ -216,6 +228,8 @@ class CroProSettingsDialog(QDialog):
         )
         for key, checkbox in self.checkboxes.items():
             config[key] = checkbox.isChecked()
+        for field_key, edit_widget in self._remote_fields.items():
+            config.remote_fields[field_key] = edit_widget.currentText()
         config.write_config()
         return super().accept()
 

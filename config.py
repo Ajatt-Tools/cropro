@@ -3,10 +3,46 @@
 
 from typing import Optional
 
-from .ajt_common.addon_config import AddonConfigManager
+from .ajt_common.addon_config import AddonConfigManager, ConfigSubViewBase
+
+
+class RemoteFieldsConfig(ConfigSubViewBase):
+    _view_key: str = "remote_fields"
+
+    @property
+    def sentence_kanji(self) -> str:
+        return self["sentence_kanji"]
+
+    @property
+    def sentence_furigana(self) -> str:
+        return self["sentence_furigana"]
+
+    @property
+    def sentence_eng(self) -> str:
+        return self["sentence_eng"]
+
+    @property
+    def sentence_audio(self) -> str:
+        return self["sentence_audio"]
+
+    @property
+    def image(self) -> str:
+        return self["image"]
+
+    @property
+    def notes(self) -> str:
+        return self["notes"]
 
 
 class CroProConfig(AddonConfigManager):
+    def __init__(self, default: bool = False):
+        super().__init__(default)
+        self._remote_fields = RemoteFieldsConfig(default)
+
+    @property
+    def remote_fields(self) -> RemoteFieldsConfig:
+        return self._remote_fields
+
     @property
     def exported_tag(self) -> Optional[str]:
         """

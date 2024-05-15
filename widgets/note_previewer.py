@@ -82,6 +82,10 @@ def format_local_audio(audio_files: Iterable[str]) -> str:
     )
 
 
+def format_tags_as_html(tags: list[str]) -> str:
+    return "".join(f'<span class="cropro__note_tag">{tag}</span>' for tag in tags)
+
+
 class NotePreviewer(AnkiWebView):
     """Previews a note in a Form Layout using a webview."""
 
@@ -143,6 +147,9 @@ class NotePreviewer(AnkiWebView):
             else:
                 markup.write(self._create_html_for_field(field_content))
             markup.write("</div>")
+        if note.tags:
+            markup.write('<div class="name">Tags</div>')
+            markup.write(f'<div class="content">{format_tags_as_html(note.tags)}</div>')
         return markup.getvalue()
 
     def _create_html_for_remote_field(self, field_name: str, field_content: str) -> str:
