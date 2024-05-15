@@ -5,6 +5,8 @@
     --content-bg: hsl(0, 0%, 97%);
     --name-color: hsl(0, 0%, 25%);
     --content-color: hsl(0, 0%, 1%);
+    --tag-bg: hsl(0, 0%, 100%);
+    --tag-border: hsl(0, 0%, 65%);
 }
 
 :root[class*="night-mode"] {
@@ -13,6 +15,8 @@
     --content-bg: hsl(0, 0%, 3%);
     --name-color: hsl(0, 0%, 75%);
     --content-color: hsl(0, 0%, 90%);
+    --tag-bg: hsl(0, 0%, 7%);
+    --tag-border: hsl(0, 0%, 50%);
 }
 
 body,
@@ -106,4 +110,18 @@ button.cropro__play_button {
 
 button.cropro__play_button:hover {
     background-color: #ced0d2;
+}
+
+.cropro__note_tag {
+    /* Each tag is a <span> */
+    display: inline-block;
+    background-color: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    border-radius: 0.4rem;
+    padding: 0.1rem 0.3rem;
+    color: var(--content-color);
+}
+
+.cropro__note_tag:not(:first-child) {
+    margin-left: 0.3rem;
 }
