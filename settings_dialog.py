@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from aqt.qt import *
+from aqt import Qt
 from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText, openFolder
 from aqt.webview import AnkiWebView
 
@@ -49,7 +50,7 @@ class CroProSettingsDialog(QDialog):
         self.tab_view = QTabWidget()
         self.checkboxes = make_checkboxes()
         self.tag_edit = QLineEdit(config.exported_tag)
-        self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.max_displayed_notes)
+        self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.notes_per_page)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
         # Currently, the longest sentence has a length of 196 letters (Shirokuma Cafe Outro full sub).
@@ -87,7 +88,7 @@ class CroProSettingsDialog(QDialog):
     def _make_general_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
-        layout.addRow("Max displayed notes", self.max_notes_edit)
+        layout.addRow("Notes per page", self.max_notes_edit)
         layout.addRow(self.hidden_fields)
         layout.addRow(self.checkboxes["skip_duplicates"])
         layout.addRow(self.checkboxes["copy_tags"])
@@ -106,7 +107,7 @@ class CroProSettingsDialog(QDialog):
     def _make_web_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
-
+        
         length_layout = QHBoxLayout()
         length_layout.addWidget(QLabel("From"))
         length_layout.addWidget(self.sentence_min_length)
@@ -142,7 +143,7 @@ class CroProSettingsDialog(QDialog):
         names_layout.addRow(preset_layout)
         layout.addRow(field_name_group)
         return widget
-
+      
     def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
@@ -247,7 +248,7 @@ class CroProSettingsDialog(QDialog):
         return super().done(result)
 
     def accept(self) -> None:
-        config.max_displayed_notes = self.max_notes_edit.value()
+        config.notes_per_page = self.max_notes_edit.value()
         config.exported_tag = self.tag_edit.text()
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
