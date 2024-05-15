@@ -56,7 +56,7 @@ class CroProSettingsDialog(QDialog):
         self.sentence_min_length = CroProSpinBox(min_val=0, max_val=500, step=1, value=config.sentence_min_length)
         self.sentence_max_length = CroProSpinBox(min_val=0, max_val=999, step=1, value=config.sentence_max_length)
         self._remote_fields = make_remote_field_combos()
-        self.preset_fields_ajt = QPushButton("Ajatt Field Preset")
+        self.preset_fields_ajt = QPushButton("Ajatt Preset")
         self.preset_fields_srs = QPushButton("Standard Sub2Srs Preset")
         self.button_box = QDialogButtonBox(BUT_HELP | BUT_OK | BUT_CANCEL)
         self._create_tabs()
@@ -68,7 +68,7 @@ class CroProSettingsDialog(QDialog):
         restoreGeom(self, self.name, adjustSize=True)
 
     def _setup_ui(self) -> None:
-        self.setMinimumWidth(370)
+        self.setMinimumWidth(350)
         self.setWindowTitle(f"{ADDON_NAME} Settings")
         self.setLayout(self._make_layout())
 
