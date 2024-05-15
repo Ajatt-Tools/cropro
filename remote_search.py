@@ -28,6 +28,7 @@ class ApiReturnExampleDict(TypedDict):
     sentence_with_furigana: str
     translation: str
     sentence_id: str
+    category: str
 
 
 @enum.unique
