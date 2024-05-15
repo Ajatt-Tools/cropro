@@ -62,6 +62,10 @@ class RemoteMediaInfo:
         raise NotImplementedError(f"not implemented: {self.type}")
 
 
+def remote_tags_as_list(json_dict: ApiReturnExampleDict) -> list[str]:
+    return [tag.replace(r"\s:", "_") for tag in [*json_dict["tags"], json_dict["category"]]]
+
+
 @dataclasses.dataclass
 class RemoteNote:
     """
@@ -126,7 +130,7 @@ class RemoteNote:
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict):
         return RemoteNote(
-            tags=[tag.replace(r"\s:", "_") for tag in [*json_dict["tags"], json_dict["category"]]],
+            tags=remote_tags_as_list(json_dict),
             image_url=json_dict["image_url"],
             sound_url=json_dict["sound_url"],
             sent_kanji=json_dict["sentence"],
