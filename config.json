@@ -14,5 +14,7 @@
   "call_add_cards_hook": false,
   "enable_debug_log": false,
   "search_the_web": false,
+  "sentence_min_length": 0,
+  "sentence_max_length": 0,
   "timeout_seconds": 60
 }

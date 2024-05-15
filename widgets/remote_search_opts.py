@@ -64,6 +64,13 @@ class RemoteSearchOptions(QWidget):
             ],
             key="jlpt",
         )
+        self._wanikani_level_combo = new_combo_box(
+            [
+                RemoteComboBoxItem(None, "all"),
+                *map(str, range(1, 61)),
+            ],
+            key="wanikani",
+        )
         self._setup_layout()
 
     def _setup_layout(self) -> None:
@@ -74,6 +81,8 @@ class RemoteSearchOptions(QWidget):
         layout.addWidget(self._sort_combo)
         layout.addWidget(QLabel("JLPT:"))
         layout.addWidget(self._jlpt_level_combo)
+        layout.addWidget(QLabel("WaniKani:"))
+        layout.addWidget(self._wanikani_level_combo)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
@@ -88,6 +97,10 @@ class RemoteSearchOptions(QWidget):
     @property
     def jlpt_level_combo(self) -> QComboBox:
         return self._jlpt_level_combo
+
+    @property
+    def wanikani_level_combo(self) -> QComboBox:
+        return self._wanikani_level_combo
 
 
 # Debug
@@ -111,6 +124,7 @@ class App(QWidget):
         print(self.search_opts.category_combo.currentText())
         print(self.search_opts.sort_combo.currentText())
         print(self.search_opts.jlpt_level_combo.currentText())
+        print(self.search_opts.wanikani_level_combo.currentText())
 
 
 def main():

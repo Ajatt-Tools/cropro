@@ -83,6 +83,7 @@ class WindowState:
             "web_category": self._window.search_bar.remote_opts.category_combo,
             "web_sort_by": self._window.search_bar.remote_opts.sort_combo,
             "web_jlpt_level": self._window.search_bar.remote_opts.jlpt_level_combo,
+            "web_wanikani_level": self._window.search_bar.remote_opts.wanikani_level_combo,
         }
         self._state = defaultdict(dict)
 
@@ -339,7 +340,9 @@ class CroProMainWindow(MainWindowUI):
             return
 
         def search_notes(_col) -> Sequence[RemoteNote]:
-            return self.web_search_client.search_notes(self.search_bar.get_request_args())
+            return self.web_search_client.search_notes(
+                self.search_bar.get_request_args(config.sentence_min_length, config.sentence_max_length)
+            )
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(

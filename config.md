@@ -14,6 +14,8 @@
         <li><code>skip_duplicates</code> | Skips cards, which are already existent in the collection</li>
         <li><code>copy_tags</code> | Adds the category in case of web search and tags in all cases as anki tags</li>
         <li><code>search_online</code> | Toggle between local profile's and immersion kit's search</li>
+        <li><code>sentence_min_length</code> | Minimum count of letters in the sentence for the card to be shown
+        <li><code>sentence_min_length</code> | Maximum count of letters in the sentence for the card to be shown
         <li><code>show_note_preview</code> | Toggles the preview on the right side when having a card selected</li>
     </ul>
 </details>
