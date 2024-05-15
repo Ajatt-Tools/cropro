@@ -123,19 +123,19 @@ class CroProSettingsDialog(QDialog):
         preset_layout = QHBoxLayout()
         preset_layout.addWidget(self.preset_fields_ajt)
         qconnect(self.preset_fields_ajt.clicked, lambda: self.set_preset({
-            "sent_kanji": "SentKanji",
-            "sent_furigana": "SentFurigana",
-            "sent_eng": "SentEng",
-            "sent_audio": "SentAudio",
+            "sentence_kanji": "SentKanji",
+            "sentence_furigana": "SentFurigana",
+            "sentence_eng": "SentEng",
+            "sentence_audio": "SentAudio",
             "image": "Image",
             "notes": "Notes",
         }))
         preset_layout.addWidget(self.preset_fields_srs)
         qconnect(self.preset_fields_srs.clicked, lambda: self.set_preset({
-            "sent_kanji": "Expression",
-            "sent_furigana": "Reading",
-            "sent_eng": "English",
-            "sent_audio": "Audio",
+            "sentence_kanji": "Expression",
+            "sentence_furigana": "Reading",
+            "sentence_eng": "English",
+            "sentence_audio": "Audio",
             "image": "Image",
             "notes": "ID",
         }))
