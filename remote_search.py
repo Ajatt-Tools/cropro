@@ -10,9 +10,8 @@ from collections.abc import Iterable
 
 import anki.httpclient
 import requests
+from .config import config
 
-IMAGE_FIELD_NAME = "Image"
-AUDIO_FIELD_NAME = "SentAudio"
 API_URL = "https://api.immersionkit.com/look_up_dictionary?"
 
 
@@ -82,25 +81,33 @@ class RemoteNote:
 
     def __post_init__(self):
         self._media = {
-            IMAGE_FIELD_NAME: RemoteMediaInfo(IMAGE_FIELD_NAME, self.image_url, MediaType.image),
-            AUDIO_FIELD_NAME: RemoteMediaInfo(AUDIO_FIELD_NAME, self.sound_url, MediaType.sound),
+            config.remote_fields.image: RemoteMediaInfo(
+                config.remote_fields.image,
+                self.image_url,
+                MediaType.image,
+            ),
+            config.remote_fields.sent_audio: RemoteMediaInfo(
+                config.remote_fields.sent_audio,
+                self.sound_url,
+                MediaType.sound,
+            ),
         }
         self._mapping = {
-            "SentKanji": self.sent_kanji,
-            "SentFurigana": self.sent_furigana,
-            "SentEng": self.sent_eng,
-            AUDIO_FIELD_NAME: self.audio.as_anki_ref(),
-            IMAGE_FIELD_NAME: self.image.as_anki_ref(),
-            "Notes": self.notes,
+            config.remote_fields.sent_kanji: self.sent_kanji,
+            config.remote_fields.sent_furigana: self.sent_furigana,
+            config.remote_fields.sent_eng: self.sent_eng,
+            config.remote_fields.sent_audio: self.audio.as_anki_ref(),
+            config.remote_fields.image: self.image.as_anki_ref(),
+            config.remote_fields.notes: self.notes,
         }
 
     @property
     def image(self) -> RemoteMediaInfo:
-        return self._media[IMAGE_FIELD_NAME]
+        return self._media[config.remote_fields.image]
 
     @property
     def audio(self) -> RemoteMediaInfo:
-        return self._media[AUDIO_FIELD_NAME]
+        return self._media[config.remote_fields.sent_audio]
 
     def __contains__(self, item) -> bool:
         return item in self._mapping
