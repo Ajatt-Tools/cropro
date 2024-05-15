@@ -33,12 +33,6 @@ class CroProSpinBox(QSpinBox):
         self.setRange(min_val, max_val)
         self.setSingleStep(step)
         self.setValue(value)
-    
-    def currentText(self) -> str:
-        return str(self.value())
-        
-    def setCurrentText(self, value: str):
-        self.setValue(int(value))
 
 
 class ProfileNameLabel(QLabel):

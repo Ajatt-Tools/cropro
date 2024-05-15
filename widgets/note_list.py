@@ -86,7 +86,7 @@ class NoteList(QSplitter):
             item = QListWidgetItem()
             item.setText(
                 " | ".join(
-                    ', '.join(field_content) if isinstance(field_content, list) else html_to_text_line(field_content)
+                    ", ".join(field_content) if isinstance(field_content, list) else html_to_text_line(field_content)
                     for field_name, field_content in note.items()
                     if not is_hidden(field_name) and isinstance(field_content, list) or field_content.strip()
                 )

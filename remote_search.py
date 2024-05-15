@@ -126,7 +126,7 @@ class RemoteNote:
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict):
         return RemoteNote(
-            tags=[tag.replace(r'\s:', '_') for tag in [*json_dict["tags"], json_dict["category"]]],
+            tags=[tag.replace(r"\s:", "_") for tag in [*json_dict["tags"], json_dict["category"]]],
             image_url=json_dict["image_url"],
             sound_url=json_dict["sound_url"],
             sent_kanji=json_dict["sentence"],
