@@ -71,9 +71,9 @@ class RemoteNote:
     Packs the response from the API into a familiar interface.
     """
 
-    sent_kanji: str
-    sent_furigana: str
-    sent_eng: str
+    sentence_kanji: str
+    sentence_furigana: str
+    sentence_eng: str
     image_url: str
     sound_url: str
     notes: str
@@ -86,17 +86,17 @@ class RemoteNote:
                 self.image_url,
                 MediaType.image,
             ),
-            config.remote_fields.sent_audio: RemoteMediaInfo(
-                config.remote_fields.sent_audio,
+            config.remote_fields.sentence_audio: RemoteMediaInfo(
+                config.remote_fields.sentence_audio,
                 self.sound_url,
                 MediaType.sound,
             ),
         }
         self._mapping = {
-            config.remote_fields.sent_kanji: self.sent_kanji,
-            config.remote_fields.sent_furigana: self.sent_furigana,
-            config.remote_fields.sent_eng: self.sent_eng,
-            config.remote_fields.sent_audio: self.audio.as_anki_ref(),
+            config.remote_fields.sentence_kanji: self.sentence_kanji,
+            config.remote_fields.sentence_furigana: self.sentence_furigana,
+            config.remote_fields.sentence_eng: self.sentence_eng,
+            config.remote_fields.sentence_audio: self.audio.as_anki_ref(),
             config.remote_fields.image: self.image.as_anki_ref(),
             config.remote_fields.notes: self.notes,
         }
@@ -107,7 +107,7 @@ class RemoteNote:
 
     @property
     def audio(self) -> RemoteMediaInfo:
-        return self._media[config.remote_fields.sent_audio]
+        return self._media[config.remote_fields.sentence_audio]
 
     def __contains__(self, item) -> bool:
         return item in self._mapping
@@ -140,9 +140,9 @@ class RemoteNote:
             tags=remote_tags_as_list(json_dict),
             image_url=json_dict["image_url"],
             sound_url=json_dict["sound_url"],
-            sent_kanji=json_dict["sentence"],
-            sent_furigana=json_dict["sentence_with_furigana"],
-            sent_eng=json_dict["translation"],
+            sentence_kanji=json_dict["sentence"],
+            sentence_furigana=json_dict["sentence_with_furigana"],
+            sentence_eng=json_dict["translation"],
             notes=json_dict["sentence_id"],
         )
 

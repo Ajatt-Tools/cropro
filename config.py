@@ -10,20 +10,20 @@ class RemoteFieldsConfig(ConfigSubViewBase):
     _view_key: str = "remote_fields"
 
     @property
-    def sent_kanji(self) -> str:
-        return self["sent_kanji"]
+    def sentence_kanji(self) -> str:
+        return self["sentence_kanji"]
 
     @property
-    def sent_furigana(self) -> str:
-        return self["sent_furigana"]
+    def sentence_furigana(self) -> str:
+        return self["sentence_furigana"]
 
     @property
-    def sent_eng(self) -> str:
-        return self["sent_eng"]
+    def sentence_eng(self) -> str:
+        return self["sentence_eng"]
 
     @property
-    def sent_audio(self) -> str:
-        return self["sent_audio"]
+    def sentence_audio(self) -> str:
+        return self["sentence_audio"]
 
     @property
     def image(self) -> str:

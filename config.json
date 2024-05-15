@@ -18,10 +18,10 @@
   "sentence_max_length": 0,
   "timeout_seconds": 60,
   "remote_fields": {
-    "sent_kanji": "SentKanji",
-    "sent_furigana": "SentFurigana",
-    "sent_eng": "SentEng",
-    "sent_audio": "SentAudio",
+    "sentence_kanji": "SentKanji",
+    "sentence_furigana": "SentFurigana",
+    "sentence_eng": "SentEng",
+    "sentence_audio": "SentAudio",
     "image": "Image",
     "notes": "Notes"
   }
