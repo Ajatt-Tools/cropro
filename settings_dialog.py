@@ -114,7 +114,7 @@ class CroProSettingsDialog(QDialog):
         length_layout.addWidget(self.sentence_max_length)
         length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addRow("Sentence Length", length_layout)
-
+        
         field_name_group = QGroupBox("Field names")
         field_name_group.setCheckable(False)
         field_name_group.setLayout(names_layout := QFormLayout())
