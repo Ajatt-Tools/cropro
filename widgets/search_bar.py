@@ -102,9 +102,9 @@ class CroProSearchWidget(QWidget):
 
     def _setup_layout(self) -> None:
         self.setLayout(layout := QVBoxLayout())
-        layout.addWidget(self.bar)
         layout.addWidget(self.opts)
         layout.addWidget(self.remote_opts)
+        layout.addWidget(self.bar)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.bar.focus_search_edit()
 

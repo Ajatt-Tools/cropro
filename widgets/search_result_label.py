@@ -3,6 +3,7 @@
 
 import typing
 from collections.abc import Sized
+from math import ceil
 
 import requests
 from aqt.qt import *
@@ -36,17 +37,17 @@ class SearchResultLabel(QLabel):
     def set_search_result(self, note_ids: Sized, display_limit: int):
         found = len(note_ids)
         displayed = min(found, display_limit)
-        return self.set_count(found, displayed)
+        return self.set_count(found, displayed, notes_per_page=display_limit)
 
-    def set_count(self, found: int, displayed: int):
+    def set_count(self, found: int, displayed: int, page: int = 1, notes_per_page: int = 0):
         if found == 0:
-            self.setText(f"No notes found")
+            self.setText("No notes found")
             self.setStyleSheet("QLabel { color: red; }")
         elif displayed >= found:
             self.setText(f"{found} notes found")
             self.setStyleSheet("QLabel { color: green; }")
         else:
-            self.setText(f"{found} notes found (displaying first {displayed})")
+            self.setText(f"Displaying {displayed}/{found} notes | Page {page}/{ceil(found/(ceil(displayed/notes_per_page)*notes_per_page))}")
             self.setStyleSheet("QLabel { color: orange; }")
         if self.isHidden():
             self.show()

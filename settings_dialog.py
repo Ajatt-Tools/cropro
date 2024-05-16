@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 from aqt.qt import *
+from aqt import Qt
 from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText, openFolder
 from aqt.webview import AnkiWebView
 
@@ -49,13 +50,15 @@ class CroProSettingsDialog(QDialog):
         self.tab_view = QTabWidget()
         self.checkboxes = make_checkboxes()
         self.tag_edit = QLineEdit(config.exported_tag)
-        self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.max_displayed_notes)
+        self.max_notes_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.notes_per_page)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
         # Currently, the longest sentence has a length of 196 letters (Shirokuma Cafe Outro full sub).
         self.sentence_min_length = CroProSpinBox(min_val=0, max_val=500, step=1, value=config.sentence_min_length)
         self.sentence_max_length = CroProSpinBox(min_val=0, max_val=999, step=1, value=config.sentence_max_length)
         self._remote_fields = make_remote_field_combos()
+        self.preset_fields_ajt = QPushButton("Ajatt Preset")
+        self.preset_fields_srs = QPushButton("Standard Sub2Srs Preset")
         self.button_box = QDialogButtonBox(BUT_HELP | BUT_OK | BUT_CANCEL)
         self._create_tabs()
         self._setup_ui()
@@ -85,7 +88,7 @@ class CroProSettingsDialog(QDialog):
     def _make_general_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
-        layout.addRow("Max displayed notes", self.max_notes_edit)
+        layout.addRow("Notes per page", self.max_notes_edit)
         layout.addRow(self.hidden_fields)
         layout.addRow(self.checkboxes["skip_duplicates"])
         layout.addRow(self.checkboxes["copy_tags"])
@@ -104,6 +107,7 @@ class CroProSettingsDialog(QDialog):
     def _make_web_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
+
         length_layout = QHBoxLayout()
         length_layout.addWidget(QLabel("From"))
         length_layout.addWidget(self.sentence_min_length)
@@ -111,8 +115,33 @@ class CroProSettingsDialog(QDialog):
         length_layout.addWidget(self.sentence_max_length)
         length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addRow("Sentence Length", length_layout)
+
+        field_name_group = QGroupBox("Field names")
+        field_name_group.setCheckable(False)
+        field_name_group.setLayout(names_layout := QFormLayout())
         for field_key, edit_widget in self._remote_fields.items():
-            layout.addRow(ui_translate(field_key).title(), edit_widget)
+            names_layout.addRow(ui_translate(field_key).title(), edit_widget)
+        preset_layout = QHBoxLayout()
+        preset_layout.addWidget(self.preset_fields_ajt)
+        qconnect(self.preset_fields_ajt.clicked, lambda: self.set_preset({
+            "sentence_kanji": "SentKanji",
+            "sentence_furigana": "SentFurigana",
+            "sentence_eng": "SentEng",
+            "sentence_audio": "SentAudio",
+            "image": "Image",
+            "notes": "Notes",
+        }))
+        preset_layout.addWidget(self.preset_fields_srs)
+        qconnect(self.preset_fields_srs.clicked, lambda: self.set_preset({
+            "sentence_kanji": "Expression",
+            "sentence_furigana": "Reading",
+            "sentence_eng": "English",
+            "sentence_audio": "Audio",
+            "image": "Image",
+            "notes": "ID",
+        }))
+        names_layout.addRow(preset_layout)
+        layout.addRow(field_name_group)
         return widget
 
     def _make_hl_tab(self) -> QWidget:
@@ -183,6 +212,10 @@ class CroProSettingsDialog(QDialog):
             "Instead of searching notes in a local profile,\n" "search the Internet instead."
         )
 
+    def set_preset(self, name_dict: dict):
+        for field_key, edit_widget in self._remote_fields.items():
+            edit_widget.setCurrentText(name_dict[field_key])
+
     def show_help(self):
         help_win = QDialog(parent=self)
         help_win.setWindowModality(Qt.WindowModality.NonModal)
@@ -215,7 +248,7 @@ class CroProSettingsDialog(QDialog):
         return super().done(result)
 
     def accept(self) -> None:
-        config.max_displayed_notes = self.max_notes_edit.value()
+        config.notes_per_page = self.max_notes_edit.value()
         config.exported_tag = self.tag_edit.text()
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()

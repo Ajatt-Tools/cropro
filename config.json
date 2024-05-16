@@ -1,5 +1,5 @@
 {
-  "max_displayed_notes": 500,
+  "notes_per_page": 500,
   "exported_tag": "cropro_exported",
   "hidden_fields": [
     "furigana",
