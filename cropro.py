@@ -255,8 +255,6 @@ class CroProMainWindow(MainWindowUI):
     def connect_elements(self):
         qconnect(self.search_bar.opts.selected_profile_changed, self.open_other_col)
         qconnect(self.search_bar.search_requested, self.perform_search)
-        qconnect(self.page_prev.clicked, lambda: self.change_page(False))
-        qconnect(self.page_skip.clicked, lambda: self.change_page())
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
 
@@ -306,8 +304,6 @@ class CroProMainWindow(MainWindowUI):
         self.status_bar.hide_counters()
         self.search_result_label.hide_count()
         self.note_list.clear_notes()
-        self.page_prev.setEnabled(False)
-        self.page_skip.setEnabled(False)
         logDebug("cleared search results")
 
     def populate_other_profile_decks(self):
@@ -350,13 +346,12 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(
-                notes,
-                notes_per_page=config.notes_per_page,
+                notes[: config.max_displayed_notes],
                 hide_fields=config.hidden_fields,
                 previewer_enabled=config.preview_on_right_side,
             )
-
-            self.finish_search()
+            self.search_result_label.set_search_result(notes, config.max_displayed_notes)
+            self._search_lock.set_searching(False)
 
         def on_exception(exception: Exception) -> None:
             self._search_lock.set_searching(False)
@@ -399,13 +394,12 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
             self.note_list.set_notes(
-                list(map(self.other_col.get_note, note_ids)),
-                config.notes_per_page,
+                map(self.other_col.get_note, note_ids[: config.max_displayed_notes]),
                 hide_fields=config.hidden_fields,
                 previewer_enabled=config.preview_on_right_side,
             )
-            
-            self.finish_search()
+            self.search_result_label.set_search_result(note_ids, config.max_displayed_notes)
+            self._search_lock.set_searching(False)
 
         self._search_lock.set_searching(True)
         (
@@ -418,28 +412,6 @@ class CroProMainWindow(MainWindowUI):
             .with_progress("Searching notes...")
             .run_in_background()
         )
-    
-    def finish_search(self):
-        self.page_prev.setEnabled(False)
-        if len(self.note_list.current_notes) > config.notes_per_page:
-            self.page_skip.setEnabled(True)
-        self.note_list.current_page = 1
-        self.search_result_label.set_search_result(self.note_list.current_notes, config.notes_per_page)
-        self._search_lock.set_searching(False)
-
-    def change_page(self, is_skip_page: bool = True):
-        page_boundary = self.note_list.change_page(config.notes_per_page, config.hidden_fields, is_skip_page=is_skip_page)
-
-        self.search_result_label.set_count(
-            len(self.note_list.current_notes),
-            len(self.note_list.current_notes[page_boundary[0] : page_boundary[1]]),
-            page=self.note_list.current_page,
-            notes_per_page=config.notes_per_page,
-        )
-
-        self.page_prev.setEnabled(page_boundary[0] > 0)
-        self.page_skip.setEnabled(len(self.note_list.current_notes)-1 > page_boundary[1]) # note: aims for the next page's start
-        logDebug(f"Page switch {self.note_list.current_page-(1 if is_skip_page else -1)} -> {self.note_list.current_page} ({page_boundary[0]}:{page_boundary[1]} in {len(self.note_list.current_notes)})")
 
     def current_model(self) -> NameId:
         return self.note_type_selection_combo.current_item()

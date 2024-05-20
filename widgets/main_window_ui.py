@@ -27,9 +27,7 @@ class MainWindowUI(QMainWindow):
         self.current_profile_deck_combo = NameIdComboBox()
         self.edit_button = CroProPushButton("Edit")
         self.import_button = CroProPushButton("Import")
-        self.page_prev = QPushButton('🞀')
         self.note_list = NoteList()
-        self.page_skip = QPushButton('🞂')
         self.note_type_selection_combo = NameIdComboBox()
         self.init_ui()
 
@@ -43,27 +41,10 @@ class MainWindowUI(QMainWindow):
         main_vbox = QVBoxLayout()
         main_vbox.addWidget(self.search_bar)
         main_vbox.addWidget(self.search_result_label)
-        main_vbox.addLayout(self.make_note_row())
+        main_vbox.addWidget(self.note_list)
         main_vbox.addLayout(self.status_bar)
         main_vbox.addLayout(self.make_input_row())
         return main_vbox
-    
-    def make_note_row(self) -> QLayout:
-        note_row = QHBoxLayout()
-        self.page_prev.setFixedWidth(17)
-        self.page_prev.setFixedHeight(45)
-        self.page_prev.setEnabled(False)
-        self.page_prev.setToolTip("Previous Page")
-        self.page_skip.setFixedWidth(17)
-        self.page_skip.setFixedHeight(45)
-        self.page_skip.setEnabled(False)
-        self.page_skip.setToolTip("Next Page")
-        note_row.addWidget(self.page_prev)
-        note_row.addWidget(self.note_list)
-        note_row.addWidget(self.page_skip)
-        note_row.setStretch(1, 1)
-        return note_row
-
 
     def make_input_row(self) -> QLayout:
         import_row = QHBoxLayout()

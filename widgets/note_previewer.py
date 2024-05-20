@@ -158,9 +158,9 @@ class NotePreviewer(AnkiWebView):
         markup = io.StringIO()
         if field_name == self._note.image.field_name:
             markup.write(format_remote_image(self._note.image))
-        elif field_name == self._note.audio.field_name:
+        if field_name == self._note.audio.field_name:
             markup.write(format_remote_audio(self._note.audio))
-        elif text := (', '.join(field_content) if isinstance(field_content, list) else html_to_text_line(field_content)):
+        if text := html_to_text_line(field_content):
             markup.write(f"<div>{html_to_text_line(text)}</div>")
         return markup.getvalue()
 
@@ -170,9 +170,9 @@ class NotePreviewer(AnkiWebView):
         markup = io.StringIO()
         if audio_files := find_sounds(field_content):
             markup.write(f'<div class="cropro__audio_list">{format_local_audio(audio_files)}</div>')
-        elif image_files := find_images(field_content):
+        if image_files := find_images(field_content):
             markup.write(f'<div class="cropro__image_list">{format_local_images(self._note, image_files)}</div>')
-        elif text := html_to_text_line(field_content):
+        if text := html_to_text_line(field_content):
             markup.write(f'<div class="cropro__text_item">{text}</div>')
         return markup.getvalue()
 
