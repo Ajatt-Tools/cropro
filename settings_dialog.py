@@ -113,7 +113,7 @@ class CroProSettingsDialog(QDialog):
         length_layout.addWidget(self.sentence_max_length)
         length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addRow("Sentence Length", length_layout)
-        
+
         field_name_group = QGroupBox("Field names")
         field_name_group.setCheckable(False)
         field_name_group.setLayout(names_layout := QFormLayout())
@@ -121,27 +121,37 @@ class CroProSettingsDialog(QDialog):
             names_layout.addRow(ui_translate(field_key).title(), edit_widget)
         preset_layout = QHBoxLayout()
         preset_layout.addWidget(self.preset_fields_ajt)
-        qconnect(self.preset_fields_ajt.clicked, lambda: self.set_preset({
-            "sentence_kanji": "SentKanji",
-            "sentence_furigana": "SentFurigana",
-            "sentence_eng": "SentEng",
-            "sentence_audio": "SentAudio",
-            "image": "Image",
-            "notes": "Notes",
-        }))
+        qconnect(
+            self.preset_fields_ajt.clicked,
+            lambda: self.set_preset(
+                {
+                    "sentence_kanji": "SentKanji",
+                    "sentence_furigana": "SentFurigana",
+                    "sentence_eng": "SentEng",
+                    "sentence_audio": "SentAudio",
+                    "image": "Image",
+                    "notes": "Notes",
+                }
+            ),
+        )
         preset_layout.addWidget(self.preset_fields_srs)
-        qconnect(self.preset_fields_srs.clicked, lambda: self.set_preset({
-            "sentence_kanji": "Expression",
-            "sentence_furigana": "Reading",
-            "sentence_eng": "English",
-            "sentence_audio": "Audio",
-            "image": "Image",
-            "notes": "ID",
-        }))
+        qconnect(
+            self.preset_fields_srs.clicked,
+            lambda: self.set_preset(
+                {
+                    "sentence_kanji": "Expression",
+                    "sentence_furigana": "Reading",
+                    "sentence_eng": "English",
+                    "sentence_audio": "Audio",
+                    "image": "Image",
+                    "notes": "ID",
+                }
+            ),
+        )
         names_layout.addRow(preset_layout)
         layout.addRow(field_name_group)
         return widget
-      
+
     def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
