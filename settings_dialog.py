@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import functools
 
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText, openFolder
@@ -56,8 +57,6 @@ class CroProSettingsDialog(QDialog):
         self.sentence_min_length = CroProSpinBox(min_val=0, max_val=500, step=1, value=config.sentence_min_length)
         self.sentence_max_length = CroProSpinBox(min_val=0, max_val=999, step=1, value=config.sentence_max_length)
         self._remote_fields = make_remote_field_combos()
-        self.preset_fields_ajt = QPushButton("Ajatt Preset")
-        self.preset_fields_srs = QPushButton("Standard Sub2Srs Preset")
         self.button_box = QDialogButtonBox(BUT_HELP | BUT_OK | BUT_CANCEL)
         self._create_tabs()
         self._setup_ui()
@@ -113,44 +112,49 @@ class CroProSettingsDialog(QDialog):
         length_layout.addWidget(self.sentence_max_length)
         length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addRow("Sentence Length", length_layout)
+        layout.addRow(self._make_field_names_group())
+        return widget
 
-        field_name_group = QGroupBox("Field names")
-        field_name_group.setCheckable(False)
-        field_name_group.setLayout(names_layout := QFormLayout())
-        for field_key, edit_widget in self._remote_fields.items():
-            names_layout.addRow(ui_translate(field_key).title(), edit_widget)
-        preset_layout = QHBoxLayout()
-        preset_layout.addWidget(self.preset_fields_ajt)
-        qconnect(
-            self.preset_fields_ajt.clicked,
-            lambda: self.set_preset(
-                {
+    def _make_field_names_group(self) -> QGroupBox:
+        def presets() -> dict[str, dict[str, str]]:
+            return {
+                "AJATT preset": {
                     "sentence_kanji": "SentKanji",
                     "sentence_furigana": "SentFurigana",
                     "sentence_eng": "SentEng",
                     "sentence_audio": "SentAudio",
                     "image": "Image",
                     "notes": "Notes",
-                }
-            ),
-        )
-        preset_layout.addWidget(self.preset_fields_srs)
-        qconnect(
-            self.preset_fields_srs.clicked,
-            lambda: self.set_preset(
-                {
+                },
+                "Standard subs2srs preset": {
                     "sentence_kanji": "Expression",
                     "sentence_furigana": "Reading",
                     "sentence_eng": "English",
                     "sentence_audio": "Audio",
                     "image": "Image",
                     "notes": "ID",
-                }
-            ),
-        )
-        names_layout.addRow(preset_layout)
-        layout.addRow(field_name_group)
-        return widget
+                },
+            }
+
+        group = QGroupBox("Field names")
+        group.setCheckable(False)
+        group.setLayout(layout := QFormLayout())
+
+        for field_key, edit_widget in self._remote_fields.items():
+            layout.addRow(ui_translate(field_key).title(), edit_widget)
+
+        presets_layout = QHBoxLayout()
+        for preset_name, preset_opts in presets().items():
+            activate_btn = QPushButton(preset_name)
+            presets_layout.addWidget(activate_btn)
+            qconnect(activate_btn.clicked, functools.partial(self.set_preset, preset_opts))
+        layout.addRow(presets_layout)
+
+        return group
+
+    def set_preset(self, name_dict: dict[str, str]) -> None:
+        for field_key, edit_widget in self._remote_fields.items():
+            edit_widget.setCurrentText(name_dict[field_key])
 
     def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
@@ -219,10 +223,6 @@ class CroProSettingsDialog(QDialog):
         self.checkboxes["search_the_web"].setToolTip(
             "Instead of searching notes in a local profile,\n" "search the Internet instead."
         )
-
-    def set_preset(self, name_dict: dict):
-        for field_key, edit_widget in self._remote_fields.items():
-            edit_widget.setCurrentText(name_dict[field_key])
 
     def show_help(self):
         help_win = QDialog(parent=self)
