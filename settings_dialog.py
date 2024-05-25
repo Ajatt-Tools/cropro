@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import functools
 
 from aqt.qt import *
 from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText, openFolder
@@ -111,9 +112,49 @@ class CroProSettingsDialog(QDialog):
         length_layout.addWidget(self.sentence_max_length)
         length_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addRow("Sentence Length", length_layout)
+        layout.addRow(self._make_field_names_group())
+        return widget
+
+    def _make_field_names_group(self) -> QGroupBox:
+        def presets() -> dict[str, dict[str, str]]:
+            return {
+                "AJATT preset": {
+                    "sentence_kanji": "SentKanji",
+                    "sentence_furigana": "SentFurigana",
+                    "sentence_eng": "SentEng",
+                    "sentence_audio": "SentAudio",
+                    "image": "Image",
+                    "notes": "Notes",
+                },
+                "Standard subs2srs preset": {
+                    "sentence_kanji": "Expression",
+                    "sentence_furigana": "Reading",
+                    "sentence_eng": "English",
+                    "sentence_audio": "Audio",
+                    "image": "Image",
+                    "notes": "ID",
+                },
+            }
+
+        group = QGroupBox("Field names")
+        group.setCheckable(False)
+        group.setLayout(layout := QFormLayout())
+
         for field_key, edit_widget in self._remote_fields.items():
             layout.addRow(ui_translate(field_key).title(), edit_widget)
-        return widget
+
+        presets_layout = QHBoxLayout()
+        for preset_name, preset_opts in presets().items():
+            activate_btn = QPushButton(preset_name)
+            presets_layout.addWidget(activate_btn)
+            qconnect(activate_btn.clicked, functools.partial(self.set_preset, preset_opts))
+        layout.addRow(presets_layout)
+
+        return group
+
+    def set_preset(self, name_dict: dict[str, str]) -> None:
+        for field_key, edit_widget in self._remote_fields.items():
+            edit_widget.setCurrentText(name_dict[field_key])
 
     def _make_hl_tab(self) -> QWidget:
         widget = QWidget()
