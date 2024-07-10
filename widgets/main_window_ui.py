@@ -4,7 +4,7 @@
 from aqt import AnkiQt
 from aqt.qt import *
 
-from .note_list import NoteList
+from .note_pages import PagedNoteList
 from .search_bar import CroProSearchWidget
 from .search_result_label import SearchResultLabel
 from .status_bar import StatusBar
@@ -27,7 +27,7 @@ class MainWindowUI(QMainWindow):
         self.current_profile_deck_combo = NameIdComboBox()
         self.edit_button = CroProPushButton("Edit")
         self.import_button = CroProPushButton("Import")
-        self.note_list = NoteList()
+        self.note_list = PagedNoteList()
         self.note_type_selection_combo = NameIdComboBox()
         self.init_ui()
 
