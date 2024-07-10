@@ -37,7 +37,7 @@ class RemoteFieldsConfig(ConfigSubViewBase):
 class CroProConfig(AddonConfigManager):
     def __init__(self, default: bool = False):
         super().__init__(default)
-        self._remote_fields = RemoteFieldsConfig(default)
+        self._remote_fields = RemoteFieldsConfig(self)
 
     @property
     def remote_fields(self) -> RemoteFieldsConfig:
