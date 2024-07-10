@@ -62,10 +62,10 @@ class NoteList(QSplitter):
     def selected_notes(self) -> Sequence[Note]:
         return [item.data(self._role) for item in self._note_list.selectedItems()]
 
-    def clear_selection(self):
+    def clear_selection(self) -> None:
         return self._note_list.clearSelection()
 
-    def clear_notes(self):
+    def clear_notes(self) -> None:
         self._previewer.unload_note()
         self._note_list.clear()
 
@@ -73,9 +73,9 @@ class NoteList(QSplitter):
         self,
         notes: Iterable[Union[Note, RemoteNote]],
         hide_fields: list[str],
-        previewer_enabled: bool = True,
+        is_previewer_enabled: bool = True,
     ):
-        self._enable_previewer = previewer_enabled
+        self._enable_previewer = is_previewer_enabled
 
         def is_hidden(field_name: str) -> bool:
             field_name = field_name.lower()

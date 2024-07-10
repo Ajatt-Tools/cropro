@@ -105,6 +105,7 @@ class CroProSettingsDialog(QDialog):
     def _make_web_tab(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
+
         length_layout = QHBoxLayout()
         length_layout.addWidget(QLabel("From"))
         length_layout.addWidget(self.sentence_min_length)

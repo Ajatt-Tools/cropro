@@ -15,16 +15,16 @@ class CropProExceptionProtocol(typing.Protocol):
 
 
 class SearchResultLabel(QLabel):
-    def __init__(self, *args):
+    def __init__(self, *args) -> None:
         super().__init__(*args)
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
 
-    def hide_count(self):
+    def hide_count(self) -> None:
         self.setText("")
         self.setStyleSheet("")
         self.hide()
 
-    def set_error(self, ex: CropProExceptionProtocol):
+    def set_error(self, ex: CropProExceptionProtocol) -> None:
         text = f"Error: {ex.what()}."
         if ex.response:
             text += f" Status code: {ex.response.status_code}"
