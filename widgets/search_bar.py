@@ -102,6 +102,7 @@ class CroProSearchWidget(QWidget):
 
     def _setup_layout(self) -> None:
         self.setLayout(layout := QVBoxLayout())
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.bar)
         layout.addWidget(self.opts)
         layout.addWidget(self.remote_opts)

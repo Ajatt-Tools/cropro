@@ -50,6 +50,7 @@ from .note_importer import NoteImporter, NoteTypeUnavailable
 from .remote_search import CroProWebClientException, CroProWebSearchClient, RemoteNote
 from .settings_dialog import open_cropro_settings
 from .widgets.main_window_ui import MainWindowUI
+from .widgets.note_pages import NoteListStatus
 from .widgets.utils import CroProComboBox
 
 logDebug = LogDebug()
@@ -248,6 +249,7 @@ class CroProMainWindow(MainWindowUI):
         qconnect(self.search_bar.search_requested, self.perform_search)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
+        qconnect(self.note_list.status_changed, self.set_search_result_status)
 
     def populate_other_profile_names(self) -> None:
         if not self.search_bar.opts.needs_to_repopulate_profile_names():
@@ -336,12 +338,7 @@ class CroProMainWindow(MainWindowUI):
             )
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
-            self.note_list.set_notes(
-                notes[: config.notes_per_page],
-                hide_fields=config.hidden_fields,
-                previewer_enabled=config.preview_on_right_side,
-            )
-            self.search_result_label.set_search_result(notes, config.notes_per_page)
+            self.note_list.set_notes(notes)
             self._search_lock.set_searching(False)
 
         def on_exception(exception: Exception) -> None:
@@ -384,12 +381,7 @@ class CroProMainWindow(MainWindowUI):
             return self.other_col.find_notes(self.search_bar.opts.current_deck(), search_text)
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
-            self.note_list.set_notes(
-                map(self.other_col.get_note, note_ids[: config.notes_per_page]),
-                hide_fields=config.hidden_fields,
-                previewer_enabled=config.preview_on_right_side,
-            )
-            self.search_result_label.set_search_result(note_ids, config.notes_per_page)
+            self.note_list.set_notes([self.other_col.get_note(note_id) for note_id in note_ids])
             self._search_lock.set_searching(False)
 
         self._search_lock.set_searching(True)
@@ -403,6 +395,9 @@ class CroProMainWindow(MainWindowUI):
             .with_progress("Searching notes...")
             .run_in_background()
         )
+
+    def set_search_result_status(self, status: NoteListStatus) -> None:
+        self.search_result_label.set_count(*status)
 
     def current_model(self) -> NameId:
         return self.note_type_selection_combo.current_item()

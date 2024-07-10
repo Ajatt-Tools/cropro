@@ -2,7 +2,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import typing
-from collections.abc import Sized
 
 import requests
 from aqt.qt import *
@@ -33,20 +32,18 @@ class SearchResultLabel(QLabel):
         if self.isHidden():
             self.show()
 
-    def set_search_result(self, note_ids: Sized, display_limit: int):
-        found = len(note_ids)
-        displayed = min(found, display_limit)
-        return self.set_count(found, displayed)
-
-    def set_count(self, found: int, displayed: int):
-        if found == 0:
-            self.setText(f"No notes found")
+    def set_count(self, found_notes: int, displayed_notes: int, current_page_n: int, total_pages_count: int) -> None:
+        if found_notes == 0:
+            self.setText("No notes found")
             self.setStyleSheet("QLabel { color: red; }")
-        elif displayed >= found:
-            self.setText(f"{found} notes found")
+        elif displayed_notes >= found_notes:
+            self.setText(f"{found_notes} notes found")
             self.setStyleSheet("QLabel { color: green; }")
         else:
-            self.setText(f"{found} notes found (displaying first {displayed})")
+            self.setText(
+                f"Displaying {displayed_notes} notes out of {found_notes} total. "
+                f"Page {current_page_n}/{total_pages_count}."
+            )
             self.setStyleSheet("QLabel { color: orange; }")
         if self.isHidden():
             self.show()
