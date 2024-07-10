@@ -17,8 +17,8 @@ from aqt import mw
 from aqt.qt import *
 from aqt.webview import AnkiWebView
 
-from ..ajt_common.media import find_sounds, find_images
-from ..remote_search import RemoteNote, RemoteMediaInfo
+from ..ajt_common.media import find_images, find_sounds
+from ..remote_search import RemoteMediaInfo, RemoteNote
 
 RE_DANGEROUS = re.compile(r'[\'"<>]+')
 QUOTE_SAFE = ":/%"

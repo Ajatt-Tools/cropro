@@ -1,19 +1,19 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import Protocol, Optional, cast
+from typing import Optional, Protocol, cast
 
 import anki.notes
 import aqt
 from anki.notes import Note, NoteId
-from aqt import mw, gui_hooks, addcards
+from aqt import addcards, gui_hooks, mw
 from aqt.qt import *
 from aqt.utils import tooltip
 
 from .collection_manager import NameId
 from .common import LogDebug
 from .config import config
-from .note_importer import copy_media_files, remove_media_files, import_card_info, get_matching_model
+from .note_importer import copy_media_files, get_matching_model, import_card_info, remove_media_files
 from .widgets.note_list import NoteList
 from .widgets.status_bar import StatusBar
 

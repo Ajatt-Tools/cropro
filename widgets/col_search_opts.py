@@ -2,24 +2,23 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 
-from collections.abc import Iterable
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from types import SimpleNamespace
 from typing import cast
 
 from aqt import AnkiQt
 from aqt.qt import *
 
-
 try:
-    from .remote_search_opts import RemoteSearchOptions
-    from ..remote_search import get_request_url
-    from .utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
     from ..collection_manager import NameId
+    from ..remote_search import get_request_url
+    from .remote_search_opts import RemoteSearchOptions
+    from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
 except ImportError:
-    from utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
-    from collection_manager import NameId
     from remote_search_opts import RemoteSearchOptions
+    from utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
+
+    from collection_manager import NameId
     from remote_search import get_request_url
 
 

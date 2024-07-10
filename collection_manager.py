@@ -2,8 +2,8 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import os
-from typing import Optional, NamedTuple
 from collections.abc import Iterable, Sequence
+from typing import NamedTuple, Optional
 
 from anki.collection import Collection
 from anki.notes import NoteId

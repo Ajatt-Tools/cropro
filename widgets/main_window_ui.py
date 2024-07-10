@@ -8,7 +8,7 @@ from .note_list import NoteList
 from .search_bar import CroProSearchWidget
 from .search_result_label import SearchResultLabel
 from .status_bar import StatusBar
-from .utils import ProfileNameLabel, NameIdComboBox, CroProPushButton
+from .utils import CroProPushButton, NameIdComboBox, ProfileNameLabel
 
 WIN_MIN_WIDTH = 900
 WIN_MIN_HEIGHT = 480

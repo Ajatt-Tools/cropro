@@ -11,6 +11,7 @@ try:
     from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
 except ImportError:
     from utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
+
     from remote_search import get_request_url
 
 

@@ -4,12 +4,12 @@
 import dataclasses
 import enum
 import itertools
-from typing import TypedDict, Optional
-from collections.abc import Sequence
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from typing import Optional, TypedDict
 
 import anki.httpclient
 import requests
+
 from .config import config
 
 API_URL = "https://api.immersionkit.com/look_up_dictionary?"

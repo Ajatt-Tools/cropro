@@ -3,13 +3,13 @@
 import functools
 
 from aqt.qt import *
-from aqt.utils import restoreGeom, saveGeom, disable_help_button, showText, openFolder
+from aqt.utils import disable_help_button, openFolder, restoreGeom, saveGeom, showText
 from aqt.webview import AnkiWebView
 
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.utils import ui_translate
-from .common import ADDON_NAME, LogDebug, CONFIG_MD_PATH
+from .common import ADDON_NAME, CONFIG_MD_PATH, LogDebug
 from .config import config
 from .widgets.item_edit import ItemEditBox
 from .widgets.utils import CroProSpinBox

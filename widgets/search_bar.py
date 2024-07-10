@@ -6,19 +6,19 @@ from typing import cast
 from aqt import AnkiQt
 from aqt.qt import *
 
-
 try:
+    from ..collection_manager import NameId
+    from ..remote_search import get_request_url
     from .col_search_opts import ColSearchOptions
     from .remote_search_opts import RemoteSearchOptions
-    from ..remote_search import get_request_url
-    from .utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
-    from ..collection_manager import NameId
+    from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
 except ImportError:
-    from utils import CroProComboBox, NameIdComboBox, CroProLineEdit, CroProPushButton
-    from collection_manager import NameId
-    from remote_search_opts import RemoteSearchOptions
-    from remote_search import get_request_url
     from col_search_opts import ColSearchOptions
+    from remote_search_opts import RemoteSearchOptions
+    from utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
+
+    from collection_manager import NameId
+    from remote_search import get_request_url
 
 
 class CroProSearchBar(QWidget):

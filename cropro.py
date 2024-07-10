@@ -28,35 +28,26 @@ from anki.models import NotetypeDict
 from anki.notes import NoteId
 from aqt import AnkiQt, gui_hooks
 from aqt.browser import Browser
-from aqt.operations import QueryOp, CollectionOp
+from aqt.operations import CollectionOp, QueryOp
 from aqt.qt import *
-from aqt.utils import (
-    showInfo,
-    disable_help_button,
-    restoreGeom,
-    saveGeom,
-    openHelp,
-    tooltip,
-    openLink,
-    showWarning,
-)
+from aqt.utils import disable_help_button, openHelp, openLink, restoreGeom, saveGeom, showInfo, showWarning, tooltip
 
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import (
-    CollectionManager,
-    sorted_decks_and_ids,
-    get_other_profile_names,
-    NameId,
-    note_type_names_and_ids,
     NO_MODEL,
     WHOLE_COLLECTION,
+    CollectionManager,
+    NameId,
+    get_other_profile_names,
+    note_type_names_and_ids,
+    sorted_decks_and_ids,
 )
 from .common import *
 from .config import config
 from .edit_window import AddDialogLauncher
-from .note_importer import NoteTypeUnavailable, NoteImporter
-from .remote_search import CroProWebSearchClient, RemoteNote, CroProWebClientException
+from .note_importer import NoteImporter, NoteTypeUnavailable
+from .remote_search import CroProWebClientException, CroProWebSearchClient, RemoteNote
 from .settings_dialog import open_cropro_settings
 from .widgets.main_window_ui import MainWindowUI
 from .widgets.utils import CroProComboBox

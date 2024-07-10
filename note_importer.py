@@ -6,14 +6,12 @@ import dataclasses
 import enum
 import math
 import os.path
-from collections.abc import Iterable
-from collections.abc import MutableSequence
-from collections.abc import Sequence
+from collections.abc import Iterable, MutableSequence, Sequence
 from copy import deepcopy
 from typing import NamedTuple, Optional
 
 from anki.cards import Card
-from anki.collection import Collection, AddNoteRequest, OpChanges
+from anki.collection import AddNoteRequest, Collection, OpChanges
 from anki.consts import CARD_TYPE_REV
 from anki.decks import DeckId
 from anki.models import NoteType
@@ -22,10 +20,10 @@ from anki.utils import join_fields
 from aqt import mw
 from aqt.qt import *
 
-from .collection_manager import NameId, NO_MODEL
+from .collection_manager import NO_MODEL, NameId
 from .common import ADDON_NAME_SHORT
 from .config import config
-from .remote_search import RemoteNote, CroProWebSearchClient, CroProWebClientException
+from .remote_search import CroProWebClientException, CroProWebSearchClient, RemoteNote
 
 MAX_WORKERS = 5
 
