@@ -194,12 +194,12 @@ class CroProMainWindow(MainWindowUI):
 
         # Help menu
         help_menu = menu_bar.addMenu("&Help")
-        help_menu.addAction("Guide", lambda: openLink(ADDON_GUIDE_LINK))
+        help_menu.addAction("CroPro: Manual", lambda: openLink(ADDON_GUIDE_LINK))
         help_menu.addSeparator()
-        help_menu.addAction("Searching", lambda: openHelp("searching"))
+        help_menu.addAction("Anki: Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
         help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
-        help_menu.addAction("Create sentence bank: subs2srs", lambda: openLink(SUBS2SRS_LINK))
+        help_menu.addAction("subs2srs: Create sentence bank", lambda: openLink(SUBS2SRS_LINK))
 
     def _send_query_to_browser(self):
         search_text = self.search_bar.bar.search_text()
