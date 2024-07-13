@@ -192,6 +192,13 @@ class CroProMainWindow(MainWindowUI):
         close_act = tools_menu.addAction("Close", self.close)
         close_act.setShortcut(QKeySequence("Ctrl+q"))
 
+        # Navigation menu
+        nav_menu = menu_bar.addMenu("&Navigate")
+        prev_act = nav_menu.addAction("Previous page", lambda: self.note_list.flip_page(-1))
+        prev_act.setShortcut(QKeySequence("Ctrl+Left"))
+        next_act = nav_menu.addAction("Next page", lambda: self.note_list.flip_page(+1))
+        next_act.setShortcut(QKeySequence("Ctrl+Right"))
+
         # Help menu
         help_menu = menu_bar.addMenu("&Help")
         help_menu.addAction("CroPro: Manual", lambda: openLink(ADDON_GUIDE_LINK))
