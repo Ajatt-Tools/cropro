@@ -56,11 +56,10 @@ class CroProSearchBar(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-    def _connect_elements(self):
-        def handle_search_requested():
-            if text := self.search_text():
-                # noinspection PyUnresolvedReferences
-                self.search_requested.emit(text)
+    def _connect_elements(self) -> None:
+        def handle_search_requested() -> None:
+            # noinspection PyUnresolvedReferences
+            self.search_requested.emit(self.search_text())
 
         qconnect(self._search_button.clicked, handle_search_requested)
         qconnect(self._search_term_edit.editingFinished, handle_search_requested)
@@ -129,14 +128,19 @@ class CroProSearchWidget(QWidget):
                 args["max_length"] = max_length
         return args
 
-    def _connect_elements(self):
-        def handle_search_requested():
+    def _connect_elements(self) -> None:
+        def handle_search_requested() -> None:
+            # noinspection PyUnresolvedReferences
+            self.search_requested.emit(self.bar.search_text())
+
+        def handle_deck_changed() -> None:
             if text := self.bar.search_text():
+                # Make sure that search isn't triggered when the window state is restored.
                 # noinspection PyUnresolvedReferences
                 self.search_requested.emit(text)
 
-        qconnect(self.opts.selected_deck_changed, handle_search_requested)
         qconnect(self.bar.search_requested, handle_search_requested)
+        qconnect(self.opts.selected_deck_changed, handle_deck_changed)
         qconnect(self.opts.selected_profile_changed, lambda row_idx: self.setEnabled(row_idx >= 0 or self._web_mode))
 
 

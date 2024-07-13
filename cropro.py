@@ -370,7 +370,7 @@ class CroProMainWindow(MainWindowUI):
             .run_in_background()
         )
 
-    def perform_local_search(self, search_text: str):
+    def perform_local_search(self, search_text: str) -> None:
         """
         Search notes in a different Anki collection.
         """
