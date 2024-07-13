@@ -32,6 +32,12 @@ class SearchResultLabel(QLabel):
         if self.isHidden():
             self.show()
 
+    def set_nothing_to_do(self) -> None:
+        self.setText("Search query is empty. Did nothing.")
+        self.setStyleSheet("QLabel { color: orange; }")
+        if self.isHidden():
+            self.show()
+
     def set_count(self, found_notes: int, displayed_notes: int, current_page_n: int, total_pages_count: int) -> None:
         if found_notes == 0:
             self.setText("No notes found")

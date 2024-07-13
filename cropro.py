@@ -337,6 +337,7 @@ class CroProMainWindow(MainWindowUI):
         self.reset_cropro_status()
 
         if not search_text:
+            self.search_result_label.set_nothing_to_do()
             return
 
         def search_notes(_col) -> Sequence[RemoteNote]:
@@ -378,6 +379,7 @@ class CroProMainWindow(MainWindowUI):
         self.open_other_col()
 
         if not (search_text or config.allow_empty_search):
+            self.search_result_label.set_nothing_to_do()
             return
 
         if not (self.search_bar.opts.selected_profile_name() and self.search_bar.opts.decks_populated()):
