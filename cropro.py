@@ -89,14 +89,14 @@ class WindowState:
         }
         self._pm_name_to_win_state = defaultdict(dict)
 
-    def save(self):
+    def save(self) -> None:
         self._ensure_loaded()
         self._remember_current_values()
         self._write_state_to_disk()
         saveGeom(self._window, self._window.name)
         logDebug(f"saved window state.")
 
-    def _write_state_to_disk(self):
+    def _write_state_to_disk(self) -> None:
         with open(self._json_filepath, "w", encoding="utf8") as of:
             json.dump(self._pm_name_to_win_state, of, indent=4, ensure_ascii=False)
 
@@ -149,7 +149,7 @@ class SearchLock:
     Until a search operation finishes, don't allow subsequent searches.
     """
 
-    def __init__(self, cropro: MainWindowUI):
+    def __init__(self, cropro: MainWindowUI) -> None:
         self._cropro = cropro
         self._searching = False
 
@@ -162,7 +162,7 @@ class SearchLock:
 
 
 class CroProMainWindow(MainWindowUI):
-    def __init__(self, ankimw: AnkiQt):
+    def __init__(self, ankimw: AnkiQt) -> None:
         super().__init__(ankimw=ankimw, window_title=ADDON_NAME)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
@@ -176,16 +176,16 @@ class CroProMainWindow(MainWindowUI):
         self._add_global_shortcuts()
         self._add_tooltips()
 
-    def _add_global_shortcuts(self):
+    def _add_global_shortcuts(self) -> None:
         QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.search_bar.bar.focus_search_edit())  # type: ignore
         QShortcut(QKeySequence("Ctrl+i"), self, activated=lambda: self.import_button.click())  # type: ignore
         QShortcut(QKeySequence("Ctrl+l"), self, activated=lambda: self.note_list.set_focus())  # type: ignore
 
-    def _add_tooltips(self):
+    def _add_tooltips(self) -> None:
         self.import_button.setToolTip("Add a new card (Ctrl+I)")
         self.edit_button.setToolTip("Edit card before adding")
 
-    def setup_menubar(self):
+    def setup_menubar(self) -> None:
         menu_bar: QMenuBar = self.menuBar()
 
         # Options menu
@@ -219,7 +219,7 @@ class CroProMainWindow(MainWindowUI):
         help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
         help_menu.addAction("subs2srs: Create sentence bank", lambda: openLink(SUBS2SRS_LINK))
 
-    def _send_query_to_browser(self):
+    def _send_query_to_browser(self) -> None:
         search_text = self.search_bar.bar.search_text()
         if not search_text:
             return tooltip("Nothing to do.", parent=self)
@@ -241,7 +241,7 @@ class CroProMainWindow(MainWindowUI):
         # save config to disk to remember checkbox state.
         config.write_config()
 
-    def show_target_note_fields(self):
+    def show_target_note_fields(self) -> None:
         if note_type := self.get_target_note_type():
             names = "\n".join(f"* {name}" for name in mw.col.models.field_names(note_type))
             showInfo(
@@ -273,7 +273,7 @@ class CroProMainWindow(MainWindowUI):
         if not self.search_bar.opts.needs_to_repopulate_profile_names():
             return
 
-        logDebug("populating other profiles.")
+        logDebug("populating other profile names.")
 
         other_profile_names: list[str] = get_other_profile_names()
         if not other_profile_names:
@@ -285,14 +285,15 @@ class CroProMainWindow(MainWindowUI):
 
         self.search_bar.opts.set_profile_names(other_profile_names)
 
-    def populate_note_type_selection_combo(self):
+    def populate_note_type_selection_combo(self) -> None:
         """
         Set note types present in this collection.
         Called when profile opens.
         """
+        logDebug("populating note type selector...")
         self.note_type_selection_combo.set_items((NO_MODEL, *note_type_names_and_ids(mw.col)))
 
-    def populate_current_profile_decks(self):
+    def populate_current_profile_decks(self) -> None:
         """
         Set deck names present in this collection.
         Called when profile opens.
@@ -300,7 +301,7 @@ class CroProMainWindow(MainWindowUI):
         logDebug("populating current profile decks...")
         self.current_profile_deck_combo.set_items(sorted_decks_and_ids(mw.col))
 
-    def open_other_col(self):
+    def open_other_col(self) -> None:
         selected_profile_name = self.search_bar.opts.selected_profile_name()
         if not selected_profile_name:
             # there are no collections in the combobox
@@ -311,13 +312,13 @@ class CroProMainWindow(MainWindowUI):
             self.other_col.open_collection(selected_profile_name)
             self.populate_other_profile_decks()
 
-    def reset_cropro_status(self):
+    def reset_cropro_status(self) -> None:
         self.status_bar.hide_counters()
         self.search_result_label.hide_count()
         self.note_list.clear_notes()
         logDebug("cleared search results")
 
-    def populate_other_profile_decks(self):
+    def populate_other_profile_decks(self) -> None:
         if not self.other_col.is_opened:
             # there's nothing to fill.
             return
@@ -332,7 +333,7 @@ class CroProMainWindow(MainWindowUI):
     def _should_abort_search(self) -> bool:
         return self._search_lock.is_searching() or not self.isVisible()
 
-    def perform_search(self, search_text: str):
+    def perform_search(self, search_text: str) -> None:
         if self._should_abort_search():
             return
         if config.search_the_web:
@@ -340,7 +341,7 @@ class CroProMainWindow(MainWindowUI):
         else:
             return self.perform_local_search(search_text)
 
-    def perform_remote_search(self, search_text: str):
+    def perform_remote_search(self, search_text: str) -> None:
         """
         Search notes on a remote server.
         """
@@ -443,7 +444,7 @@ class CroProMainWindow(MainWindowUI):
                 return
             raise ex
 
-        def on_success(_):
+        def on_success(_) -> None:
             results = self._importer.move_results()
             self.status_bar.set_import_status(results)
             if config.call_add_cards_hook:
@@ -467,7 +468,7 @@ class CroProMainWindow(MainWindowUI):
             .run_in_background()
         )
 
-    def new_edit_win(self):
+    def new_edit_win(self) -> None:
         if len(selected_notes := self.note_list.selected_notes()) > 0:
             self._add_window_mgr.create_window(selected_notes[-1])
         else:
@@ -486,10 +487,10 @@ class CroProMainWindow(MainWindowUI):
         self.window_state.save()
         return super().closeEvent(event)
 
-    def _ensure_enabled_search_mode(self):
+    def _ensure_enabled_search_mode(self) -> None:
         self.search_bar.set_web_mode(config.search_the_web)
 
-    def _open_cropro_settings(self):
+    def _open_cropro_settings(self) -> None:
         open_cropro_settings(parent=self)
         self._ensure_enabled_search_mode()  # the "search_the_web" setting may have changed
 
@@ -497,7 +498,7 @@ class CroProMainWindow(MainWindowUI):
         self.close()
         self.other_col.close_all()
 
-    def on_profile_did_open(self):
+    def on_profile_did_open(self) -> None:
         # clean state from the previous profile if it was set.
         self.search_bar.clear_all()
         self.note_list.clear_notes()
