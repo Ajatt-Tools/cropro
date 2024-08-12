@@ -115,14 +115,14 @@ class WindowState:
         if self._pm_name_to_win_state:
             # Already loaded, good.
             return True
-        if os.path.isfile(self._json_filepath):
-            # File exists but the state hasn't been read yet.
+        try:
             with open(self._json_filepath, encoding="utf8") as f:
                 # File exists but the state hasn't been read yet.
                 self._pm_name_to_win_state.update(json.load(f))
             return True
-        # There's nothing to do.
-        return False
+        except FileNotFoundError:
+            # There's nothing to do.
+            return False
 
     def restore(self) -> None:
         if self._ensure_loaded() and (profile_settings := self._pm_name_to_win_state.get(mw.pm.name)):
