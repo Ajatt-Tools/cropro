@@ -69,10 +69,13 @@ logDebug = LogDebug()
 
 
 class WindowState:
-    def __init__(self, window: MainWindowUI):
+    _pm_name_to_win_state: MutableMapping[str, dict[str, str]]
+    _cfg_key_to_widget: dict[str, CroProComboBox]
+
+    def __init__(self, window: MainWindowUI) -> None:
         self._window = window
         self._json_filepath = WINDOW_STATE_FILE_PATH
-        self._map: dict[str, CroProComboBox] = {
+        self._cfg_key_to_widget = {
             # Search bar settings
             "from_profile": self._window.search_bar.opts.other_profile_names_combo,
             "from_deck": self._window.search_bar.opts.other_profile_deck_combo,
@@ -84,7 +87,7 @@ class WindowState:
             "web_jlpt_level": self._window.search_bar.remote_opts.jlpt_level_combo,
             "web_wanikani_level": self._window.search_bar.remote_opts.wanikani_level_combo,
         }
-        self._state = defaultdict(dict)
+        self._pm_name_to_win_state = defaultdict(dict)
 
     def save(self):
         self._ensure_loaded()
@@ -95,33 +98,34 @@ class WindowState:
 
     def _write_state_to_disk(self):
         with open(self._json_filepath, "w", encoding="utf8") as of:
-            json.dump(self._state, of, indent=4, ensure_ascii=False)
+            json.dump(self._pm_name_to_win_state, of, indent=4, ensure_ascii=False)
 
-    def _remember_current_values(self):
-        for key, widget in self._map.items():
+    def _remember_current_values(self) -> None:
+        for key, widget in self._cfg_key_to_widget.items():
             if widget.currentText():
                 # A combo box should have current text.
                 # Otherwise, it apparently has no items set, and the value is invalid.
-                self._state[mw.pm.name][key] = widget.currentText()
+                self._pm_name_to_win_state[mw.pm.name][key] = widget.currentText()
 
     def _ensure_loaded(self) -> bool:
         """
         Attempt to read the state json from disk. Return true on success.
         """
-        if self._state:
+        if self._pm_name_to_win_state:
             # Already loaded, good.
             return True
         if os.path.isfile(self._json_filepath):
             # File exists but the state hasn't been read yet.
             with open(self._json_filepath, encoding="utf8") as f:
-                self._state.update(json.load(f))
+                # File exists but the state hasn't been read yet.
+                self._pm_name_to_win_state.update(json.load(f))
             return True
         # There's nothing to do.
         return False
 
-    def restore(self):
-        if self._ensure_loaded() and (profile_settings := self._state.get(aqt.mw.pm.name)):
-            for key, widget in self._map.items():
+    def restore(self) -> None:
+        if self._ensure_loaded() and (profile_settings := self._pm_name_to_win_state.get(mw.pm.name)):
+            for key, widget in self._cfg_key_to_widget.items():
                 if value := profile_settings.get(key):
                     widget.setCurrentText(value)
         restoreGeom(self._window, self._window.name, adjustSize=True)
