@@ -92,6 +92,7 @@ class WindowState:
     def save(self) -> None:
         self._ensure_loaded()
         self._remember_current_values()
+        self._forget_missing_profiles()
         self._write_state_to_disk()
         saveGeom(self._window, self._window.name)
         logDebug(f"saved window state.")
@@ -129,6 +130,11 @@ class WindowState:
                 if value := profile_settings.get(key):
                     widget.setCurrentText(value)
         restoreGeom(self._window, self._window.name, adjustSize=True)
+
+    def _forget_missing_profiles(self) -> None:
+        """ If the user has deleted certain profiles, remove data about them from the dictionary. """
+        for pm_name_to_remove in self._pm_name_to_win_state.keys() - mw.pm.profiles():
+            del self._pm_name_to_win_state[pm_name_to_remove]
 
 
 def nag_about_note_type(parent) -> int:
