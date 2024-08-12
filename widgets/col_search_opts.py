@@ -30,7 +30,7 @@ class CroProSearchBar(QWidget):
     # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._search_term_edit = CroProLineEdit()
         self._search_button = CroProPushButton("Search")
@@ -57,7 +57,7 @@ class CroProSearchBar(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-    def _connect_elements(self):
+    def _connect_elements(self) -> None:
         def handle_search_requested():
             if text := self.search_text():
                 # noinspection PyUnresolvedReferences
@@ -68,7 +68,7 @@ class CroProSearchBar(QWidget):
 
 
 class ColSearchOptions(QWidget):
-    def __init__(self, ankimw: AnkiQt):
+    def __init__(self, ankimw: AnkiQt) -> None:
         super().__init__()
         self.ankimw = ankimw
         self._other_profile_names_combo = CroProComboBox()
@@ -115,7 +115,7 @@ class ColSearchOptions(QWidget):
             or self._other_profile_names_combo.findText(self.ankimw.pm.name) != -1
         )
 
-    def set_profile_names(self, other_profile_names: Sequence[str]):
+    def set_profile_names(self, other_profile_names: Sequence[str]) -> None:
         """
         Populate profile selector with a list of profile names, excluding the current profile.
         """
@@ -128,7 +128,7 @@ class ColSearchOptions(QWidget):
         """
         return self._other_profile_names_combo.currentText()
 
-    def set_decks(self, decks: Iterable[NameId]):
+    def set_decks(self, decks: Iterable[NameId]) -> None:
         """
         A list of decks to search in.
         The user can limit search to a certain deck in the other collection.
@@ -141,7 +141,7 @@ class ColSearchOptions(QWidget):
 
 
 class App(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Test")
         self.search_opts = ColSearchOptions(cast(AnkiQt, SimpleNamespace(pm=SimpleNamespace(name="Dummy"))))
@@ -149,18 +149,18 @@ class App(QWidget):
         self.search_opts.set_profile_names(["first", "second"])
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setMinimumSize(640, 480)
         self.setLayout(layout := QVBoxLayout())
         layout.addWidget(self.search_opts)
         layout.addStretch(1)
 
-    def hideEvent(self, _event: QHideEvent):
+    def hideEvent(self, _event: QHideEvent) -> None:
         print(self.search_opts.selected_profile_name())
         print(self.search_opts.current_deck())
 
 
-def main():
+def main() -> None:
     app = QApplication(sys.argv)
     ex = App()
     ex.show()

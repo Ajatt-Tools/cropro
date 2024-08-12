@@ -89,7 +89,7 @@ class PagedNoteList(QWidget):
         qconnect(self._page_prev_btn.clicked, lambda: self.flip_page(-1))
         qconnect(self._page_next_btn.clicked, lambda: self.flip_page(+1))
 
-    def set_notes(self, notes):
+    def set_notes(self, notes: Sequence[Union[Note, RemoteNote]]) -> None:
         self._notes = [*to_chunks(notes, config.notes_per_page)]
         self.set_page(0)
 

@@ -24,7 +24,7 @@ class RemoteComboBoxItem:
         self.visible_name = (self.visible_name or str(self.http_arg)).capitalize()
 
 
-def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]], key: str):
+def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]], key: str) -> CroProComboBox:
     b = CroProComboBox(key=key)
     for item in add_items:
         if not isinstance(item, RemoteComboBoxItem):
