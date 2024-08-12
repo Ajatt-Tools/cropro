@@ -18,15 +18,14 @@ TODO:
 """
 
 import json
-import os.path
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import MutableMapping, Sequence
 from typing import Optional
 
 import aqt
 from anki.models import NotetypeDict
 from anki.notes import NoteId
-from aqt import AnkiQt, gui_hooks
+from aqt import AnkiQt, gui_hooks, mw
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, QueryOp
 from aqt.qt import *
@@ -43,7 +42,15 @@ from .collection_manager import (
     note_type_names_and_ids,
     sorted_decks_and_ids,
 )
-from .common import *
+from .common import (
+    ADDON_GUIDE_LINK,
+    ADDON_NAME,
+    ADDON_NAME_SHORT,
+    EXAMPLE_DECK_LINK,
+    SUBS2SRS_LINK,
+    WINDOW_STATE_FILE_PATH,
+    LogDebug,
+)
 from .config import config
 from .edit_window import AddDialogLauncher
 from .note_importer import NoteImporter, NoteTypeUnavailable
