@@ -1,11 +1,10 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
-
 from collections.abc import Iterable, Sequence
 from types import SimpleNamespace
-from typing import cast
+from typing import Any, Optional, cast
 
+from anki.notes import Note
 from aqt import AnkiQt
 from aqt.qt import *
 
@@ -67,12 +66,32 @@ class CroProSearchBar(QWidget):
         qconnect(self._search_term_edit.editingFinished, handle_search_requested)
 
 
+def _sort_by_sent_len(note: Note, sentence_field_name: str = "SentKanji") -> tuple[int, str]:
+    try:
+        return len(note[sentence_field_name]), note[sentence_field_name]
+    except KeyError:
+        return sys.maxsize, ""
+
+
+def _sort_by_note_id(note: Note):
+    return note.id
+
+
+def new_sort_results_combo_box() -> CroProComboBox:
+    combo = CroProComboBox()
+    combo.addItem("None", None)
+    combo.addItem("Sentence length", _sort_by_sent_len)
+    combo.addItem("Note ID", _sort_by_note_id)
+    return combo
+
+
 class ColSearchOptions(QWidget):
     def __init__(self, ankimw: AnkiQt) -> None:
         super().__init__()
         self.ankimw = ankimw
         self._other_profile_names_combo = CroProComboBox()
         self._other_profile_deck_combo = NameIdComboBox()
+        self._sort_results_combo = new_sort_results_combo_box()
         self.selected_profile_changed = self._other_profile_names_combo.currentIndexChanged
         self.selected_deck_changed = self._other_profile_deck_combo.currentIndexChanged
         self._setup_layout()
@@ -83,8 +102,13 @@ class ColSearchOptions(QWidget):
         layout.addWidget(self._other_profile_names_combo)
         layout.addWidget(QLabel("Deck:"))
         layout.addWidget(self._other_profile_deck_combo)
+        layout.addWidget(QLabel("Sort:"))
+        layout.addWidget(self._sort_results_combo)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
+
+    def current_sort_key(self) -> Optional[Callable[Note, Any]]:
+        return self._sort_results_combo.currentData()
 
     @property
     def other_profile_names_combo(self) -> QComboBox:
@@ -93,6 +117,10 @@ class ColSearchOptions(QWidget):
     @property
     def other_profile_deck_combo(self) -> QComboBox:
         return self._other_profile_deck_combo
+
+    @property
+    def sort_results_combo(self) -> QComboBox:
+        return self._sort_results_combo
 
     def current_deck(self) -> NameId:
         return self._other_profile_deck_combo.current_item()

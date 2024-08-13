@@ -19,12 +19,12 @@ TODO:
 
 import json
 from collections import defaultdict
-from collections.abc import MutableMapping, Sequence
+from collections.abc import Iterable, MutableMapping, Sequence
 from typing import Optional
 
 import aqt
 from anki.models import NotetypeDict
-from anki.notes import NoteId
+from anki.notes import Note, NoteId
 from aqt import AnkiQt, gui_hooks, mw
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, QueryOp
@@ -79,6 +79,7 @@ class WindowState:
             # Search bar settings
             "from_profile": self._window.search_bar.opts.other_profile_names_combo,
             "from_deck": self._window.search_bar.opts.other_profile_deck_combo,
+            "sort_results": self._window.search_bar.opts.sort_results_combo,
             "to_deck": self._window.current_profile_deck_combo,
             "note_type": self._window.note_type_selection_combo,
             # Web search settings
@@ -132,7 +133,7 @@ class WindowState:
         restoreGeom(self._window, self._window.name, adjustSize=True)
 
     def _forget_missing_profiles(self) -> None:
-        """ If the user has deleted certain profiles, remove data about them from the dictionary. """
+        """If the user has deleted certain profiles, remove data about them from the dictionary."""
         for pm_name_to_remove in self._pm_name_to_win_state.keys() - mw.pm.profiles():
             del self._pm_name_to_win_state[pm_name_to_remove]
 
@@ -408,7 +409,9 @@ class CroProMainWindow(MainWindowUI):
             return self.other_col.find_notes(self.search_bar.opts.current_deck(), search_text)
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
-            self.note_list.set_notes([self.other_col.get_note(note_id) for note_id in note_ids])
+            self.note_list.set_notes(
+                self._sort_col_search_results(self.other_col.get_note(note_id) for note_id in note_ids)
+            )
             self._search_lock.set_searching(False)
 
         self._search_lock.set_searching(True)
@@ -422,6 +425,12 @@ class CroProMainWindow(MainWindowUI):
             .with_progress("Searching notes...")
             .run_in_background()
         )
+
+    def _sort_col_search_results(self, results: Iterable[Note]) -> Sequence[Note]:
+        sort_key = self.search_bar.opts.current_sort_key()
+        if sort_key is None:
+            return list(results)
+        return sorted(results, key=sort_key)
 
     def set_search_result_status(self, status: NoteListStatus) -> None:
         self.search_result_label.set_count(*status)
