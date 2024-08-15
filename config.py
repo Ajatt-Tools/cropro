@@ -56,6 +56,17 @@ class CroProConfig(AddonConfigManager):
         self["exported_tag"] = new_value.strip()
 
     @property
+    def sentence_field_name(self) -> str:
+        """
+        Field name used to sort entries.
+        """
+        return self["sentence_field_name"].strip()
+
+    @sentence_field_name.setter
+    def sentence_field_name(self, new_value: str) -> None:
+        self["sentence_field_name"] = new_value.strip()
+
+    @property
     def allow_empty_search(self) -> bool:
         """
         Perform search with empty search bar.
