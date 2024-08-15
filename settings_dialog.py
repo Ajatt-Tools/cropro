@@ -183,9 +183,7 @@ class CroProSettingsDialog(QDialog):
         qconnect(self.button_box.helpRequested, self.show_help)
 
     def add_tooltips(self) -> None:
-        self.sentence_field_edit.setToolTip(
-            "Use this field to sort search results."
-        )
+        self.sentence_field_edit.setToolTip("Use this field to sort search results.")
         self.tag_edit.setToolTip(
             "When importing notes to the current collection,\n"
             "tag the original notes in the other collection\n"

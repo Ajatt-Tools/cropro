@@ -1,5 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+import abc
 from collections.abc import Iterable, Sequence
 from types import SimpleNamespace
 from typing import Any, Optional, cast
@@ -10,6 +11,7 @@ from aqt.qt import *
 
 try:
     from ..collection_manager import NameId
+    from ..config import CroProConfig
     from ..remote_search import get_request_url
     from .remote_search_opts import RemoteSearchOptions
     from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
@@ -66,22 +68,34 @@ class CroProSearchBar(QWidget):
         qconnect(self._search_term_edit.editingFinished, handle_search_requested)
 
 
-def _sort_by_sent_len(note: Note, sentence_field_name: str = "SentKanji") -> tuple[int, str]:
-    try:
-        return len(note[sentence_field_name]), note[sentence_field_name]
-    except KeyError:
-        return sys.maxsize, ""
+class SortResults(abc.ABC):
+    def __init__(self, config: CroProConfig):
+        self._config = config
+
+    @abc.abstractmethod
+    def __call__(self, note: Note):
+        raise NotImplementedError()
 
 
-def _sort_by_note_id(note: Note):
-    return note.id
+class SortResultsByLen(SortResults):
+    def __call__(self, note: Note) -> tuple[int, str]:
+        field_name = self._config.sentence_field_name
+        try:
+            return len(note[field_name]), note[field_name]
+        except KeyError:
+            return sys.maxsize, ""
+
+
+class SortResultsByNoteID(SortResults):
+    def __call__(self, note: Note) -> int:
+        return note.id
 
 
 def new_sort_results_combo_box() -> CroProComboBox:
     combo = CroProComboBox()
     combo.addItem("None", None)
-    combo.addItem("Sentence length", _sort_by_sent_len)
-    combo.addItem("Note ID", _sort_by_note_id)
+    combo.addItem("Sentence length", SortResultsByLen)
+    combo.addItem("Note ID", SortResultsByNoteID)
     return combo
 
 
@@ -107,7 +121,7 @@ class ColSearchOptions(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-    def current_sort_key(self) -> Optional[Callable[Note, Any]]:
+    def current_sort_key(self) -> Optional[SortResults]:
         return self._sort_results_combo.currentData()
 
     @property

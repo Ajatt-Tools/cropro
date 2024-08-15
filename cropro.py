@@ -430,7 +430,7 @@ class CroProMainWindow(MainWindowUI):
         sort_key = self.search_bar.opts.current_sort_key()
         if sort_key is None:
             return list(results)
-        return sorted(results, key=sort_key)
+        return sorted(results, key=sort_key(config))
 
     def set_search_result_status(self, status: NoteListStatus) -> None:
         self.search_result_label.set_count(*status)
