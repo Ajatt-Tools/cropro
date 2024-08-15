@@ -131,6 +131,7 @@ class WindowState:
                 if value := profile_settings.get(key):
                     widget.setCurrentText(value)
         restoreGeom(self._window, self._window.name, adjustSize=True)
+        logDebug(f"restored window state.")
 
     def _forget_missing_profiles(self) -> None:
         """If the user has deleted certain profiles, remove data about them from the dictionary."""
