@@ -50,7 +50,8 @@ class CroProSettingsDialog(QDialog):
         self.tab_view = QTabWidget()
         self.checkboxes = make_checkboxes()
         self.tag_edit = QLineEdit(config.exported_tag)
-        self.sentence_field_edit = QLineEdit(config.sentence_field_name)
+        self.sentence_field_edit = AnkiFieldSelector()
+        self.sentence_field_edit.setCurrentText(config.sentence_field_name)
         self.notes_per_page_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.notes_per_page)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
@@ -262,7 +263,7 @@ class CroProSettingsDialog(QDialog):
     def accept(self) -> None:
         config.notes_per_page = self.notes_per_page_edit.value()
         config.exported_tag = self.tag_edit.text()
-        config.sentence_field_name = self.sentence_field_edit.text()
+        config.sentence_field_name = self.sentence_field_edit.currentText()
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
         config.sentence_min_length = self.sentence_min_length.value()
