@@ -5,7 +5,7 @@ __pycache__
 .vscode
 *.ankiaddon
 *.zip
-/meta.json
-/manifest.json
-/user_files/window_state.json
+meta.json
+manifest.json
+user_files/window_state.json
 *TODO*
