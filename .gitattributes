@@ -1,6 +1,6 @@
 /test export-ignore
 /*.sh export-ignore
-/meta.json export-ignore
+meta.json export-ignore
 .git* export-ignore
 .idea export-ignore
 .vscode export-ignore

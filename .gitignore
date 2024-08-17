@@ -7,5 +7,5 @@ __pycache__
 *.zip
 meta.json
 manifest.json
-user_files/window_state.json
+**/user_files/window_state.json
 *TODO*
