@@ -128,12 +128,6 @@ class NotePreviewer(AnkiWebView):
         )
         self.show()
 
-    def _is_remote_note(self) -> bool:
-        return isinstance(self._note, RemoteNote)
-
-    def _is_local_note(self) -> bool:
-        return isinstance(self._note, Note)
-
     def _generate_html_for_note(self, note: Union[Note, RemoteNote]) -> str:
         """Creates html for the previewer showing the current note."""
         markup = io.StringIO()
@@ -142,10 +136,12 @@ class NotePreviewer(AnkiWebView):
                 continue
             markup.write(f'<div class="name">{field_name}</div>')
             markup.write('<div class="content">')
-            if self._is_remote_note():
+            if isinstance(self._note, RemoteNote):
                 markup.write(self._create_html_for_remote_field(field_name, field_content))
-            else:
+            elif isinstance(self._note, Note):
                 markup.write(self._create_html_for_field(field_content))
+            else:
+                raise ValueError(f"Unknown type {type(self._note)}")
             markup.write("</div>")
         if note.tags:
             markup.write('<div class="name">Tags</div>')
@@ -154,7 +150,7 @@ class NotePreviewer(AnkiWebView):
 
     def _create_html_for_remote_field(self, field_name: str, field_content: str) -> str:
         """Creates the content for the previewer showing the remote note's field."""
-        assert self._is_remote_note(), "Remote note required."
+        assert isinstance(self._note, RemoteNote), "Remote note required."
         markup = io.StringIO()
         if field_name == self._note.image.field_name:
             markup.write(format_remote_image(self._note.image))
@@ -166,7 +162,7 @@ class NotePreviewer(AnkiWebView):
 
     def _create_html_for_field(self, field_content: str) -> str:
         """Creates the content for the previewer showing the local note's field."""
-        assert self._is_local_note(), "Local note required."
+        assert isinstance(self._note, Note), "Local note required."
         markup = io.StringIO()
         if audio_files := find_sounds(field_content):
             markup.write(f'<div class="cropro__audio_list">{format_local_audio(audio_files)}</div>')
@@ -181,7 +177,7 @@ class NotePreviewer(AnkiWebView):
         from aqt import sound
 
         if cmd.startswith("cropro__play_file:"):
-            assert self._is_local_note(), "Only local files can be played with av_player."
+            assert isinstance(self._note, Note), "Only local files can be played with av_player."
             file_name = os.path.basename(urllib.parse.unquote(cmd.split(":", maxsplit=1)[-1]))
             file_path = os.path.join(self._note.col.media.dir(), file_name)
             return sound.av_player.play_tags(
