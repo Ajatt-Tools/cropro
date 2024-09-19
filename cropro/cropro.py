@@ -100,14 +100,16 @@ class WindowState:
 
     def _write_state_to_disk(self) -> None:
         with open(self._json_filepath, "w", encoding="utf8") as of:
-            json.dump(self._pm_name_to_win_state, of, indent=4, ensure_ascii=False)
+            json.dump(self._pm_name_to_win_state, of,
+                      indent=4, ensure_ascii=False)
 
     def _remember_current_values(self) -> None:
         for key, widget in self._cfg_key_to_widget.items():
             if widget.currentText():
                 # A combo box should have current text.
                 # Otherwise, it apparently has no items set, and the value is invalid.
-                self._pm_name_to_win_state[mw.pm.name][key] = widget.currentText()
+                self._pm_name_to_win_state[mw.pm.name][key] = widget.currentText(
+                )
 
     def _ensure_loaded(self) -> bool:
         """
@@ -185,9 +187,12 @@ class CroProMainWindow(MainWindowUI):
         self._add_tooltips()
 
     def _add_global_shortcuts(self) -> None:
-        QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.search_bar.bar.focus_search_edit())  # type: ignore
-        QShortcut(QKeySequence("Ctrl+i"), self, activated=lambda: self.import_button.click())  # type: ignore
-        QShortcut(QKeySequence("Ctrl+l"), self, activated=lambda: self.note_list.set_focus())  # type: ignore
+        QShortcut(QKeySequence("Ctrl+k"), self,
+                  activated=lambda: self.search_bar.bar.focus_search_edit())  # type: ignore
+        QShortcut(QKeySequence("Ctrl+i"), self,
+                  activated=lambda: self.import_button.click())  # type: ignore
+        QShortcut(QKeySequence("Ctrl+l"), self,
+                  activated=lambda: self.note_list.set_focus())  # type: ignore
 
     def _add_tooltips(self) -> None:
         self.import_button.setToolTip("Add a new card (Ctrl+I)")
@@ -203,29 +208,36 @@ class CroProMainWindow(MainWindowUI):
 
         toggle_web_search_act = tools_menu.addAction("Search the web")
         toggle_web_search_act.setCheckable(True)
-        qconnect(toggle_web_search_act.triggered, self._on_toggle_web_search_triggered)
-        qconnect(tools_menu.aboutToShow, lambda: toggle_web_search_act.setChecked(config.search_the_web))
+        qconnect(toggle_web_search_act.triggered,
+                 self._on_toggle_web_search_triggered)
+        qconnect(tools_menu.aboutToShow, lambda: toggle_web_search_act.setChecked(
+            config.search_the_web))
 
-        tools_menu.addAction("Send query to Browser", self._send_query_to_browser)
+        tools_menu.addAction("Send query to Browser",
+                             self._send_query_to_browser)
 
         close_act = tools_menu.addAction("Close", self.close)
         close_act.setShortcut(QKeySequence("Ctrl+q"))
 
         # Navigation menu
         nav_menu = menu_bar.addMenu("&Navigate")
-        prev_act = nav_menu.addAction("Previous page", lambda: self.note_list.flip_page(-1))
+        prev_act = nav_menu.addAction(
+            "Previous page", lambda: self.note_list.flip_page(-1))
         prev_act.setShortcut(QKeySequence("Ctrl+Left"))
-        next_act = nav_menu.addAction("Next page", lambda: self.note_list.flip_page(+1))
+        next_act = nav_menu.addAction(
+            "Next page", lambda: self.note_list.flip_page(+1))
         next_act.setShortcut(QKeySequence("Ctrl+Right"))
 
         # Help menu
         help_menu = menu_bar.addMenu("&Help")
-        help_menu.addAction("CroPro: Manual", lambda: openLink(ADDON_GUIDE_LINK))
+        help_menu.addAction(
+            "CroPro: Manual", lambda: openLink(ADDON_GUIDE_LINK))
         help_menu.addSeparator()
         help_menu.addAction("Anki: Searching", lambda: openHelp("searching"))
         help_menu.addAction("Note fields", self.show_target_note_fields)
         help_menu.addAction("Ask question", lambda: openLink(COMMUNITY_LINK))
-        help_menu.addAction("subs2srs: Create sentence bank", lambda: openLink(SUBS2SRS_LINK))
+        help_menu.addAction("subs2srs: Create sentence bank",
+                            lambda: openLink(SUBS2SRS_LINK))
 
     def _send_query_to_browser(self) -> None:
         search_text = self.search_bar.bar.search_text()
@@ -251,7 +263,8 @@ class CroProMainWindow(MainWindowUI):
 
     def show_target_note_fields(self) -> None:
         if note_type := self.get_target_note_type():
-            names = "\n".join(f"* {name}" for name in mw.col.models.field_names(note_type))
+            names = "\n".join(
+                f"* {name}" for name in mw.col.models.field_names(note_type))
             showInfo(
                 text=f"## Target note type has fields:\n\n{names}",
                 textFormat="markdown",
@@ -271,7 +284,8 @@ class CroProMainWindow(MainWindowUI):
             return mw.col.models.get(selected_note_type.id)
 
     def connect_elements(self):
-        qconnect(self.search_bar.opts.selected_profile_changed, self.open_other_col)
+        qconnect(self.search_bar.opts.selected_profile_changed,
+                 self.open_other_col)
         qconnect(self.search_bar.search_requested, self.perform_search)
         qconnect(self.edit_button.clicked, self.new_edit_win)
         qconnect(self.import_button.clicked, self.do_import)
@@ -299,7 +313,8 @@ class CroProMainWindow(MainWindowUI):
         Called when profile opens.
         """
         logDebug("populating note type selector...")
-        self.note_type_selection_combo.set_items((NO_MODEL, *note_type_names_and_ids(mw.col)))
+        self.note_type_selection_combo.set_items(
+            (NO_MODEL, *note_type_names_and_ids(mw.col)))
 
     def populate_current_profile_decks(self) -> None:
         """
@@ -362,7 +377,8 @@ class CroProMainWindow(MainWindowUI):
 
         def search_notes(_col) -> Sequence[RemoteNote]:
             return self.web_search_client.search_notes(
-                self.search_bar.get_request_args(config.sentence_min_length, config.sentence_max_length)
+                self.search_bar.get_request_args(
+                    config.sentence_min_length, config.sentence_max_length)
             )
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
@@ -411,7 +427,8 @@ class CroProMainWindow(MainWindowUI):
 
         def set_search_results(note_ids: Sequence[NoteId]) -> None:
             self.note_list.set_notes(
-                self._sort_col_search_results(self.other_col.get_note(note_id) for note_id in note_ids)
+                self._sort_col_search_results(
+                    self.other_col.get_note(note_id) for note_id in note_ids)
             )
             self._search_lock.set_searching(False)
 
@@ -508,7 +525,10 @@ class CroProMainWindow(MainWindowUI):
 
     def _open_cropro_settings(self) -> None:
         open_cropro_settings(parent=self)
-        self._ensure_enabled_search_mode()  # the "search_the_web" setting may have changed
+        # the "search_the_web" setting may have changed
+        self._ensure_enabled_search_mode()
+        if config.search_the_web:
+            self.search_for(self.search_bar.bar.search_text())
 
     def on_profile_will_close(self):
         self.close()
@@ -535,8 +555,10 @@ class CroProMainWindow(MainWindowUI):
         """Add a browser entry"""
         # This is the "Go" menu.
         browser.form.menuJump.addSeparator()
-        action = browser.form.menuJump.addAction(f"Look up in {ADDON_NAME_SHORT}")
-        qconnect(action.triggered, lambda: self.search_for(browser.current_search()))
+        action = browser.form.menuJump.addAction(
+            f"Look up in {ADDON_NAME_SHORT}")
+        qconnect(action.triggered, lambda: self.search_for(
+            browser.current_search()))
 
 
 ######################################################################
