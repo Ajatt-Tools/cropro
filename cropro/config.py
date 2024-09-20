@@ -3,6 +3,8 @@
 
 from typing import Optional
 
+from aqt import mw
+
 from .ajt_common.addon_config import AddonConfigManager, ConfigSubViewBase
 
 
@@ -177,4 +179,5 @@ class CroProConfig(AddonConfigManager):
         return self["call_add_cards_hook"]
 
 
-config = CroProConfig()
+if mw:
+    config = CroProConfig()

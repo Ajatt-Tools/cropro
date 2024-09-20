@@ -6,13 +6,7 @@ from collections.abc import Sequence
 
 from aqt.qt import *
 
-try:
-    from ..remote_search import get_request_url
-    from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
-except ImportError:
-    from utils import CroProComboBox, CroProLineEdit, CroProPushButton, CroProSpinBox
-
-    from remote_search import get_request_url
+from .utils import CroProComboBox
 
 
 @dataclasses.dataclass

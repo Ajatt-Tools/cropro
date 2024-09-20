@@ -6,19 +6,9 @@ from typing import cast
 from aqt import AnkiQt
 from aqt.qt import *
 
-try:
-    from ..collection_manager import NameId
-    from ..remote_search import get_request_url
-    from .col_search_opts import ColSearchOptions
-    from .remote_search_opts import RemoteSearchOptions
-    from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
-except ImportError:
-    from col_search_opts import ColSearchOptions
-    from remote_search_opts import RemoteSearchOptions
-    from utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
-
-    from collection_manager import NameId
-    from remote_search import get_request_url
+from .col_search_opts import ColSearchOptions
+from .remote_search_opts import RemoteSearchOptions
+from .utils import CroProLineEdit, CroProPushButton
 
 
 class CroProSearchBar(QWidget):
@@ -142,40 +132,3 @@ class CroProSearchWidget(QWidget):
         qconnect(self.bar.search_requested, handle_search_requested)
         qconnect(self.opts.selected_deck_changed, handle_deck_changed)
         qconnect(self.opts.selected_profile_changed, lambda row_idx: self.setEnabled(row_idx >= 0 or self._web_mode))
-
-
-# Debug
-##########################################################################
-
-
-def on_search_requested(text: str):
-    print(text)
-
-
-class App(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Test")
-        self.search_bar = CroProSearchWidget(cast(AnkiQt, SimpleNamespace(pm=SimpleNamespace(name="Dummy"))))
-        self.initUI()
-        qconnect(self.search_bar.search_requested, on_search_requested)
-        # self.search_bar.set_profile_names(["User 1", "subs2srs", "dumpster"])
-        # self.search_bar.set_decks([NameId("History", 1), NameId("Math", 2)])
-
-    def initUI(self):
-        self.setMinimumSize(640, 480)
-        self.setLayout(layout := QVBoxLayout())
-        layout.addWidget(self.search_bar)
-        layout.addStretch(1)
-
-
-def main():
-    app = QApplication(sys.argv)
-    ex = App()
-    ex.show()
-    app.exec()
-    sys.exit()
-
-
-if __name__ == "__main__":
-    main()

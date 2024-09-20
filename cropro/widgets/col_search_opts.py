@@ -3,24 +3,15 @@
 import abc
 from collections.abc import Iterable, Sequence
 from types import SimpleNamespace
-from typing import Any, Optional, cast
+from typing import Optional, cast
 
 from anki.notes import Note
 from aqt import AnkiQt
 from aqt.qt import *
 
-try:
-    from ..collection_manager import NameId
-    from ..config import CroProConfig
-    from ..remote_search import get_request_url
-    from .remote_search_opts import RemoteSearchOptions
-    from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
-except ImportError:
-    from remote_search_opts import RemoteSearchOptions
-    from utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
-
-    from collection_manager import NameId
-    from remote_search import get_request_url
+from ..collection_manager import NameId
+from ..config import CroProConfig
+from .utils import CroProComboBox, CroProLineEdit, CroProPushButton, NameIdComboBox
 
 
 class CroProSearchBar(QWidget):

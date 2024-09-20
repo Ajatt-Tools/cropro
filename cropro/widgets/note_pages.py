@@ -8,8 +8,8 @@ from anki.notes import Note
 from aqt.qt import *
 
 from ..ajt_common.utils import clamp, q_emit
-from ..common import LogDebug
 from ..config import config
+from ..debug_log import LogDebug
 from ..remote_search import RemoteNote
 from .note_list import NoteList
 

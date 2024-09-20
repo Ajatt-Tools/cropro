@@ -5,10 +5,7 @@ from collections.abc import Iterable, Sequence
 
 from aqt.qt import *
 
-try:
-    from ..collection_manager import NameId
-except ImportError:
-    from collection_manager import NameId
+from ..collection_manager import NameId
 
 WIDGET_MIN_HEIGHT = 29
 COMBO_MIN_WIDTH = 120
