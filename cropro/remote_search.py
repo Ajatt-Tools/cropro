@@ -10,7 +10,7 @@ from typing import Optional, TypedDict
 import anki.httpclient
 import requests
 
-from .config import config
+from .config import CroProConfig
 
 API_URL = "https://api.immersionkit.com/look_up_dictionary?"
 
@@ -78,36 +78,37 @@ class RemoteNote:
     sound_url: str
     notes: str
     tags: list[str]
+    _config: CroProConfig
 
     def __post_init__(self):
         self._media = {
-            config.remote_fields.image: RemoteMediaInfo(
-                config.remote_fields.image,
+            self._config.remote_fields.image: RemoteMediaInfo(
+                self._config.remote_fields.image,
                 self.image_url,
                 MediaType.image,
             ),
-            config.remote_fields.sentence_audio: RemoteMediaInfo(
-                config.remote_fields.sentence_audio,
+            self._config.remote_fields.sentence_audio: RemoteMediaInfo(
+                self._config.remote_fields.sentence_audio,
                 self.sound_url,
                 MediaType.sound,
             ),
         }
         self._mapping = {
-            config.remote_fields.sentence_kanji: self.sentence_kanji,
-            config.remote_fields.sentence_furigana: self.sentence_furigana,
-            config.remote_fields.sentence_eng: self.sentence_eng,
-            config.remote_fields.sentence_audio: self.audio.as_anki_ref(),
-            config.remote_fields.image: self.image.as_anki_ref(),
-            config.remote_fields.notes: self.notes,
+            self._config.remote_fields.sentence_kanji: self.sentence_kanji,
+            self._config.remote_fields.sentence_furigana: self.sentence_furigana,
+            self._config.remote_fields.sentence_eng: self.sentence_eng,
+            self._config.remote_fields.sentence_audio: self.audio.as_anki_ref(),
+            self._config.remote_fields.image: self.image.as_anki_ref(),
+            self._config.remote_fields.notes: self.notes,
         }
 
     @property
     def image(self) -> RemoteMediaInfo:
-        return self._media[config.remote_fields.image]
+        return self._media[self._config.remote_fields.image]
 
     @property
     def audio(self) -> RemoteMediaInfo:
-        return self._media[config.remote_fields.sentence_audio]
+        return self._media[self._config.remote_fields.sentence_audio]
 
     def __contains__(self, item) -> bool:
         return item in self._mapping
@@ -135,7 +136,7 @@ class RemoteNote:
         return self._mapping.items()
 
     @classmethod
-    def from_json(cls, json_dict: ApiReturnExampleDict):
+    def from_json(cls, json_dict: ApiReturnExampleDict, config: CroProConfig):
         return RemoteNote(
             tags=remote_tags_as_list(json_dict),
             image_url=json_dict["image_url"],
@@ -144,6 +145,7 @@ class RemoteNote:
             sentence_furigana=json_dict["sentence_with_furigana"],
             sentence_eng=json_dict["translation"],
             notes=json_dict["sentence_id"],
+            _config=config,
         )
 
 
@@ -162,8 +164,12 @@ class CroProWebClientException(Exception):
 
 
 class CroProWebSearchClient:
-    def __init__(self) -> None:
+    _client: anki.httpclient.HttpClient
+    _config: CroProConfig
+
+    def __init__(self, config: CroProConfig) -> None:
         self._client = anki.httpclient.HttpClient()
+        self._config = config
 
     def _get(self, url: str) -> requests.Response:
         try:
@@ -187,15 +193,4 @@ class CroProWebSearchClient:
             return []
         resp = self._get(get_request_url(search_args))
         examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
-        return [RemoteNote.from_json(example) for example in examples]
-
-
-def main():
-    client = CroProWebSearchClient()
-    result = client.search_notes({"keyword": "人事"})
-    for note in result:
-        print(note)
-
-
-if __name__ == "__main__":
-    main()
+        return [RemoteNote.from_json(example, self._config) for example in examples]

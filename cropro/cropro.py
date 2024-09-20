@@ -183,7 +183,7 @@ class CroProMainWindow(MainWindowUI):
         super().__init__(ankimw=ankimw, window_title=ADDON_NAME)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
-        self.web_search_client = CroProWebSearchClient()
+        self.web_search_client = CroProWebSearchClient(config)
         self._add_window_mgr = AddDialogLauncher(self)
         self._search_lock = SearchLock(self)
         self._importer = NoteImporter(web_client=self.web_search_client)
