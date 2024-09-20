@@ -9,8 +9,9 @@ from aqt.webview import AnkiWebView
 from .ajt_common.about_menu import tweak_window
 from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.utils import ui_translate
-from .common import ADDON_NAME, CONFIG_MD_PATH, LogDebug
+from .common import ADDON_NAME, CONFIG_MD_PATH
 from .config import config
+from .debug_log import LogDebug
 from .widgets.item_edit import ItemEditBox
 from .widgets.utils import CroProSpinBox
 

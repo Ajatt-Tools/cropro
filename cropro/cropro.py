@@ -29,7 +29,16 @@ from aqt import AnkiQt, gui_hooks, mw
 from aqt.browser import Browser
 from aqt.operations import CollectionOp, QueryOp
 from aqt.qt import *
-from aqt.utils import disable_help_button, openHelp, openLink, restoreGeom, saveGeom, showInfo, showWarning, tooltip
+from aqt.utils import (
+    disable_help_button,
+    openHelp,
+    openLink,
+    restoreGeom,
+    saveGeom,
+    showInfo,
+    showWarning,
+    tooltip,
+)
 
 from .ajt_common.about_menu import menu_root_entry
 from .ajt_common.consts import COMMUNITY_LINK
@@ -49,9 +58,9 @@ from .common import (
     EXAMPLE_DECK_LINK,
     SUBS2SRS_LINK,
     WINDOW_STATE_FILE_PATH,
-    LogDebug,
 )
 from .config import config
+from .debug_log import LogDebug
 from .edit_window import AddDialogLauncher
 from .note_importer import NoteImporter, NoteTypeUnavailable
 from .remote_search import CroProWebClientException, CroProWebSearchClient, RemoteNote
@@ -176,7 +185,7 @@ class CroProMainWindow(MainWindowUI):
         super().__init__(ankimw=ankimw, window_title=ADDON_NAME)
         self.window_state = WindowState(self)
         self.other_col = CollectionManager()
-        self.web_search_client = CroProWebSearchClient()
+        self.web_search_client = CroProWebSearchClient(config)
         self._add_window_mgr = AddDialogLauncher(self)
         self._search_lock = SearchLock(self)
         self._importer = NoteImporter(web_client=self.web_search_client)
