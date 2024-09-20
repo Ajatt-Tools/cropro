@@ -517,7 +517,10 @@ class CroProMainWindow(MainWindowUI):
 
     def _open_cropro_settings(self) -> None:
         open_cropro_settings(parent=self)
-        self._ensure_enabled_search_mode()  # the "search_the_web" setting may have changed
+        # the "search_the_web" setting may have changed
+        self._ensure_enabled_search_mode()
+        if config.search_the_web:
+            self.search_for(self.search_bar.bar.search_text())
 
     def on_profile_will_close(self):
         self.close()
