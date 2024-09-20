@@ -194,9 +194,7 @@ class CroProMainWindow(MainWindowUI):
         self._add_tooltips()
 
     def _add_global_shortcuts(self) -> None:
-        QShortcut(
-            QKeySequence("Ctrl+k"), self, activated=lambda: self.search_bar.bar.focus_search_edit()
-        )  # type: ignore
+        QShortcut(QKeySequence("Ctrl+k"), self, activated=lambda: self.search_bar.bar.focus_search_edit())  # type: ignore
         QShortcut(QKeySequence("Ctrl+i"), self, activated=lambda: self.import_button.click())  # type: ignore
         QShortcut(QKeySequence("Ctrl+l"), self, activated=lambda: self.note_list.set_focus())  # type: ignore
 
