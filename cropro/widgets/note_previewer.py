@@ -46,8 +46,12 @@ def format_remote_image(image: RemoteMediaInfo) -> str:
 
 def format_image_references(note: Note, image_file_names: Iterable[str]) -> str:
     def image_as_base64_src(file_name: str) -> str:
-        with open(os.path.join(note.col.media.dir(), file_name), "rb") as f:
-            return f"data:image/{filetype(file_name)};base64,{img2b64(f.read())}"
+        try:
+            with open(os.path.join(note.col.media.dir(), file_name), "rb") as f:
+                return f"data:image/{filetype(file_name)};base64,{img2b64(f.read())}"
+        except FileNotFoundError:
+            # This file does not exist in the collection. Likely a URL. Return as is.
+            return file_name
 
     return "".join(
         f'<img alt="image:{name_attr_strip(file_name)}" src="{image_as_base64_src(file_name)}"/>'
