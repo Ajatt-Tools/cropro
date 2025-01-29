@@ -44,7 +44,7 @@ def format_remote_image(image: RemoteMediaInfo) -> str:
     )
 
 
-def format_local_images(note: Note, image_file_names: Iterable[str]) -> str:
+def format_image_references(note: Note, image_file_names: Iterable[str]) -> str:
     def image_as_base64_src(file_name: str) -> str:
         with open(os.path.join(note.col.media.dir(), file_name), "rb") as f:
             return f"data:image/{filetype(file_name)};base64,{img2b64(f.read())}"
@@ -70,7 +70,7 @@ def format_remote_audio(audio: RemoteMediaInfo):
     )
 
 
-def format_local_audio(audio_files: Iterable[str]) -> str:
+def format_audio_references(audio_files: Iterable[str]) -> str:
     return "".join(
         """
         <button class="cropro__play_button" title="{}" onclick='pycmd("cropro__play_file:{}");'></button>
@@ -165,9 +165,9 @@ class NotePreviewer(AnkiWebView):
         assert isinstance(self._note, Note), "Local note required."
         markup = io.StringIO()
         if audio_files := find_sounds(field_content):
-            markup.write(f'<div class="cropro__audio_list">{format_local_audio(audio_files)}</div>')
+            markup.write(f'<div class="cropro__audio_list">{format_audio_references(audio_files)}</div>')
         if image_files := find_images(field_content):
-            markup.write(f'<div class="cropro__image_list">{format_local_images(self._note, image_files)}</div>')
+            markup.write(f'<div class="cropro__image_list">{format_image_references(self._note, image_files)}</div>')
         if text := html_to_text_line(field_content):
             markup.write(f'<div class="cropro__text_item">{text}</div>')
         return markup.getvalue()
