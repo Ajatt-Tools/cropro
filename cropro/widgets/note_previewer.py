@@ -37,11 +37,13 @@ def filetype(file: str):
 
 
 def format_remote_image(image: RemoteMediaInfo) -> str:
-    return (
-        f'<img src="{urllib.parse.quote(image.url, safe=QUOTE_SAFE)}" alt="remote image">'
-        if image.is_valid_url()
-        else ""
-    )
+    if not image.is_valid_url():
+        return ""
+    url = urllib.parse.quote(image.url, safe=QUOTE_SAFE)
+    return f'''
+    <img src="{url}" alt="remote image">
+    <div><a href="{url}">{image.file_name}</a></div>
+    '''
 
 
 def format_image_references(note: Note, image_file_names: Iterable[str]) -> str:
@@ -63,15 +65,14 @@ def format_remote_audio(audio: RemoteMediaInfo):
     if not audio.is_valid_url():
         return ""
     element_id = f"cropro__remote_{urllib.parse.quote(audio.file_name)}"
-    return """
-    <audio preload="auto" id="{}" src="{}"></audio>
-    <button class="cropro__play_button" title="{}" onclick='{}'></button>
-    """.format(
-        element_id,
-        urllib.parse.quote(audio.url, safe=QUOTE_SAFE),
-        _(f"Play file: {name_attr_strip(audio.file_name)}"),
-        f'cropro__play_remote_audio("{element_id}");',
-    )
+    url = urllib.parse.quote(audio.url, safe=QUOTE_SAFE)
+    title = _(f"Play file: {name_attr_strip(audio.file_name)}")
+    tag_id = f'cropro__play_remote_audio("{element_id}");'
+    return f"""
+    <audio preload="auto" id="{element_id}" src="{url}"></audio>
+    <button class="cropro__play_button" title="{title}" onclick='{tag_id}'></button>
+    <div><a href="{url}">{audio.file_name}</a></div>
+    """
 
 
 def format_audio_references(audio_files: Iterable[str]) -> str:
@@ -158,9 +159,9 @@ class NotePreviewer(AnkiWebView):
         markup = io.StringIO()
         if field_name == self._note.image.field_name:
             markup.write(format_remote_image(self._note.image))
-        if field_name == self._note.audio.field_name:
+        elif field_name == self._note.audio.field_name:
             markup.write(format_remote_audio(self._note.audio))
-        if text := html_to_text_line(field_content):
+        elif text := html_to_text_line(field_content):
             markup.write(f"<div>{html_to_text_line(text)}</div>")
         return markup.getvalue()
 
