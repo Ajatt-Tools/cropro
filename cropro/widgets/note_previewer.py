@@ -40,10 +40,10 @@ def format_remote_image(image: RemoteMediaInfo) -> str:
     if not image.is_valid_url():
         return ""
     url = urllib.parse.quote(image.url, safe=QUOTE_SAFE)
-    return f'''
+    return f"""
     <img src="{url}" alt="remote image">
     <div><a href="{url}">{image.file_name}</a></div>
-    '''
+    """
 
 
 def format_image_references(note: Note, image_file_names: Iterable[str]) -> str:

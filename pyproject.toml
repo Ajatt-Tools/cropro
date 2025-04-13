@@ -37,10 +37,11 @@ version-file = "cropro/__about__.py"
 
 [tool.hatch.envs.dev]
 dependencies = [
+  "pyupgrade",
   "mypy>=1.0.0",
   "isort",
   "pytest",
-  "aqt[qt6]",
+  "aqt",
 ]
 python = "3.9"
 
