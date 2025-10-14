@@ -18,6 +18,7 @@ TODO:
 """
 
 import json
+import sys
 from collections import defaultdict
 from collections.abc import Iterable, MutableMapping, Sequence
 from typing import Optional
@@ -370,9 +371,14 @@ class CroProMainWindow(MainWindowUI):
             return
 
         def search_notes(_col) -> Sequence[RemoteNote]:
-            return self.web_search_client.search_notes(
-                self.search_bar.get_request_args(config.sentence_min_length, config.sentence_max_length)
-            )
+            def wrap_zero(val: int) -> int:
+                return val if val > 0 else sys.maxsize
+
+            return [
+                item
+                for item in self.web_search_client.search_notes(self.search_bar.get_request_args())
+                if config.sentence_min_length <= len(item.sentence_kanji) <= wrap_zero(config.sentence_max_length)
+            ]
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(notes)

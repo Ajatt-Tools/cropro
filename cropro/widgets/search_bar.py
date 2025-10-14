@@ -6,6 +6,7 @@ from typing import cast
 from aqt import AnkiQt
 from aqt.qt import *
 
+from ..remote_search import CroProWebSearchArgs
 from .col_search_opts import ColSearchOptions
 from .remote_search_opts import RemoteSearchOptions
 from .utils import CroProLineEdit, CroProPushButton
@@ -98,24 +99,21 @@ class CroProSearchWidget(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Maximum)
         self.bar.focus_search_edit()
 
-    def get_request_args(self, min_length: int, max_length: int) -> dict[str, str]:
+    def get_request_args(self) -> CroProWebSearchArgs:
         assert self._web_mode, "Web mode must be enabled."
-        args = {}
+        args: CroProWebSearchArgs = {}
         widgets = (
             self.remote_opts.sort_combo,
             self.remote_opts.category_combo,
             self.remote_opts.jlpt_level_combo,
             self.remote_opts.wanikani_level_combo,
         )
+        # https://apiv2.immersionkit.com/openapi.json
         if keyword := self.bar.search_text():
-            args["keyword"] = keyword
+            args["q"] = keyword
             for widget in widgets:
                 if param := widget.currentData().http_arg:
                     args[widget.key] = param
-            if min_length > 0:
-                args["min_length"] = min_length
-            if max_length > 0:
-                args["max_length"] = max_length
         return args
 
     def _connect_elements(self) -> None:

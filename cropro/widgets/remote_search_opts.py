@@ -32,7 +32,8 @@ class RemoteSearchOptions(QWidget):
     Search options for https://docs.immersionkit.com/public%20api/search/
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        # https://apiv2.immersionkit.com/openapi.json
         super().__init__()
         self._category_combo = new_combo_box(
             [
@@ -47,8 +48,8 @@ class RemoteSearchOptions(QWidget):
         self._sort_combo = new_combo_box(
             [
                 RemoteComboBoxItem(None, "none"),
-                "shortness",
-                "longness",
+                RemoteComboBoxItem("sentence_length:desc", "Longer"),
+                RemoteComboBoxItem("sentence_length:asc", "Shorter"),
             ],
             key="sort",
         )
@@ -64,7 +65,7 @@ class RemoteSearchOptions(QWidget):
                 RemoteComboBoxItem(None, "all"),
                 *map(str, range(1, 61)),
             ],
-            key="wanikani",
+            key="wk",
         )
         self._setup_layout()
 

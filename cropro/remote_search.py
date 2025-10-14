@@ -3,7 +3,7 @@
 
 import dataclasses
 import enum
-import itertools
+import typing
 from collections.abc import Iterable, Sequence
 from typing import Optional, TypedDict
 
@@ -12,7 +12,8 @@ import requests
 
 from .config import CroProConfig
 
-API_URL = "https://api.immersionkit.com/look_up_dictionary?"
+# Example: https://apiv2.immersionkit.com/search?q=%E3%81%8A%E5%89%8D
+API_URL = "https://apiv2.immersionkit.com/search?"
 
 
 class ApiReturnExampleDict(TypedDict):
@@ -21,13 +22,14 @@ class ApiReturnExampleDict(TypedDict):
     """
 
     tags: list[str]
-    image_url: str
-    sound_url: str
+    image: str
+    sound: str
     sentence: str
     sentence_with_furigana: str
     translation: str
-    sentence_id: str
+    id: str
     category: str
+    title: str
 
 
 @enum.unique
@@ -62,7 +64,7 @@ class RemoteMediaInfo:
 
 
 def remote_tags_as_list(json_dict: ApiReturnExampleDict) -> list[str]:
-    return [tag.replace(r"\s:", "_") for tag in [*json_dict["tags"], json_dict["category"]]]
+    return [tag.replace(r"\s:", "_") for tag in [*json_dict["tags"], json_dict["title"]]]
 
 
 @dataclasses.dataclass
@@ -137,20 +139,43 @@ class RemoteNote:
 
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict, config: CroProConfig):
+        # pprint(json_dict)
         return RemoteNote(
-            tags=remote_tags_as_list(json_dict),
-            image_url=json_dict["image_url"],
-            sound_url=json_dict["sound_url"],
+            tags=[
+                json_dict["title"],
+            ],
+            # Example: 'https://apiv2.immersionkit.com/download_media?path=media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.935.jpg'
+            image_url=json_dict.get("image", ""),
+            # Example:
+            # https://apiv2.immersionkit.com/download_media?path=0x0010c1a5.wav.ogg
+            # https://apiv2.immersionkit.com/download_media?path=media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.435-0.48.40.435.mp3
+            # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.435-0.48.40.435.mp3
+            # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Lucky%20Star/media/luckystar-nodup_16_0.06.49.235.jpg
+            sound_url=json_dict.get("sound", ""),
             sentence_kanji=json_dict["sentence"],
             sentence_furigana=json_dict["sentence_with_furigana"],
             sentence_eng=json_dict["translation"],
-            notes=json_dict["sentence_id"],
+            notes=json_dict["id"],
             _config=config,
         )
 
 
-def get_request_url(request_args: dict[str, str]) -> str:
-    if "keyword" in request_args:
+class CroProWebSearchArgs(typing.TypedDict):
+    # https://apiv2.immersionkit.com/openapi.json
+    q: str
+    category: str
+    index: str
+    locale: str
+    sort: str
+    exactMatch: str
+    jlpt: int
+    wk: int
+    limit: int
+    offset: int
+
+
+def get_request_url(request_args: CroProWebSearchArgs) -> str:
+    if "q" in request_args:
         return API_URL + "&".join(f"{key}={val}" for key, val in request_args.items())
     return ""
 
@@ -172,6 +197,7 @@ class CroProWebSearchClient:
         self._config = config
 
     def _get(self, url: str) -> requests.Response:
+        print(f"curl -sL '{url}'")
         try:
             resp = self._client.get(url)
         except OSError as ex:
@@ -188,9 +214,9 @@ class CroProWebSearchClient:
     def download_media(self, url: str) -> bytes:
         return self._client.stream_content(self._get(url))
 
-    def search_notes(self, search_args: dict[str, str]) -> Sequence[RemoteNote]:
+    def search_notes(self, search_args: CroProWebSearchArgs) -> Sequence[RemoteNote]:
         if not search_args:
             return []
         resp = self._get(get_request_url(search_args))
-        examples = list(itertools.chain(*(item["examples"] for item in resp.json()["data"])))
+        examples = [item for item in resp.json()["examples"]]
         return [RemoteNote.from_json(example, self._config) for example in examples]
