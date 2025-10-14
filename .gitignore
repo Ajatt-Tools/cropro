@@ -1,5 +1,6 @@
 # Ignored files
 __pycache__
+__about__.py
 .mypy_cache
 .idea
 .vscode
