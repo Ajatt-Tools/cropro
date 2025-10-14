@@ -83,17 +83,17 @@ class RemoteSearchOptions(QWidget):
         self.setLayout(layout)
 
     @property
-    def category_combo(self) -> QComboBox:
+    def category_combo(self) -> CroProComboBox:
         return self._category_combo
 
     @property
-    def sort_combo(self) -> QComboBox:
+    def sort_combo(self) -> CroProComboBox:
         return self._sort_combo
 
     @property
-    def jlpt_level_combo(self) -> QComboBox:
+    def jlpt_level_combo(self) -> CroProComboBox:
         return self._jlpt_level_combo
 
     @property
-    def wanikani_level_combo(self) -> QComboBox:
+    def wanikani_level_combo(self) -> CroProComboBox:
         return self._wanikani_level_combo
