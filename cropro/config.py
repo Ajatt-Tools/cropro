@@ -74,62 +74,62 @@ class CroProConfig(AddonConfigManager):
         Perform search with empty search bar.
         Could be used to transfer all notes at once, although not really practical.
         """
-        return self["allow_empty_search"]
+        return bool(self["allow_empty_search"])
 
     @property
     def search_the_web(self) -> bool:
         """
         Whether to search the web or a local collection.
         """
-        return self["search_the_web"]
+        return bool(self["search_the_web"])
 
     @search_the_web.setter
     def search_the_web(self, value: bool) -> None:
         self["search_the_web"] = bool(value)
 
     @property
-    def sentence_min_length(self) -> bool:
+    def sentence_min_length(self) -> int:
         """
         Minimum count of letters in the sentence for the card to be shown
         """
-        return self["sentence_min_length"]
+        return int(self["sentence_min_length"])
 
     @sentence_min_length.setter
     def sentence_min_length(self, new_value: int) -> None:
-        self["sentence_min_length"] = new_value
+        self["sentence_min_length"] = int(new_value)
 
     @property
-    def sentence_max_length(self) -> bool:
+    def sentence_max_length(self) -> int:
         """
         Maximum count of letters in the sentence for the card to be shown
         """
-        return self["sentence_max_length"]
+        return int(self["sentence_max_length"])
 
     @sentence_max_length.setter
     def sentence_max_length(self, new_value: int) -> None:
-        self["sentence_max_length"] = new_value
+        self["sentence_max_length"] = int(new_value)
 
     @property
     def notes_per_page(self) -> int:
         """
         How many search results to display on one page
         """
-        return self["notes_per_page"]
+        return int(self["notes_per_page"])
 
     @notes_per_page.setter
     def notes_per_page(self, new_value: int) -> None:
-        self["notes_per_page"] = new_value
+        self["notes_per_page"] = int(new_value)
 
     @property
     def timeout_seconds(self) -> int:
         """
         Give up trying to connect to the remote server after this many seconds.
         """
-        return self["timeout_seconds"]
+        return int(self["timeout_seconds"])
 
     @timeout_seconds.setter
     def timeout_seconds(self, timeout: int) -> None:
-        self["timeout_seconds"] = timeout
+        self["timeout_seconds"] = int(timeout)
 
     @property
     def hidden_fields(self) -> list[str]:
