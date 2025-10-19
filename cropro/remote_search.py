@@ -12,6 +12,7 @@ import requests
 
 from .config import CroProConfig
 
+# https://apiv2.immersionkit.com/openapi.json
 # Example: https://apiv2.immersionkit.com/search?q=%E3%81%8A%E5%89%8D
 API_URL = "https://apiv2.immersionkit.com/search?"
 
