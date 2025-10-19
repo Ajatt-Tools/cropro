@@ -68,6 +68,7 @@ from .remote_search import CroProWebClientException, CroProWebSearchClient, Remo
 from .settings_dialog import open_cropro_settings
 from .widgets.main_window_ui import MainWindowUI
 from .widgets.note_pages import NoteListStatus
+from .widgets.remote_search_opts import RemoteNotesSortMethod
 from .widgets.utils import CroProComboBox
 
 logDebug = LogDebug()
@@ -370,15 +371,26 @@ class CroProMainWindow(MainWindowUI):
             self.search_result_label.set_nothing_to_do()
             return
 
+        def remote_notes_sort_key(remote_note: RemoteNote) -> int:
+            if self.search_bar.remote_opts.sort_method() == RemoteNotesSortMethod.len_asc:
+                return len(remote_note.sentence_kanji)
+            elif self.search_bar.remote_opts.sort_method() == RemoteNotesSortMethod.len_desc:
+                return -len(remote_note.sentence_kanji)
+            else:
+                return 1
+
         def search_notes(_col) -> Sequence[RemoteNote]:
             def wrap_zero(val: int) -> int:
                 return val if val > 0 else sys.maxsize
 
-            return [
-                item
-                for item in self.web_search_client.search_notes(self.search_bar.get_request_args())
-                if config.sentence_min_length <= len(item.sentence_kanji) <= wrap_zero(config.sentence_max_length)
-            ]
+            return sorted(
+                (
+                    item
+                    for item in self.web_search_client.search_notes(self.search_bar.get_request_args())
+                    if config.sentence_min_length <= len(item.sentence_kanji) <= wrap_zero(config.sentence_max_length)
+                ),
+                key=remote_notes_sort_key,
+            )
 
         def set_search_results(notes: Sequence[RemoteNote]) -> None:
             self.note_list.set_notes(notes)
