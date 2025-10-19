@@ -2,6 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import dataclasses
+import enum
 from collections.abc import Sequence
 
 from aqt.qt import *
@@ -16,6 +17,12 @@ class RemoteComboBoxItem:
 
     def __post_init__(self):
         self.visible_name = (self.visible_name or str(self.http_arg)).capitalize()
+
+
+class RemoteNotesSortMethod(enum.Enum):
+    none = None
+    len_desc = "sentence_length:desc"
+    len_asc = "sentence_length:asc"
 
 
 def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]], key: str) -> CroProComboBox:
@@ -42,14 +49,15 @@ class RemoteSearchOptions(QWidget):
                 "drama",
                 "games",
                 "literature",
+                "news",
             ],
             key="category",
         )
         self._sort_combo = new_combo_box(
             [
-                RemoteComboBoxItem(None, "none"),
-                RemoteComboBoxItem("sentence_length:desc", "Longer"),
-                RemoteComboBoxItem("sentence_length:asc", "Shorter"),
+                RemoteComboBoxItem(RemoteNotesSortMethod.none.value, "none"),
+                RemoteComboBoxItem(RemoteNotesSortMethod.len_desc.value, "Longer"),
+                RemoteComboBoxItem(RemoteNotesSortMethod.len_asc.value, "Shorter"),
             ],
             key="sort",
         )
@@ -89,6 +97,9 @@ class RemoteSearchOptions(QWidget):
     @property
     def sort_combo(self) -> CroProComboBox:
         return self._sort_combo
+
+    def sort_method(self) -> RemoteNotesSortMethod:
+        return RemoteNotesSortMethod(self._sort_combo.currentData().http_arg)
 
     @property
     def jlpt_level_combo(self) -> CroProComboBox:
