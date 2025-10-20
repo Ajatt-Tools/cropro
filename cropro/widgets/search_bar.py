@@ -111,6 +111,7 @@ class CroProSearchWidget(QWidget):
             self.remote_opts.category_combo,
             self.remote_opts.jlpt_level_combo,
             self.remote_opts.wanikani_level_combo,
+            self.remote_opts.exact_match_combo,
         )
         # https://apiv2.immersionkit.com/openapi.json
         if keyword := self.bar.search_text():

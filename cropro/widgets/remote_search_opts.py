@@ -75,6 +75,13 @@ class RemoteSearchOptions(QWidget):
             ],
             key="wk",
         )
+        self._exact_match_combo = new_combo_box(
+            [
+                RemoteComboBoxItem("false", "Not exact"),
+                RemoteComboBoxItem("true", "Exact"),
+            ],
+            key="exactMatch",
+        )
         self._setup_layout()
 
     def _setup_layout(self) -> None:
@@ -87,6 +94,8 @@ class RemoteSearchOptions(QWidget):
         layout.addWidget(self._jlpt_level_combo)
         layout.addWidget(QLabel("WaniKani:"))
         layout.addWidget(self._wanikani_level_combo)
+        layout.addWidget(QLabel("Match:"))
+        layout.addWidget(self._exact_match_combo)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
@@ -108,3 +117,7 @@ class RemoteSearchOptions(QWidget):
     @property
     def wanikani_level_combo(self) -> CroProComboBox:
         return self._wanikani_level_combo
+
+    @property
+    def exact_match_combo(self) -> CroProComboBox:
+        return self._exact_match_combo

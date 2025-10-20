@@ -24,6 +24,7 @@ class App(QWidget):
         print(self.search_opts.sort_combo.currentText())
         print(self.search_opts.jlpt_level_combo.currentText())
         print(self.search_opts.wanikani_level_combo.currentText())
+        print(self.search_opts.exact_match_combo.currentText())
 
 
 def main():

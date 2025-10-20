@@ -97,6 +97,7 @@ class WindowState:
             "web_sort_by": self._window.search_bar.remote_opts.sort_combo,
             "web_jlpt_level": self._window.search_bar.remote_opts.jlpt_level_combo,
             "web_wanikani_level": self._window.search_bar.remote_opts.wanikani_level_combo,
+            "web_exact_match": self._window.search_bar.remote_opts.exact_match_combo,
         }
         self._pm_name_to_win_state = defaultdict(dict)
 
