@@ -75,11 +75,14 @@ class CroProSearchWidget(QWidget):
         self._web_mode = False
         self.setEnabled(False)  # disallow search until profiles and decks are set.
 
+    def _should_allow_local_search(self) -> bool:
+        return self.opts.other_profile_names_combo.count() > 0
+
     def set_web_mode(self, is_web: bool) -> None:
         self._web_mode = is_web
         self.remote_opts.setVisible(is_web)
         self.opts.setVisible(not is_web)
-        self.setEnabled(is_web or self.opts.other_profile_names_combo.count() > 0)
+        self.setEnabled(is_web or self._should_allow_local_search())
         self.bar.focus_search_edit()
 
     def clear_all(self) -> None:
