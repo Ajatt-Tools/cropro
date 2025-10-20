@@ -423,12 +423,18 @@ class CroProMainWindow(MainWindowUI):
         self.reset_cropro_status()
         self.open_other_col()
 
+        if not self.other_col.is_opened:
+            logDebug("Abort local search: other collection is not opened.")
+            return
+
         if not (search_text or config.allow_empty_search):
             self.search_result_label.set_nothing_to_do()
+            logDebug("Abort local search: empty search string.")
             return
 
         if not (self.search_bar.opts.selected_profile_name() and self.search_bar.opts.decks_populated()):
             # the user has only one profile or the combo boxes haven't been populated.
+            logDebug("Abort local search: other collection's decks are not populated.")
             return
 
         def search_notes(_col) -> Sequence[NoteId]:
