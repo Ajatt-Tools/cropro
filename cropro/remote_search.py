@@ -142,18 +142,27 @@ class RemoteNote:
 
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict, config: CroProConfig):
-        # pprint(json_dict)
+        # The full url does not come from the api anymore.
+        #
+        # The url is:
+        # https://us-southeast-1.linodeobjects.com/immersionkit/media/${category}/${deckName}/media/${fileName}
+        #
+        # How to:
+        #
+        # category - anime
+        # deckName - (title from the api) girls_band_cry
+        # fileName - (image/sound from the api) girls_band_cry_011_0.12.47.210.jpg
+        #
+        # Examples:
+        # https://apiv2.immersionkit.com/download_media?path=media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.935.jpg
+        # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.435-0.48.40.435.mp3
+        # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Lucky%20Star/media/luckystar-nodup_16_0.06.49.235.jpg
+
         return RemoteNote(
             tags=[
                 json_dict["title"],
             ],
-            # Example: 'https://apiv2.immersionkit.com/download_media?path=media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.935.jpg'
             image_url=json_dict.get("image", ""),
-            # Example:
-            # https://apiv2.immersionkit.com/download_media?path=0x0010c1a5.wav.ogg
-            # https://apiv2.immersionkit.com/download_media?path=media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.435-0.48.40.435.mp3
-            # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.435-0.48.40.435.mp3
-            # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Lucky%20Star/media/luckystar-nodup_16_0.06.49.235.jpg
             sound_url=json_dict.get("sound", ""),
             sentence_kanji=json_dict["sentence"],
             sentence_furigana=json_dict["sentence_with_furigana"],
