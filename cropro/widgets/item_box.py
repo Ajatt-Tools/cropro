@@ -15,8 +15,7 @@ class ItemBox(QWidget):
         def __init__(self, item_box: "ItemBox", text: str):
             super().__init__(text)
             self.item_box = item_box
-            self.setStyleSheet(
-                """
+            self.setStyleSheet("""
                 QPushButton {
                     background-color: #eef0f2;
                     color: #292c31;
@@ -24,8 +23,7 @@ class ItemBox(QWidget):
                     padding: 3px 6px;
                     border: 1px solid #d0d2d4;
                 }
-            """
-            )
+            """)
             self.setIcon(self._close_icon)
             self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
             qconnect(self.clicked, lambda: self.item_box.remove_item(text))

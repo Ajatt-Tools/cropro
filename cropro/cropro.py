@@ -18,7 +18,6 @@ TODO:
 """
 
 import json
-import sys
 from collections import defaultdict
 from collections.abc import Iterable, MutableMapping, Sequence
 from typing import Optional
@@ -153,9 +152,11 @@ class WindowState:
 def nag_about_note_type(parent) -> int:
     return showInfo(
         title="Note importer",
-        text="Note type must be assigned when importing from the Internet.\n\n"
-        "Notes downloaded from the Internet do not come with a built-in note type. "
-        f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK}).",
+        text=(
+            "Note type must be assigned when importing from the Internet.\n\n"
+            "Notes downloaded from the Internet do not come with a built-in note type. "
+            f"An example Note Type can be downloaded [from our site]({EXAMPLE_DECK_LINK})."
+        ),
         type="critical",
         textFormat="markdown",
         parent=parent or mw,
@@ -342,12 +343,10 @@ class CroProMainWindow(MainWindowUI):
             # there's nothing to fill.
             return
         logDebug("populating other profile decks...")
-        self.search_bar.opts.set_decks(
-            [
-                WHOLE_COLLECTION,  # the "whole collection" option goes first
-                *self.other_col.deck_names_and_ids(),
-            ]
-        )
+        self.search_bar.opts.set_decks([
+            WHOLE_COLLECTION,  # the "whole collection" option goes first
+            *self.other_col.deck_names_and_ids(),
+        ])
 
     def _should_abort_search(self) -> bool:
         return self._search_lock.is_searching() or not self.isVisible()

@@ -193,9 +193,7 @@ class CroProSettingsDialog(QDialog):
             "The tag that is added to the original notes is controlled by this setting.\n"
             "Left it empty to disable tagging."
         )
-        self.hidden_fields.setToolTip(
-            "Hide fields whose names contain these words.\n" "Press space or comma to commit."
-        )
+        self.hidden_fields.setToolTip("Hide fields whose names contain these words.\nPress space or comma to commit.")
         self.web_timeout_spinbox.setToolTip("Give up trying to connect to the remote server after this many seconds.")
         self.sentence_min_length.setToolTip("0 = No limit")
         self.sentence_max_length.setToolTip("0 = No limit")
@@ -204,12 +202,10 @@ class CroProSettingsDialog(QDialog):
             "such as due date, interval, queue, type, etc."
         )
         self.checkboxes["enable_debug_log"].setToolTip(
-            "Write events related to this add-on to the log file.\n"
-            "Most users don't need to keep this option enabled."
+            "Write events related to this add-on to the log file.\nMost users don't need to keep this option enabled."
         )
         self.checkboxes["skip_duplicates"].setToolTip(
-            "Don't import a note if turns out to be a duplicate,\n"
-            "i.e. it is already present in the current collection."
+            "Don't import a note if turns out to be a duplicate,\ni.e. it is already present in the current collection."
         )
         self.checkboxes["copy_tags"].setToolTip(
             "Copy tags from the original note to the imported note.\n"
@@ -221,13 +217,13 @@ class CroProSettingsDialog(QDialog):
             "that evaluate notes upon creation."
         )
         self.checkboxes["preview_on_right_side"].setToolTip(
-            "When a note is selected,\n" "show a preview on the right side of the window."
+            "When a note is selected,\nshow a preview on the right side of the window."
         )
         self.checkboxes["allow_empty_search"].setToolTip(
-            "Show a list of notes from the other collection\n" "even when the search bar is empty."
+            "Show a list of notes from the other collection\neven when the search bar is empty."
         )
         self.checkboxes["search_the_web"].setToolTip(
-            "Instead of searching notes in a local profile,\n" "search the Internet instead."
+            "Instead of searching notes in a local profile,\nsearch the Internet instead."
         )
 
     def show_help(self):

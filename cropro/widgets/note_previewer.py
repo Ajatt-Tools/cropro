@@ -185,10 +185,8 @@ class NotePreviewer(AnkiWebView):
             assert isinstance(self._note, Note), "Only local files can be played with av_player."
             file_name = os.path.basename(urllib.parse.unquote(cmd.split(":", maxsplit=1)[-1]))
             file_path = os.path.join(self._note.col.media.dir(), file_name)
-            return sound.av_player.play_tags(
-                [
-                    SoundOrVideoTag(file_path),
-                ]
-            )
+            return sound.av_player.play_tags([
+                SoundOrVideoTag(file_path),
+            ])
         else:
             return self.defaultOnBridgeCmd(cmd)
