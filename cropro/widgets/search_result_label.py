@@ -15,9 +15,15 @@ class CropProExceptionProtocol(typing.Protocol):
 
 @enum.unique
 class CroProSearchResult(enum.Enum):
-    ok = "green"
-    warn = "orange"
-    error = "red"
+    ok = "green:Success"
+    warn = "orange:Warning"
+    error = "red:Error"
+
+    def color(self) -> str:
+        return self.value.split(":")[0]
+
+    def label(self) -> str:
+        return self.value.split(":")[1]
 
 
 class SearchResultLabel(QLabel):
@@ -30,14 +36,20 @@ class SearchResultLabel(QLabel):
         self.setStyleSheet("")
         self.hide()
 
-    def _set_status_text(self, text: str, status: CroProSearchResult):
-        self.setText(text)
-        self.setStyleSheet("QLabel { color: %s; }" % status.value)
+    def _set_status_text(self, text: str, status: CroProSearchResult) -> None:
+        self.setText(f"<strong>{status.label()}</strong>: {text}")
+        self.setStyleSheet("QLabel { color: %s; }" % status.color())
         if self.isHidden():
             self.show()
 
+    def set_error_text(self, msg: str) -> None:
+        """
+        A special case for setting plaintext errors.
+        """
+        return self._set_status_text(msg, CroProSearchResult.error)
+
     def set_error(self, ex: CropProExceptionProtocol) -> None:
-        text = f"Error: {ex.what()}."
+        text = f"{ex.what()}."
         if ex.response:
             text += f" Status code: {ex.response.status_code}"
         self._set_status_text(text, CroProSearchResult.error)

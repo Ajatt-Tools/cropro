@@ -297,9 +297,6 @@ class CroProMainWindow(MainWindowUI):
 
         other_profile_names: list[str] = get_other_profile_names()
         if not other_profile_names:
-            msg: str = "This add-on only works if you have multiple profiles."
-            showInfo(msg, title=ADDON_NAME)
-            logDebug(msg)
             self.hide()
             return
 
@@ -517,6 +514,10 @@ class CroProMainWindow(MainWindowUI):
             tooltip("No note selected.", period=1000, parent=self)
 
     def showEvent(self, event: QShowEvent) -> None:
+        if not (self.search_bar.opts.other_profile_names_combo.count() or config.search_the_web):
+            msg = f"{ADDON_NAME_SHORT} only works if you have multiple profiles."
+            self.search_result_label.set_error_text(msg)
+            logDebug(msg)
         logDebug("show event received")
         self.status_bar.hide_counters()
         self.into_profile_label.setText(mw.pm.name or "Unknown")
