@@ -259,6 +259,7 @@ class CroProMainWindow(MainWindowUI):
         config.search_the_web = checked
         self._ensure_enabled_search_mode()
         self.reset_cropro_status()
+        self._warn_if_no_other_profiles_exist()
         # save config to disk to remember checkbox state.
         config.write_config()
 
@@ -514,16 +515,21 @@ class CroProMainWindow(MainWindowUI):
         else:
             tooltip("No note selected.", period=1000, parent=self)
 
-    def showEvent(self, event: QShowEvent) -> None:
-        if not (self.search_bar.opts.other_profile_names_combo.count() or config.search_the_web):
-            msg = f"{ADDON_NAME_SHORT} only works if you have multiple profiles."
+    def _warn_if_no_other_profiles_exist(self) -> None:
+        if config.search_the_web:
+            return
+        if self.search_bar.opts.other_profile_names_combo.count() < 1:
+            msg = f"Local search in {ADDON_NAME_SHORT} only works if you have multiple profiles."
             self.search_result_label.set_error_text(msg)
             logDebug(msg)
+
+    def showEvent(self, event: QShowEvent) -> None:
         logDebug("show event received")
         self.status_bar.hide_counters()
         self.into_profile_label.setText(mw.pm.name or "Unknown")
         self.window_state.restore()
         self._ensure_enabled_search_mode()
+        self._warn_if_no_other_profiles_exist()
         return super().showEvent(event)
 
     def closeEvent(self, event: QCloseEvent) -> None:
