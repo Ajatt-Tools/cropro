@@ -11,12 +11,15 @@ import anki.httpclient
 import requests
 
 from .config import CroProConfig
+from .debug_log import LogDebug
 
 # https://apiv2.immersionkit.com/openapi.json
 # Example:
 # https://apiv2.immersionkit.com/search?q=草&index=&exactMatch=false&limit=0&sort=sentence_length:asc
 # https://apiv2.immersionkit.com/search?q=%E3%81%8A%E5%89%8D
 API_URL = "https://apiv2.immersionkit.com/search?"
+
+logDebug = LogDebug()
 
 
 class ApiReturnExampleDict(TypedDict):
@@ -218,7 +221,7 @@ class CroProWebSearchClient:
         self._config = config
 
     def _get(self, url: str) -> requests.Response:
-        print(f"curl -sL '{url}'")
+        logDebug(f"sending request to {url}")
         try:
             resp = self._client.get(url)
         except OSError as ex:
