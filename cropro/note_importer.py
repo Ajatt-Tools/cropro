@@ -208,7 +208,7 @@ class NoteImporter:
 
             for future in concurrent.futures.as_completed(futures):
                 result: NoteCreateResult = future.result()
-                if result.status == NoteCreateStatus.success:
+                if result.status in (NoteCreateStatus.success, NoteCreateStatus.connection_error):
                     requests.append(AddNoteRequest(note=result.note, deck_id=DeckId(deck.id)))
                 self._counter[result.status].append(result.note)
 

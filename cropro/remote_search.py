@@ -158,10 +158,19 @@ class RemoteNote:
         # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.435-0.48.40.435.mp3
         # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Lucky%20Star/media/luckystar-nodup_16_0.06.49.235.jpg
 
+        def media_url(file_name: str) -> str:
+            if file_name:
+                category = json_dict["id"].split("_")[0]
+                deck_name = json_dict["title"]
+                return f"https://us-southeast-1.linodeobjects.com/immersionkit/media/{category}/{deck_name}/media/{file_name}"
+            return ""
+
         return RemoteNote(
             tags=[
                 json_dict["title"],
             ],
+            # image_url=media_url(json_dict.get("image")),
+            # sound_url=media_url(json_dict.get("sound")),
             image_url=json_dict.get("image", ""),
             sound_url=json_dict.get("sound", ""),
             sentence_kanji=json_dict["sentence"],
