@@ -19,8 +19,6 @@ from .debug_log import LogDebug
 # https://apiv2.immersionkit.com/search?q=%E3%81%8A%E5%89%8D
 API_URL = "https://apiv2.immersionkit.com/search?"
 
-logDebug = LogDebug()
-
 
 class ApiReturnExampleDict(TypedDict):
     """
@@ -219,9 +217,10 @@ class CroProWebSearchClient:
     def __init__(self, config: CroProConfig) -> None:
         self._client = anki.httpclient.HttpClient()
         self._config = config
+        self._log = LogDebug(config)
 
     def _get(self, url: str) -> requests.Response:
-        logDebug(f"sending request to {url}")
+        self._log(f"sending request to {url}")
         try:
             resp = self._client.get(url)
         except OSError as ex:

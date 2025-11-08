@@ -11,7 +11,10 @@ SUBS2SRS_LINK = "https://aur.archlinux.org/packages/subs2srs"
 EXAMPLE_DECK_LINK = "https://tatsumoto.neocities.org/blog/setting-up-anki.html#import-an-example-mining-deck"
 ADDON_GUIDE_LINK = "https://tatsumoto.neocities.org/blog/cross-profile-search-and-import.html"
 
-ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
+if mw:
+    ADDON_DIR_PATH = mw.addonManager.addonsFolder(mw.addonManager.addonFromModule(__name__))
+else:
+    ADDON_DIR_PATH = os.path.dirname(__file__)
 WEB_DIR_PATH = os.path.join(ADDON_DIR_PATH, "web")
 USER_FILES_DIR_PATH = os.path.join(ADDON_DIR_PATH, "user_files")
 IMG_DIR_PATH = os.path.join(ADDON_DIR_PATH, "img")

@@ -5,23 +5,30 @@ import pathlib
 
 from aqt import mw
 
-from .config import config
+from .common import ADDON_NAME_SHORT
+from .config import CroProConfig
 
 
 class LogDebug:
     _instance = None
+    _cfg: CroProConfig
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self):
-        self.logger = mw.addonManager.get_logger(__name__)
+    def __init__(self, config: CroProConfig):
+        if mw is None:
+            # anki isn't running
+            self.logger = logging.getLogger(name=f"{ADDON_NAME_SHORT} (no anki)")
+        else:
+            self.logger = mw.addonManager.get_logger(__name__)
         self.logger.setLevel(logging.DEBUG)
+        self._cfg = config
 
     def write(self, msg: str) -> None:
-        if not config.enable_debug_log:
+        if not self._cfg.enable_debug_log:
             # if disabled, don't write anything.
             return
         self.logger.debug(msg)

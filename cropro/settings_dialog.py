@@ -15,7 +15,7 @@ from .debug_log import LogDebug
 from .widgets.item_edit import ItemEditBox
 from .widgets.utils import CroProSpinBox
 
-logDebug = LogDebug()
+logDebug = LogDebug(config)
 
 
 def make_checkboxes() -> dict[str, QCheckBox]:

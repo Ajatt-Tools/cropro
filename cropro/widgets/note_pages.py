@@ -13,7 +13,7 @@ from ..debug_log import LogDebug
 from ..remote_search import RemoteNote
 from .note_list import NoteList
 
-logDebug = LogDebug()
+logDebug = LogDebug(config)
 
 
 class PageNavButton(QPushButton):

@@ -22,7 +22,7 @@ from .note_importer import (
 from .widgets.note_list import NoteList
 from .widgets.status_bar import StatusBar
 
-logDebug = LogDebug()
+logDebug = LogDebug(config)
 
 
 class CropProWindowProtocol(Protocol):

@@ -70,7 +70,7 @@ from .widgets.note_pages import NoteListStatus
 from .widgets.remote_search_opts import RemoteNotesSortMethod
 from .widgets.utils import CroProComboBox
 
-logDebug = LogDebug()
+logDebug = LogDebug(config)
 
 
 #############################################################################
