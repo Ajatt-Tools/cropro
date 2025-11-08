@@ -105,6 +105,7 @@ class CroProSearchWidget(QWidget):
     def get_request_args(self) -> CroProWebSearchArgs:
         assert self._web_mode, "Web mode must be enabled."
         args: CroProWebSearchArgs = {
+            "showUrlInMedia": "true",
             "index": "",
             "exactMatch": "false",
             "limit": "0",

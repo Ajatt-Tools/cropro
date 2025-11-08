@@ -143,35 +143,10 @@ class RemoteNote:
 
     @classmethod
     def from_json(cls, json_dict: ApiReturnExampleDict, config: CroProConfig):
-        # The full url does not come from the api anymore.
-        #
-        # The url is:
-        # https://us-southeast-1.linodeobjects.com/immersionkit/media/${category}/${deckName}/media/${fileName}
-        #
-        # How to:
-        #
-        # category - anime
-        # deckName - (title from the api) girls_band_cry
-        # fileName - (image/sound from the api) girls_band_cry_011_0.12.47.210.jpg
-        #
-        # Examples:
-        # https://apiv2.immersionkit.com/download_media?path=media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.935.jpg
-        # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Whisper%20of%20the%20Heart/media/A_WhisperOfTheHeart_1_0.48.39.435-0.48.40.435.mp3
-        # https://us-southeast-1.linodeobjects.com/immersionkit/media/anime/Lucky%20Star/media/luckystar-nodup_16_0.06.49.235.jpg
-
-        def media_url(file_name: str) -> str:
-            if file_name:
-                category = json_dict["id"].split("_")[0]
-                deck_name = json_dict["title"]
-                return f"https://us-southeast-1.linodeobjects.com/immersionkit/media/{category}/{deck_name}/media/{file_name}"
-            return ""
-
         return RemoteNote(
             tags=[
                 json_dict["title"],
             ],
-            # image_url=media_url(json_dict.get("image")),
-            # sound_url=media_url(json_dict.get("sound")),
             image_url=json_dict.get("image", ""),
             sound_url=json_dict.get("sound", ""),
             sentence_kanji=json_dict["sentence"],
@@ -194,6 +169,7 @@ class CroProWebSearchArgs(typing.TypedDict):
     wk: int
     limit: int
     offset: int
+    showUrlInMedia: str  # you can now add showUrlInMedia=true to the query params to get the full media url in the api
 
 
 def get_request_url(request_args: CroProWebSearchArgs) -> str:

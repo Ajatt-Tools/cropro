@@ -8,7 +8,7 @@ from run.mock_config import NoAnkiConfig
 
 def main():
     client = CroProWebSearchClient(NoAnkiConfig())
-    result = client.search_notes({"q": "人事"})
+    result = client.search_notes({"q": "人事", "showUrlInMedia": "true"})
     for note in result:
         pprint(note)
 
