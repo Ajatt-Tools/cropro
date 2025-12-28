@@ -56,6 +56,8 @@ class CroProSettingsDialog(QDialog):
         self.notes_per_page_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.notes_per_page)
         self.hidden_fields = ItemEditBox("Hidden fields", initial_values=config.hidden_fields)
         self.web_timeout_spinbox = CroProSpinBox(min_val=1, max_val=999, step=1, value=config.timeout_seconds)
+        self.http_proxy_edit = QLineEdit(config.http_proxy)
+        self.http_proxy_edit.setPlaceholderText("socks5://127.0.0.1:9099")
         # Currently, the longest sentence has a length of 196 letters (Shirokuma Cafe Outro full sub).
         self.sentence_min_length = CroProSpinBox(min_val=0, max_val=500, step=1, value=config.sentence_min_length)
         self.sentence_max_length = CroProSpinBox(min_val=0, max_val=999, step=1, value=config.sentence_max_length)
@@ -165,6 +167,7 @@ class CroProSettingsDialog(QDialog):
         widget = QWidget()
         widget.setLayout(layout := QFormLayout())
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
+        layout.addRow("HTTP/HTTPS proxy", self.http_proxy_edit)
         layout.addRow(self.checkboxes["enable_debug_log"])
         layout.addRow(self.checkboxes["call_add_cards_hook"])
         layout.addRow(hbox := QHBoxLayout())
@@ -195,6 +198,10 @@ class CroProSettingsDialog(QDialog):
         )
         self.hidden_fields.setToolTip("Hide fields whose names contain these words.\nPress space or comma to commit.")
         self.web_timeout_spinbox.setToolTip("Give up trying to connect to the remote server after this many seconds.")
+        self.http_proxy_edit.setToolTip(
+            "Set HTTP and HTTPS proxy if you can't access Web Search otherwise.\n"
+            "For example, 'socks5://127.0.0.1:9099'."
+        )
         self.sentence_min_length.setToolTip("0 = No limit")
         self.sentence_max_length.setToolTip("0 = No limit")
         self.checkboxes["copy_card_data"].setToolTip(
@@ -263,6 +270,7 @@ class CroProSettingsDialog(QDialog):
         config.sentence_field_name = self.sentence_field_edit.currentText()
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
+        config.http_proxy = self.http_proxy_edit.text()
         config.sentence_min_length = self.sentence_min_length.value()
         config.sentence_max_length = (
             self.sentence_max_length.value()
