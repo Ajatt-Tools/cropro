@@ -25,5 +25,6 @@
     "sentence_audio": "SentAudio",
     "image": "Image",
     "notes": "Notes"
-  }
+  },
+  "http_proxy": ""
 }

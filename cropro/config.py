@@ -178,6 +178,17 @@ class CroProConfig(AddonConfigManager):
         """
         return self["call_add_cards_hook"]
 
+    @property
+    def http_proxy(self) -> str:
+        """
+        Proxy used by HTTP client for http and https get requests.
+        """
+        return self["http_proxy"]
+
+    @http_proxy.setter
+    def http_proxy(self, new_value: str) -> None:
+        self["http_proxy"] = new_value
+
 
 if mw:
     config = CroProConfig()

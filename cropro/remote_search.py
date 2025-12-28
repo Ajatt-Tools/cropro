@@ -194,13 +194,18 @@ class CroProWebSearchClient:
         self._client = anki.httpclient.HttpClient()
         self._config = config
         self._log = LogDebug(config)
-        self._proxies = {
-            "http": "socks5://127.0.0.1:9099",
-            "https": "socks5://127.0.0.1:9099",
-        }
-        self._client.session.proxies.update(self._proxies)
+        self._set_proxies()
+
+    def _set_proxies(self) -> None:
+        if self._config.http_proxy:
+            proxies = {
+                "http": self._config.http_proxy,
+                "https": self._config.http_proxy,
+            }
+            self._client.session.proxies.update(proxies)
 
     def _get(self, url: str) -> requests.Response:
+        self._set_proxies()
         self._log(f"sending request to {url}")
         try:
             resp = self._client.get(url)
