@@ -203,7 +203,7 @@ class CroProWebSearchClient:
             raise CroProWebClientException() from ex
         try:
             resp.raise_for_status()
-        except requests.HTTPError as ex:
+        except requests.RequestException as ex:
             raise CroProWebClientException(ex.response) from ex
         return resp
 
@@ -216,6 +216,9 @@ class CroProWebSearchClient:
     def search_notes(self, search_args: CroProWebSearchArgs) -> Sequence[RemoteNote]:
         if not search_args:
             return []
-        resp = self._get(get_request_url(search_args))
-        examples = [item for item in resp.json()["examples"]]
+        try:
+            resp_json = self._get(get_request_url(search_args)).json()
+        except requests.RequestException as ex:
+            raise CroProWebClientException(ex.response) from ex
+        examples = [item for item in resp_json["examples"]]
         return [RemoteNote.from_json(example, self._config) for example in examples]
