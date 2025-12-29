@@ -10,6 +10,7 @@ from collections.abc import Iterable, MutableSequence, Sequence
 from copy import deepcopy
 from typing import NamedTuple, Optional
 
+import requests
 from anki.cards import Card
 from anki.collection import AddNoteRequest, Collection, OpChanges
 from anki.consts import CARD_TYPE_REV
@@ -243,7 +244,7 @@ class NoteImporter:
         if isinstance(other_note, RemoteNote):
             try:
                 download_media(new_note, other_note, self._web_client)
-            except CroProWebClientException:
+            except (CroProWebClientException, requests.RequestException):
                 return NoteCreateResult(new_note, NoteCreateStatus.connection_error)
         else:
             copy_media_files(new_note, other_note)
