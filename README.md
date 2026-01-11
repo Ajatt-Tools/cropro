@@ -26,6 +26,7 @@ that hasn't been updated since 2019.
 ## How to use
 
 Install the add-on from [AnkiWeb](https://ankiweb.net/shared/info/1772763629).
+
 After installation, restart Anki and go to "AJT" > "Cross Profile Search and Import".
 
 Set the following settings.
@@ -35,6 +36,15 @@ Set the following settings.
 
 Use the search bar to find notes.
 Select the notes you want to import and press "Import".
+
+## Contributing
+
+Install the add-on manually using `git`:
+
+```bash
+git clone 'https://github.com/Ajatt-Tools/cropro.git'
+ln -sr cropro/cropro ~/.local/share/Anki2/addons21/cropro
+```
 
 ## Links
 
