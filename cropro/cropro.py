@@ -567,6 +567,7 @@ class CroProMainWindow(MainWindowUI):
         # setup import conditions
         self.populate_current_profile_decks()
         self.populate_note_type_selection_combo()
+        self.window_state.restore()
 
     def search_for(self, search_text: str) -> None:
         self.show()
