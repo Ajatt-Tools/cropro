@@ -10,7 +10,7 @@ name = "cropro"
 dynamic = ["version"]
 description = 'Automatically generate furigana and other data on Anki cards.'
 readme = "README.md"
-requires-python = "~=3.9" # anki officially only runs on 3.9
+requires-python = "~=3.10" # anki officially only runs on 3.10
 license = { file = "LICENSE" }
 keywords = ["ajatt"]
 authors = [
@@ -43,7 +43,11 @@ dependencies = [
   "pytest",
   "aqt",
 ]
-python = "3.9"
+python = "3.10"
+
+[[tool.hatch.envs.dev.matrix]]
+# https://hatch.pypa.io/latest/tutorials/testing/overview/#testing-projects
+python = ["3.10", ]
 
 [tool.hatch.envs.dev.scripts]
 # run as `hatch run dev:scriptname`
@@ -74,7 +78,7 @@ exclude_lines = [
 
 [tool.black]
 line-length = 120
-target-version = ['py39']
+target-version = ['py310']
 unstable = true
 
 [tool.isort]
