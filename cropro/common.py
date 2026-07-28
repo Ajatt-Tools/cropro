@@ -7,6 +7,7 @@ from aqt import mw
 
 ADDON_NAME = "Cross Profile Search and Import"
 ADDON_NAME_SHORT = "CroPro"
+THIS_ADDON_MODULE: str = __name__.split(".")[0]
 SUBS2SRS_LINK = "https://aur.archlinux.org/packages/subs2srs"
 EXAMPLE_DECK_LINK = "https://tatsumoto.neocities.org/blog/setting-up-anki.html#import-an-example-mining-deck"
 ADDON_GUIDE_LINK = "https://tatsumoto.neocities.org/blog/cross-profile-search-and-import.html"
