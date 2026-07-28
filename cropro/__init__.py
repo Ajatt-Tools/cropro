@@ -7,7 +7,7 @@ import sys
 from aqt import mw
 
 
-def start_addon():
+def start_addon() -> None:
     from . import cropro, settings_dialog
 
     cropro.init()

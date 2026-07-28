@@ -41,7 +41,7 @@ def current_add_dialog() -> addcards.AddCards | None:
 
 
 class AddDialogLauncher:
-    def __init__(self, cropro: CropProWindowProtocol):
+    def __init__(self, cropro: CropProWindowProtocol) -> None:
         super().__init__()
         self.cropro = cropro
         self.add_window: addcards.AddCards | None = None
@@ -98,7 +98,7 @@ class AddDialogLauncher:
         else:
             self._open_window()
 
-            def on_visibility_changed():
+            def on_visibility_changed() -> None:
                 if not self.block_close_cb and self.new_note:
                     return remove_media_files(self.new_note)
 
@@ -107,7 +107,7 @@ class AddDialogLauncher:
 
         return self.new_note.id
 
-    def _open_window(self):
+    def _open_window(self) -> None:
         self.add_window = aqt.dialogs.open("AddCards", mw)
 
         self.add_window.editor.set_note(self.new_note)

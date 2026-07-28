@@ -96,7 +96,7 @@ class PagedNoteList(QWidget):
     def get_visible_notes(self) -> Sequence[Union[Note, RemoteNote]]:
         return self._notes[self._current_page_num] if self._notes else []
 
-    def set_page(self, page_num: int):
+    def set_page(self, page_num: int) -> None:
         self._current_page_num = clamp(min_val=0, val=page_num, max_val=len(self._notes) - 1)
         self._note_list.set_notes(
             notes=self.get_visible_notes(),
@@ -118,6 +118,6 @@ class PagedNoteList(QWidget):
     def flip_page(self, step: int) -> None:
         self.set_page(step + self._current_page_num)
 
-    def _set_buttons_enabled(self):
+    def _set_buttons_enabled(self) -> None:
         self._page_prev_btn.setEnabled(self._current_page_num > 0)
         self._page_next_btn.setEnabled(self._current_page_num < len(self._notes) - 1)

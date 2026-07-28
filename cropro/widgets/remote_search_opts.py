@@ -15,7 +15,7 @@ class RemoteComboBoxItem:
     http_arg: Union[str, int, None]
     visible_name: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.visible_name = (self.visible_name or str(self.http_arg)).capitalize()
 
 

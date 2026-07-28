@@ -188,7 +188,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
 
         return widget
 
-    def connect_widgets(self):
+    def connect_widgets(self) -> None:
         qconnect(self.button_box.accepted, self.accept)
         qconnect(self.button_box.rejected, self.reject)
         qconnect(self.button_box.helpRequested, self.show_help)
@@ -255,7 +255,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
             "Instead of searching notes in a local profile,\nsearch the Internet instead."
         )
 
-    def show_help(self):
+    def show_help(self) -> None:
         help_win = QDialog(parent=self)
         help_win.setWindowModality(Qt.WindowModality.NonModal)
         help_win.setWindowTitle(f"{ADDON_NAME} - Settings Help")

@@ -8,7 +8,6 @@ import re
 import urllib.parse
 from collections.abc import Iterable
 from gettext import gettext as _
-from typing import Optional
 
 from anki.notes import Note
 from anki.sound import SoundOrVideoTag
@@ -24,15 +23,15 @@ RE_DANGEROUS = re.compile(r'[\'"<>]+')
 QUOTE_SAFE = ":/%"
 
 
-def name_attr_strip(file_name: str):
+def name_attr_strip(file_name: str) -> str:
     return re.sub(RE_DANGEROUS, " ", os.path.basename(file_name)).strip()
 
 
-def img2b64(s_bytes):
+def img2b64(s_bytes: bytes) -> str:
     return base64.b64encode(s_bytes).decode("ascii")
 
 
-def filetype(file: str):
+def filetype(file: str) -> str:
     return os.path.splitext(file)[-1]
 
 
@@ -61,7 +60,7 @@ def format_image_references(note: Note, image_file_names: Iterable[str]) -> str:
     )
 
 
-def format_remote_audio(audio: RemoteMediaInfo):
+def format_remote_audio(audio: RemoteMediaInfo) -> str:
     if not audio.is_valid_url():
         return ""
     element_id = f"cropro__remote_{urllib.parse.quote(audio.file_name)}"
@@ -104,7 +103,7 @@ class NotePreviewer(AnkiWebView):
 
     _note: Union[Note, RemoteNote] | None
 
-    def __init__(self, parent: QWidget):
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
         self._note = None
         self.set_title("Note previewer")
@@ -177,7 +176,7 @@ class NotePreviewer(AnkiWebView):
             markup.write(f'<div class="cropro__text_item">{text}</div>')
         return markup.getvalue()
 
-    def _handle_play_button_press(self, cmd: str):
+    def _handle_play_button_press(self, cmd: str) -> object:
         """Play audio files if a play button was pressed. Works with local files."""
         from aqt import sound
 

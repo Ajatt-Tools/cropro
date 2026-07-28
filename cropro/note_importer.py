@@ -43,7 +43,7 @@ class NoteCreateResult:
 
 
 class ImportResultCounter(dict[NoteCreateStatus, MutableSequence[Note]]):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         for name in NoteCreateStatus:
             self[name] = []
@@ -140,7 +140,7 @@ def col_diff(this_col: Collection, other_col: Collection) -> int:
     return math.ceil((other_col.crt - this_col.crt) / (60 * 60 * 24))
 
 
-def import_card_info(new_note: Note, other_note: Note):
+def import_card_info(new_note: Note, other_note: Note) -> None:
     """
     For all cards in the new note,
     copy some scheduling info from the old card to the newly imported one.
@@ -168,7 +168,7 @@ def import_card_info(new_note: Note, other_note: Note):
             new_card.due += col_diff(new_note.col, other_note.col)
 
 
-def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWebSearchClient):
+def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWebSearchClient) -> None:
     assert new_note.id == 0, "This function expects a note that hasn't been added yet."
     for file in other_note.media_info():
         if file.is_valid_url() and file.field_name in new_note:
@@ -180,7 +180,7 @@ def download_media(new_note: Note, other_note: RemoteNote, web_client: CroProWeb
 
 
 class NoteImporter:
-    def __init__(self, web_client: CroProWebSearchClient):
+    def __init__(self, web_client: CroProWebSearchClient) -> None:
         self._web_client = web_client
         self._counter = ImportResultCounter()
 

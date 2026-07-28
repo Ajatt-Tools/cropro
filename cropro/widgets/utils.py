@@ -12,19 +12,19 @@ COMBO_MIN_WIDTH = 120
 
 
 class CroProPushButton(QPushButton):
-    def __init__(self, *__args):
+    def __init__(self, *__args) -> None:
         super().__init__(*__args)
         self.setMinimumHeight(WIDGET_MIN_HEIGHT)
 
 
 class CroProLineEdit(QLineEdit):
-    def __init__(self, *__args):
+    def __init__(self, *__args) -> None:
         super().__init__(*__args)
         self.setMinimumHeight(WIDGET_MIN_HEIGHT)
 
 
 class CroProSpinBox(QSpinBox):
-    def __init__(self, min_val: int, max_val: int, step: int, value: int):
+    def __init__(self, min_val: int, max_val: int, step: int, value: int) -> None:
         super().__init__()
         self.setRange(min_val, max_val)
         self.setSingleStep(step)
@@ -32,7 +32,7 @@ class CroProSpinBox(QSpinBox):
 
 
 class ProfileNameLabel(QLabel):
-    def __init__(self, *args):
+    def __init__(self, *args) -> None:
         super().__init__(*args)
         font = QFont()
         font.setBold(True)
@@ -40,14 +40,14 @@ class ProfileNameLabel(QLabel):
 
 
 class CroProComboBox(QComboBox):
-    def __init__(self, parent=None, key: str = None):
+    def __init__(self, parent=None, key: str = None) -> None:
         super().__init__(parent)
         self.key = key  # can be used to describe itself
         self.setMaximumHeight(WIDGET_MIN_HEIGHT)
         self.setMinimumWidth(COMBO_MIN_WIDTH)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-    def set_texts(self, texts: Sequence[str]):
+    def set_texts(self, texts: Sequence[str]) -> None:
         self.clear()
         self.addItems(texts)
 
@@ -58,7 +58,7 @@ class CroProComboBox(QComboBox):
 
 
 class NameIdComboBox(CroProComboBox):
-    def set_items(self, items: Iterable[NameId]):
+    def set_items(self, items: Iterable[NameId]) -> None:
         self.clear()
         for item_name, item_id in items:
             self.addItem(item_name, item_id)

@@ -6,7 +6,7 @@ from collections.abc import Iterable, Sequence
 from typing import NamedTuple, Optional
 
 from anki.collection import Collection
-from anki.notes import NoteId
+from anki.notes import Note, NoteId
 from aqt import mw
 
 
@@ -36,7 +36,7 @@ def get_other_profile_names() -> list[str]:
 class CollectionManager:
     """This class keeps other collections (profiles) open and can switch between them."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._opened_cols: dict[str, Collection] = {}
         self._current_name: str | None = None
 
@@ -53,19 +53,19 @@ class CollectionManager:
         return ret
 
     @property
-    def media_dir(self):
+    def media_dir(self) -> str:
         return self.col.media.dir()
 
     @property
     def is_opened(self) -> bool:
         return (self._current_name is not None) and (self._current_name in self._opened_cols)
 
-    def close(self):
+    def close(self) -> None:
         if self.is_opened:
             self._opened_cols.pop(self._current_name).close()
             self._current_name = None
 
-    def close_all(self):
+    def close_all(self) -> None:
         for col in self._opened_cols.values():
             col.close()
         self._current_name = None
@@ -89,6 +89,6 @@ class CollectionManager:
         else:
             return self.col.find_notes(query=f'"deck:{deck.name}" {filter_text}')
 
-    def get_note(self, note_id: NoteId):
+    def get_note(self, note_id: NoteId) -> Note:
         assert note_id > 0, "Note ID must be greater than 0."
         return self.col.get_note(note_id)

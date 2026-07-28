@@ -17,7 +17,7 @@ WIN_MIN_HEIGHT = 480
 class MainWindowUI(QMainWindow):
     name = "cropro_dialog"
 
-    def __init__(self, ankimw: AnkiQt, window_title: str):
+    def __init__(self, ankimw: AnkiQt, window_title: str) -> None:
         super().__init__(parent=ankimw)
         self.setWindowTitle(window_title)
         self.search_bar = CroProSearchWidget(ankimw=ankimw)
@@ -31,7 +31,7 @@ class MainWindowUI(QMainWindow):
         self.note_type_selection_combo = NameIdComboBox()
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         central_widget = QWidget(self)
         central_widget.setLayout(self.make_main_layout())
         self.setCentralWidget(central_widget)

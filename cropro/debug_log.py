@@ -13,12 +13,12 @@ class LogDebug:
     _instance = None
     _cfg: CroProConfig
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs) -> "LogDebug":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, config: CroProConfig):
+    def __init__(self, config: CroProConfig) -> None:
         if mw is None:
             # anki isn't running
             self.logger = logging.getLogger(name=f"{ADDON_NAME_SHORT} (no anki)")

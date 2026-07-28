@@ -20,7 +20,7 @@ class CroProSearchBar(QWidget):
     # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._search_term_edit = CroProLineEdit()
         self._search_button = CroProPushButton("Search")
@@ -64,7 +64,7 @@ class CroProSearchWidget(QWidget):
     # noinspection PyArgumentList
     search_requested = pyqtSignal(str)
 
-    def __init__(self, ankimw: AnkiQt):
+    def __init__(self, ankimw: AnkiQt) -> None:
         super().__init__()
         self.ankimw = ankimw
         self.opts = ColSearchOptions(ankimw)

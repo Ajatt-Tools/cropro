@@ -12,7 +12,7 @@ class ItemBox(QWidget):
     class ItemButton(QPushButton):
         _close_icon = QIcon(QPixmap(CLOSE_ICON_PATH))
 
-        def __init__(self, item_box: "ItemBox", text: str):
+        def __init__(self, item_box: "ItemBox", text: str) -> None:
             super().__init__(text)
             self.item_box = item_box
             self.setStyleSheet("""
@@ -28,7 +28,7 @@ class ItemBox(QWidget):
             self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
             qconnect(self.clicked, lambda: self.item_box.remove_item(text))
 
-    def __init__(self, parent: QWidget, initial_values: list[str]):
+    def __init__(self, parent: QWidget, initial_values: list[str]) -> None:
         super().__init__(parent=parent)
         self.items = dict.fromkeys(initial_values)
         self.setLayout(self._make_layout())

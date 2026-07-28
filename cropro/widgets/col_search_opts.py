@@ -49,7 +49,7 @@ class CroProSearchBar(QWidget):
         self.setLayout(layout)
 
     def _connect_elements(self) -> None:
-        def handle_search_requested():
+        def handle_search_requested() -> None:
             if text := self.search_text():
                 # noinspection PyUnresolvedReferences
                 self.search_requested.emit(text)
@@ -59,11 +59,11 @@ class CroProSearchBar(QWidget):
 
 
 class SortResults(abc.ABC):
-    def __init__(self, config: CroProConfig):
+    def __init__(self, config: CroProConfig) -> None:
         self._config = config
 
     @abc.abstractmethod
-    def __call__(self, note: Note):
+    def __call__(self, note: Note) -> object:
         raise NotImplementedError()
 
 

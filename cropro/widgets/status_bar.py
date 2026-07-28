@@ -15,7 +15,7 @@ class NGetTextVariant(NamedTuple):
 
 
 class ColoredCounter(QLabel):
-    def __init__(self, color: str, description: NGetTextVariant):
+    def __init__(self, color: str, description: NGetTextVariant) -> None:
         super().__init__()
         self.setStyleSheet("QLabel { color: %s; }" % color)
         self._description = description
@@ -24,7 +24,7 @@ class ColoredCounter(QLabel):
         # by default, the counter is not visible.
         self.hide()
 
-    def set_count(self, count: int):
+    def set_count(self, count: int) -> None:
         if count > 0:
             self.setText(ngettext(self._description.singular, self._description.plural, count) % count)
             self.show()
@@ -33,7 +33,7 @@ class ColoredCounter(QLabel):
 
 
 class StatusBar(QHBoxLayout):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._success_label = ColoredCounter(
             color="#228B22",

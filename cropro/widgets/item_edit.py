@@ -7,7 +7,7 @@ from .item_box import ItemBox
 
 
 class ItemEditBox(QGroupBox):
-    def __init__(self, title: str, initial_values: list[str]):
+    def __init__(self, title: str, initial_values: list[str]) -> None:
         super().__init__()
         self.setCheckable(False)
         self.setTitle(title)
@@ -17,14 +17,14 @@ class ItemEditBox(QGroupBox):
         self._setup_ui()
         self._connect_items()
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         layout = QGridLayout()
         layout.addWidget(QLabel("Hide fields matching"), 1, 1, 1, 1)
         layout.addWidget(self._hidden_fields_edit, 1, 2, 1, 1)
         layout.addWidget(self._hidden_fields_box, 2, 1, 1, 2)
         self.setLayout(layout)
 
-    def _connect_items(self):
+    def _connect_items(self) -> None:
         qconnect(
             self._hidden_fields_edit.textChanged, lambda: self._hidden_fields_box.new_item(self._hidden_fields_edit)
         )

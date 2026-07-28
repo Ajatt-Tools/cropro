@@ -4,7 +4,7 @@
 import dataclasses
 import enum
 import typing
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, ItemsView, KeysView, Sequence
 from typing import Optional, TypedDict
 
 import anki.httpclient
@@ -48,7 +48,7 @@ class RemoteMediaInfo:
     url: str
     type: MediaType
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.file_name = self.url.split("/")[-1] if self.is_valid_url() else ""
 
     def is_valid_url(self) -> bool:
@@ -57,7 +57,7 @@ class RemoteMediaInfo:
         """
         return bool(self.url and self.url.startswith("https://"))
 
-    def as_anki_ref(self):
+    def as_anki_ref(self) -> str:
         if not self.is_valid_url():
             return ""
         if self.type == MediaType.image:
@@ -86,7 +86,7 @@ class RemoteNote:
     tags: list[str]
     _config: CroProConfig
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._media = {
             self._config.remote_fields.image: RemoteMediaInfo(
                 self._config.remote_fields.image,
@@ -132,17 +132,17 @@ class RemoteNote:
         """
         return None
 
-    def keys(self):
+    def keys(self) -> KeysView[str]:
         return self._mapping.keys()
 
-    def items(self):
+    def items(self) -> ItemsView[str, str]:
         """
         Return something similar to what Note.items() returns.
         """
         return self._mapping.items()
 
     @classmethod
-    def from_json(cls, json_dict: ApiReturnExampleDict, config: CroProConfig):
+    def from_json(cls, json_dict: ApiReturnExampleDict, config: CroProConfig) -> "RemoteNote":
         return RemoteNote(
             tags=[
                 json_dict["title"],
@@ -217,7 +217,7 @@ class CroProWebSearchClient:
             raise CroProWebClientException(ex.response) from ex
         return resp
 
-    def set_timeout(self, timeout_seconds: int):
+    def set_timeout(self, timeout_seconds: int) -> None:
         self._client.timeout = timeout_seconds
 
     def download_media(self, url: str) -> bytes:

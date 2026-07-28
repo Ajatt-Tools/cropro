@@ -285,7 +285,7 @@ class CroProMainWindow(MainWindowUI):
         if selected_note_type.id and selected_note_type.id > 0:
             return mw.col.models.get(selected_note_type.id)
 
-    def connect_elements(self):
+    def connect_elements(self) -> None:
         qconnect(self.search_bar.opts.selected_profile_changed, self.open_other_col)
         qconnect(self.search_bar.search_requested, self.perform_search)
         qconnect(self.edit_button.clicked, self.new_edit_win)
@@ -554,7 +554,7 @@ class CroProMainWindow(MainWindowUI):
         if config.search_the_web:
             self.search_for(self.search_bar.bar.search_text())
 
-    def on_profile_will_close(self):
+    def on_profile_will_close(self) -> None:
         self.close()
         self.other_col.close_all()
 
@@ -595,7 +595,7 @@ def setup_config_actions(parent: QWidget) -> None:
     set_config_update_action(config.update_from_addon_manager)
 
 
-def init():
+def init() -> None:
     # init dialog
     d = mw._cropro_main_dialog = CroProMainWindow(ankimw=mw)
     setup_config_actions(parent=mw)

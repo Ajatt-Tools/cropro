@@ -19,7 +19,7 @@ class NoteList(QSplitter):
 
     _role = Qt.ItemDataRole.UserRole
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._note_list = QListWidget(self)
         self._previewer = NotePreviewer(self)
@@ -28,7 +28,7 @@ class NoteList(QSplitter):
         self.itemDoubleClicked = self._note_list.itemDoubleClicked
         qconnect(self._note_list.currentItemChanged, self._on_current_item_changed)
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
         self.setOrientation(Qt.Orientation.Horizontal)
 
@@ -44,7 +44,7 @@ class NoteList(QSplitter):
 
         self._previewer.setHidden(True)
 
-    def _on_current_item_changed(self, current: QListWidgetItem, _previous: QListWidgetItem):
+    def _on_current_item_changed(self, current: QListWidgetItem, _previous: QListWidgetItem) -> None:
         if current is None or self._enable_previewer is False:
             self._previewer.unload_note()
         else:
