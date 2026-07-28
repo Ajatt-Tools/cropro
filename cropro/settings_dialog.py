@@ -234,8 +234,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
             "Write events related to this add-on to the log file.\nMost users don't need to keep this option enabled."
         )
         self.checkboxes["show_window_menu_bar"].setToolTip(
-            "Show CroPro's menu bar inside the CroPro window.\n"
-            "Disable this to let Qt use the platform-native menu bar."
+            "Show CroPro's menu bar inside the CroPro window.\nDisable this to let Qt use the platform-native menu bar."
         )
         self.checkboxes["skip_duplicates"].setToolTip(
             "Don't import a note if turns out to be a duplicate,\ni.e. it is already present in the current collection."
