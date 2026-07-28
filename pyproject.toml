@@ -28,6 +28,8 @@ Documentation = "https://github.com/Ajatt-Tools/cropro"
 Issues = "https://github.com/Ajatt-Tools/cropro/issues"
 Source = "https://github.com/Ajatt-Tools/cropro"
 
+# Tools
+
 [tool.hatch.version]
 source = "vcs"
 path = "cropro/__about__.py"
