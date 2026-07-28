@@ -8,7 +8,7 @@ import math
 import os.path
 from collections.abc import Iterable, MutableSequence, Sequence
 from copy import deepcopy
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 import requests
 from anki.cards import Card
@@ -236,6 +236,8 @@ class NoteImporter:
         # copy field tags into new other_note object
         if config.copy_tags:
             new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
+        if tag := config.imported_tag:
+            new_note.add_tag(tag)
 
         # check if note is dupe of existing one
         if config.skip_duplicates and new_note.dupeOrEmpty():

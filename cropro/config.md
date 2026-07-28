@@ -24,6 +24,7 @@
         <li><code>allow_empty_search</code> | Show notes from the other collection even when the search bar is empty.</li>
         <li><code>copy_card_data</code> | Copy scheduling information of cards created from imported notes, such as due date and interval.</li>
         <li><code>exported_tag</code> | Tag original notes in the other profile after they are imported.</li>
+        <li><code>imported_tag</code> | Tag notes imported into the current collection. Leave it empty to disable tagging.</li>
         <li><code>sentence_field_name</code> | Field name used to sort local search results.</li>
     </ul>
 </details>

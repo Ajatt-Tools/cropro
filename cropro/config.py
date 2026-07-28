@@ -1,7 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import functools
-from typing import Optional
 
 from aqt import mw
 
@@ -46,7 +45,7 @@ class CroProConfig(AddonConfigManager):
         return self._remote_fields
 
     @property
-    def exported_tag(self) -> str | None:
+    def exported_tag(self) -> str:
         """
         Tag that is added to original notes (in the other profile)
         to mark that they have been copied to the current profile.
@@ -56,6 +55,17 @@ class CroProConfig(AddonConfigManager):
     @exported_tag.setter
     def exported_tag(self, new_value: str) -> None:
         self["exported_tag"] = new_value.strip()
+
+    @property
+    def imported_tag(self) -> str:
+        """
+        Tag that is added to notes imported to the current profile.
+        """
+        return self["imported_tag"].strip()
+
+    @imported_tag.setter
+    def imported_tag(self, new_value: str) -> None:
+        self["imported_tag"] = new_value.strip()
 
     @property
     def sentence_field_name(self) -> str:

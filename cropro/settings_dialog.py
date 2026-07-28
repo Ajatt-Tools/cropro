@@ -54,6 +54,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
         self.tab_view = QTabWidget()
         self.checkboxes = make_checkboxes()
         self.tag_edit = QLineEdit(config.exported_tag)
+        self.imported_tag_edit = QLineEdit(config.imported_tag)
         self.sentence_field_edit = AnkiFieldSelector()
         self.sentence_field_edit.setCurrentText(config.sentence_field_name)
         self.notes_per_page_edit = CroProSpinBox(min_val=10, max_val=10_000, step=50, value=config.notes_per_page)
@@ -109,6 +110,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
         layout.addRow(self.checkboxes["allow_empty_search"])
         layout.addRow(self.checkboxes["copy_card_data"])
         layout.addRow("Tag original cards with", self.tag_edit)
+        layout.addRow("Tag new cards with", self.imported_tag_edit)
         layout.addRow("Sentence field", self.sentence_field_edit)
         return widget
 
@@ -212,6 +214,10 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
             "The tag that is added to the original notes is controlled by this setting.\n"
             "Left it empty to disable tagging."
         )
+        self.imported_tag_edit.setToolTip(
+            "Tag notes imported into the current collection.\n"
+            "Leave it empty to disable tagging."
+        )
         self.hidden_fields.setToolTip("Hide fields whose names contain these words.\nPress space or comma to commit.")
         self.web_timeout_spinbox.setToolTip("Give up trying to connect to the remote server after this many seconds.")
         self.http_proxy_edit.setToolTip(
@@ -283,6 +289,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
     def accept(self) -> None:
         config.notes_per_page = self.notes_per_page_edit.value()
         config.exported_tag = self.tag_edit.text()
+        config.imported_tag = self.imported_tag_edit.text()
         config.sentence_field_name = self.sentence_field_edit.currentText()
         config.hidden_fields = self.hidden_fields.values()
         config.timeout_seconds = self.web_timeout_spinbox.value()
