@@ -215,8 +215,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
             "Left it empty to disable tagging."
         )
         self.imported_tag_edit.setToolTip(
-            "Tag notes imported into the current collection.\n"
-            "Leave it empty to disable tagging."
+            "Tag notes imported into the current collection.\nLeave it empty to disable tagging."
         )
         self.hidden_fields.setToolTip("Hide fields whose names contain these words.\nPress space or comma to commit.")
         self.web_timeout_spinbox.setToolTip("Give up trying to connect to the remote server after this many seconds.")

@@ -87,7 +87,7 @@ def copy_media_files(new_note: Note, other_note: Note) -> None:
             new_note.fields = [field.replace(file.name, new_filename) for field in new_note.fields]
 
 
-def set_imported_note_tags(new_note: Note, other_note: Union[Note, RemoteNote]) -> None:
+def set_imported_note_tags(new_note: Note, other_note: Note | RemoteNote) -> None:
     """Apply configured tags to a note imported into the current profile."""
     if config.copy_tags:
         new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
@@ -191,7 +191,7 @@ class NoteImporter:
     def import_notes(
         self,
         col: Collection,
-        notes: Sequence[Union[Note, RemoteNote]],
+        notes: Sequence[Note | RemoteNote],
         model: NameId,
         deck: NameId,
     ) -> OpChanges:
@@ -228,7 +228,7 @@ class NoteImporter:
     def _construct_new_note(
         self,
         col: Collection,
-        other_note: Union[Note, RemoteNote],
+        other_note: Note | RemoteNote,
         model: NameId,
         deck: NameId,
     ) -> NoteCreateResult:

@@ -12,7 +12,7 @@ from .utils import CroProComboBox
 
 @dataclasses.dataclass
 class RemoteComboBoxItem:
-    http_arg: Union[str, int, None]
+    http_arg: str | int | None
     visible_name: str = ""
 
     def __post_init__(self) -> None:
@@ -25,7 +25,7 @@ class RemoteNotesSortMethod(enum.Enum):
     len_asc = "sentence_length:asc"
 
 
-def new_combo_box(add_items: Sequence[Union[RemoteComboBoxItem, str]], key: str) -> CroProComboBox:
+def new_combo_box(add_items: Sequence[RemoteComboBoxItem | str], key: str) -> CroProComboBox:
     b = CroProComboBox(key=key)
     for item in add_items:
         if not isinstance(item, RemoteComboBoxItem):

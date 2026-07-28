@@ -4,7 +4,7 @@
 import dataclasses
 import enum
 import typing
-from collections.abc import Iterable, ItemsView, KeysView, Sequence
+from collections.abc import ItemsView, Iterable, KeysView, Sequence
 from typing import Optional, TypedDict
 
 import anki.httpclient

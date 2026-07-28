@@ -71,7 +71,7 @@ class NoteList(QSplitter):
 
     def set_notes(
         self,
-        notes: Iterable[Union[Note, RemoteNote]],
+        notes: Iterable[Note | RemoteNote],
         hide_fields: list[str],
         is_previewer_enabled: bool = True,
     ):

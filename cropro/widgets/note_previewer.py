@@ -101,7 +101,7 @@ class NotePreviewer(AnkiWebView):
 
     mw.addonManager.setWebExports(__name__, r"(img|web)/.*\.(js|css|html|png|svg)")
 
-    _note: Union[Note, RemoteNote] | None
+    _note: Note | RemoteNote | None
 
     def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
@@ -119,7 +119,7 @@ class NotePreviewer(AnkiWebView):
         self.stdHtml("", js=[], css=[])
         self.hide()
 
-    def load_note(self, note: Union[Note, RemoteNote]) -> None:
+    def load_note(self, note: Note | RemoteNote) -> None:
         self._note = note
         self.stdHtml(
             body=f"<main>{self._generate_html_for_note(note)}</main>",
@@ -132,7 +132,7 @@ class NotePreviewer(AnkiWebView):
         )
         self.show()
 
-    def _generate_html_for_note(self, note: Union[Note, RemoteNote]) -> str:
+    def _generate_html_for_note(self, note: Note | RemoteNote) -> str:
         """Creates html for the previewer showing the current note."""
         markup = io.StringIO()
         for field_name, field_content in note.items():

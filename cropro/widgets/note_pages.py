@@ -44,7 +44,7 @@ class PagedNoteList(QWidget):
     _note_list: NoteList
     _page_prev_btn: QPushButton
     _page_next_btn: QPushButton
-    _notes: list[Sequence[Union[Note, RemoteNote]]]
+    _notes: list[Sequence[Note | RemoteNote]]
     _current_page_num: int
 
     status_changed = pyqtSignal(NoteListStatus)
@@ -76,7 +76,7 @@ class PagedNoteList(QWidget):
         self._note_list.clear_notes()
         self._notes.clear()
 
-    def selected_notes(self) -> Sequence[Union[Note, RemoteNote]]:
+    def selected_notes(self) -> Sequence[Note | RemoteNote]:
         return self._note_list.selected_notes()
 
     def note_count(self) -> int:
@@ -89,11 +89,11 @@ class PagedNoteList(QWidget):
         qconnect(self._page_prev_btn.clicked, lambda: self.flip_page(-1))
         qconnect(self._page_next_btn.clicked, lambda: self.flip_page(+1))
 
-    def set_notes(self, notes: Sequence[Union[Note, RemoteNote]]) -> None:
+    def set_notes(self, notes: Sequence[Note | RemoteNote]) -> None:
         self._notes = [*to_chunks(notes, config.notes_per_page)]
         self.set_page(0)
 
-    def get_visible_notes(self) -> Sequence[Union[Note, RemoteNote]]:
+    def get_visible_notes(self) -> Sequence[Note | RemoteNote]:
         return self._notes[self._current_page_num] if self._notes else []
 
     def set_page(self, page_num: int) -> None:
