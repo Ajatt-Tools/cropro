@@ -286,7 +286,7 @@ class CroProSettingsDialog(QDialog):
         return super().accept()
 
 
-def open_cropro_settings(parent: QWidget):
+def open_cropro_settings(parent: QWidget) -> None:
     from aqt import mw
 
     dialog = CroProSettingsDialog(parent=(parent or mw))
