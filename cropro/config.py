@@ -46,7 +46,7 @@ class CroProConfig(AddonConfigManager):
         return self._remote_fields
 
     @property
-    def exported_tag(self) -> Optional[str]:
+    def exported_tag(self) -> str | None:
         """
         Tag that is added to original notes (in the other profile)
         to mark that they have been copied to the current profile.

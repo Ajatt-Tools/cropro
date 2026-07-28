@@ -279,7 +279,7 @@ class CroProMainWindow(MainWindowUI):
                 parent=self,
             )
 
-    def get_target_note_type(self) -> Optional[NotetypeDict]:
+    def get_target_note_type(self) -> NotetypeDict | None:
         selected_note_type = self.current_model()
         if selected_note_type.id and selected_note_type.id > 0:
             return mw.col.models.get(selected_note_type.id)

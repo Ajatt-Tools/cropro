@@ -38,10 +38,10 @@ class CollectionManager:
 
     def __init__(self):
         self._opened_cols: dict[str, Collection] = {}
-        self._current_name: Optional[str] = None
+        self._current_name: str | None = None
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         if not self.is_opened:
             raise RuntimeError("Collection vanished or was never opened.")
         return self._current_name

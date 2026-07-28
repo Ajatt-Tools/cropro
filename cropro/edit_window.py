@@ -34,7 +34,7 @@ class CropProWindowProtocol(Protocol):
     def current_model(self) -> NameId: ...
 
 
-def current_add_dialog() -> Optional[addcards.AddCards]:
+def current_add_dialog() -> addcards.AddCards | None:
     # noinspection PyProtectedMember
     return aqt.dialogs._dialogs["AddCards"][1]
 
@@ -43,13 +43,13 @@ class AddDialogLauncher:
     def __init__(self, cropro: CropProWindowProtocol):
         super().__init__()
         self.cropro = cropro
-        self.add_window: Optional[addcards.AddCards] = None
-        self.new_note: Optional[Note] = None
-        self.other_note: Optional[Note] = None
+        self.add_window: addcards.AddCards | None = None
+        self.new_note: Note | None = None
+        self.other_note: Note | None = None
         self.block_close_cb: bool = False
         gui_hooks.add_cards_will_add_note.append(self.on_add_import)
 
-    def create_window(self, other_note: Optional[Note] = None) -> NoteId:
+    def create_window(self, other_note: Note | None = None) -> NoteId:
         assert mw, "Main window must exist."
 
         if not isinstance(other_note, Note):
@@ -122,7 +122,7 @@ class AddDialogLauncher:
 
         self.add_window.setAndFocusNote(self.add_window.editor.note)
 
-    def on_add_import(self, problem: Optional[str], note: Note) -> str:
+    def on_add_import(self, problem: str | None, note: Note) -> str:
         if self.other_note and current_add_dialog() and current_add_dialog() is self.add_window:
             logDebug("Importing edited note")
             if config.copy_card_data:

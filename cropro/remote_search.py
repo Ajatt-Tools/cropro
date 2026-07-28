@@ -180,7 +180,7 @@ def get_request_url(request_args: CroProWebSearchArgs) -> str:
 
 @dataclasses.dataclass
 class CroProWebClientException(Exception):
-    response: Optional[requests.Response] = None
+    response: requests.Response | None = None
 
     def what(self) -> str:
         return self.__cause__.__class__.__name__

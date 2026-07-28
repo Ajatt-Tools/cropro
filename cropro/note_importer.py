@@ -103,7 +103,7 @@ class NoteTypeUnavailable(RuntimeError):
     pass
 
 
-def get_matching_model(target_model: NameId, reference_model: Optional[NoteType]) -> NoteType:
+def get_matching_model(target_model: NameId, reference_model: NoteType | None) -> NoteType:
     if target_model != NO_MODEL:
         # use existing note type (even if its name or fields are different)
         return mw.col.models.get(target_model.id)

@@ -102,7 +102,7 @@ class NotePreviewer(AnkiWebView):
 
     mw.addonManager.setWebExports(__name__, r"(img|web)/.*\.(js|css|html|png|svg)")
 
-    _note: Optional[Union[Note, RemoteNote]]
+    _note: Union[Note, RemoteNote] | None
 
     def __init__(self, parent: QWidget):
         super().__init__(parent)

@@ -111,7 +111,7 @@ class ColSearchOptions(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-    def current_sort_key(self) -> Optional[SortResults]:
+    def current_sort_key(self) -> SortResults | None:
         return self._sort_results_combo.currentData()
 
     @property
