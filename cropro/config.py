@@ -164,6 +164,10 @@ class CroProConfig(AddonConfigManager):
         return self["enable_debug_log"]
 
     @property
+    def show_window_menu_bar(self) -> bool:
+        return self["show_window_menu_bar"]
+
+    @property
     def copy_card_data(self) -> bool:
         """
         Copy review-related info, such as due date and interval.

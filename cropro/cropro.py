@@ -209,6 +209,7 @@ class CroProMainWindow(MainWindowUI):
 
     def setup_menubar(self) -> None:
         menu_bar: QMenuBar = self.menuBar()
+        menu_bar.setNativeMenuBar(not config.show_window_menu_bar)
 
         # Options menu
         tools_menu = menu_bar.addMenu("&Tools")

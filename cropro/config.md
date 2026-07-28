@@ -51,6 +51,7 @@
         <li><code>http_proxy</code> | HTTP and HTTPS proxy for web search requests, for example <code>socks5://127.0.0.1:9099</code>.</li>
         <li><code>enable_debug_log</code> | Write events related to this add-on to Anki's add-on log folder.<br/>
     Use the settings dialog's <b>Show log</b> or <b>Open folder</b> buttons to view the current log file.</li>
+        <li><code>show_window_menu_bar</code> | Show CroPro's menu bar inside the CroPro window. Disable this to let Qt use the platform-native menu bar.</li>
         <li><code>call_add_cards_hook</code> | Call the <code>add_cards_did_add_note</code> hook after a note is imported, for compatibility with other add-ons.</li>
     </ul>
 </details>

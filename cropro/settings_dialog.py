@@ -175,6 +175,7 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
         layout.addRow("Web download timeout", self.web_timeout_spinbox)
         layout.addRow("HTTP/HTTPS proxy", self.http_proxy_edit)
         layout.addRow(self.checkboxes["enable_debug_log"])
+        layout.addRow(self.checkboxes["show_window_menu_bar"])
         layout.addRow(self.checkboxes["call_add_cards_hook"])
         layout.addRow(hbox := QHBoxLayout())
 
@@ -231,6 +232,10 @@ class CroProSettingsDialog(QDialog, MgrPropMixIn):
         )
         self.checkboxes["enable_debug_log"].setToolTip(
             "Write events related to this add-on to the log file.\nMost users don't need to keep this option enabled."
+        )
+        self.checkboxes["show_window_menu_bar"].setToolTip(
+            "Show CroPro's menu bar inside the CroPro window.\n"
+            "Disable this to let Qt use the platform-native menu bar."
         )
         self.checkboxes["skip_duplicates"].setToolTip(
             "Don't import a note if turns out to be a duplicate,\ni.e. it is already present in the current collection."
