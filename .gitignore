@@ -6,7 +6,15 @@ __about__.py
 .vscode
 *.ankiaddon
 *.zip
+*.pickle
+*.db
+*.sqlite
+*.sqlite3
 meta.json
 manifest.json
 **/user_files/window_state.json
 *TODO*
+__about__.py
+dist
+/*.md
+!/README.md
