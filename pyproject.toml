@@ -55,10 +55,8 @@ python = ["3.10", ]
 [tool.hatch.envs.dev.scripts]
 # run as `hatch run dev:scriptname`
 check = "mypy --install-types --non-interactive {args:cropro tests}"
-test = "pytest"
-testv = "pytest -vvv -s"
-format = "bash \"$(git rev-parse --show-toplevel)/scripts/format.sh\" "
-package = "bash \"$(git rev-parse --show-toplevel)/scripts/package.sh\" "
+format = "$(git rev-parse --show-toplevel)/scripts/format.sh"
+package = "$(git rev-parse --show-toplevel)/scripts/package.sh"
 
 [tool.coverage.run]
 source_pkgs = ["cropro", "tests"]
