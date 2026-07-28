@@ -1,6 +1,6 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
-
+import functools
 from typing import Optional
 
 from aqt import mw
@@ -190,5 +190,11 @@ class CroProConfig(AddonConfigManager):
         self["http_proxy"] = new_value
 
 
+@functools.cache
+def get_global_config() -> CroProConfig:
+    assert mw, "anki must be running"
+    return CroProConfig()
+
+
 if mw:
-    config = CroProConfig()
+    config = get_global_config()
