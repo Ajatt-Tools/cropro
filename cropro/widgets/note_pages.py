@@ -15,12 +15,21 @@ from .note_list import NoteList
 
 logDebug = LogDebug(config)
 
+NAV_BUTTON_EXTRA_WIDTH = 8
+NAV_BUTTON_MIN_HEIGHT_MULTIPLIER = 2
+NAV_BUTTON_MAX_HEIGHT_MULTIPLIER = 4
 
-class PageNavButton(QPushButton):
-    def __init__(self, text: str, tooltip: str) -> None:
-        super().__init__(text)
-        self.setFixedWidth(17)
-        self.setFixedHeight(45)
+
+class PageNavButton(QToolButton):
+    def __init__(self, icon_name: QStyle.StandardPixmap, tooltip: str, parent: QWidget | None = None) -> None:
+        super().__init__(parent=parent)
+        icon_side = self.style().pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
+        self.setIcon(self.style().standardIcon(icon_name))
+        self.setIconSize(QSize(icon_side, icon_side))
+        self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.setMinimumSize(icon_side, icon_side * NAV_BUTTON_MIN_HEIGHT_MULTIPLIER)  # 16*32
+        self.setMaximumSize(icon_side + NAV_BUTTON_EXTRA_WIDTH, icon_side * NAV_BUTTON_MAX_HEIGHT_MULTIPLIER)  # 24*64
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
         self.setToolTip(tooltip)
 
 
@@ -42,8 +51,8 @@ class NoteListStatus(typing.NamedTuple):
 
 class PagedNoteList(QWidget):
     _note_list: NoteList
-    _page_prev_btn: QPushButton
-    _page_next_btn: QPushButton
+    _page_prev_btn: PageNavButton
+    _page_next_btn: PageNavButton
     _notes: list[Sequence[Note | RemoteNote]]
     _current_page_num: int
 
@@ -53,8 +62,8 @@ class PagedNoteList(QWidget):
         super().__init__()
         self._notes = []
         self._current_page_num = 0
-        self._page_prev_btn = PageNavButton("🞀", "Previous Page")
-        self._page_next_btn = PageNavButton("🞂", "Next Page")
+        self._page_prev_btn = PageNavButton(QStyle.StandardPixmap.SP_ArrowLeft, "Previous Page")
+        self._page_next_btn = PageNavButton(QStyle.StandardPixmap.SP_ArrowRight, "Next Page")
         self._note_list = NoteList()
         self.setLayout(self._create_main_layout())
         self._connect_widgets()
