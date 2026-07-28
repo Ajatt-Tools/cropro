@@ -9,34 +9,48 @@
 <details>
     <summary>General</summary>
     <ul>
-        <li><code>notes_per_page</code> | How many search results to display on one page</li>
-        <li><code>hidden_fields</code> | contents of fields that contain these keywords won't be shown.</li>
-        <li><code>skip_duplicates</code> | Skips cards, which are already existent in the collection</li>
-        <li><code>copy_tags</code> | Adds the category in case of web search and tags in all cases as anki tags</li>
-        <li><code>search_online</code> | Toggle between local profile's and immersion kit's search</li>
-        <li><code>sentence_min_length</code> | Minimum count of letters in the sentence for the card to be shown
-        <li><code>sentence_min_length</code> | Maximum count of letters in the sentence for the card to be shown
-        <li><code>show_note_preview</code> | Toggles the preview on the right side when having a card selected</li>
+        <li><code>notes_per_page</code> | How many search results to display on one page.</li>
+        <li><code>hidden_fields</code> | Hide fields whose names contain these words.</li>
+        <li><code>skip_duplicates</code> | Do not import a note if it is already present in the current collection.</li>
+        <li><code>copy_tags</code> | Copy tags from the original note to the imported note.</li>
+        <li><code>preview_on_right_side</code> | Show a preview on the right side of the window when a note is selected.</li>
+        <li><code>search_the_web</code> | Search the Internet instead of searching notes in a local profile.</li>
     </ul>
 </details>
 
 <details>
     <summary>Local Search</summary>
     <ul>
-        <li><code>allow_empty_search</code> | Search notes even if the search field is emtpy. Will show EVERY card you got (very slow)</li>
-        <li><code>copy_card_data</code> | Copies data like due date</li>
-        <li><code>exported_tag</code> | Tag added to other profile's cards when imported</li>
+        <li><code>allow_empty_search</code> | Show notes from the other collection even when the search bar is empty.</li>
+        <li><code>copy_card_data</code> | Copy scheduling information of cards created from imported notes, such as due date and interval.</li>
+        <li><code>exported_tag</code> | Tag original notes in the other profile after they are imported.</li>
+        <li><code>sentence_field_name</code> | Field name used to sort local search results.</li>
     </ul>
 </details>
 
 <details>
-<summary>High level settings</summary>
+    <summary>Web Search</summary>
     <ul>
-        <li><code>timeout_seconds</code> | How many seconds should we try to find cards online before giving up</li>
-        <li><code>enable_debug_log</code> | print debug information to <code>stdout</code> and to a log file.<br/>
-    Location: <code>~/.local/share/Anki2/subsearch_debug.log</code> (GNU systems) or <code>%APPDATA%/Anki2/subsearch_debug.log</code> (Windows).</li>
-        <li><code>call_add_cards_hook</code> | Calls the <code>add_cards_did_add_note</code> hook as soon as a note is imported.<br/>
-    For addon evaluation purposes. (<a href="https://ankiweb.net/shared/info/1207537045">example</a>)</li>
+        <li><code>sentence_min_length</code> | Minimum sentence length for web search results. Set to <code>0</code> for no limit.</li>
+        <li><code>sentence_max_length</code> | Maximum sentence length for web search results. Set to <code>0</code> for no limit.</li>
+        <li><code>remote_fields</code> | Field names used when creating notes from web search results.</li>
+        <li><code>sentence_kanji</code> | Target field for the Japanese sentence.</li>
+        <li><code>sentence_furigana</code> | Target field for the sentence with furigana.</li>
+        <li><code>sentence_eng</code> | Target field for the English sentence.</li>
+        <li><code>sentence_audio</code> | Target field for sentence audio.</li>
+        <li><code>image</code> | Target field for the image.</li>
+        <li><code>notes</code> | Target field for notes or source information.</li>
+    </ul>
+</details>
+
+<details>
+    <summary>High Level</summary>
+    <ul>
+        <li><code>timeout_seconds</code> | Give up trying to connect to the remote server after this many seconds.</li>
+        <li><code>http_proxy</code> | HTTP and HTTPS proxy for web search requests, for example <code>socks5://127.0.0.1:9099</code>.</li>
+        <li><code>enable_debug_log</code> | Write events related to this add-on to Anki's add-on log folder.<br/>
+    Use the settings dialog's <b>Show log</b> or <b>Open folder</b> buttons to view the current log file.</li>
+        <li><code>call_add_cards_hook</code> | Call the <code>add_cards_did_add_note</code> hook after a note is imported, for compatibility with other add-ons.</li>
     </ul>
 </details>
 
