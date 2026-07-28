@@ -41,6 +41,7 @@ from aqt.utils import (
 )
 
 from .ajt_common.about_menu import menu_root_entry
+from .ajt_common.addon_config import set_config_action, set_config_update_action
 from .ajt_common.consts import COMMUNITY_LINK
 from .collection_manager import (
     NO_MODEL,
@@ -588,9 +589,16 @@ class CroProMainWindow(MainWindowUI):
 ######################################################################
 
 
+def setup_config_actions(parent: QWidget) -> None:
+    """Register CroPro's settings dialog with Anki's add-on config buttons."""
+    set_config_action(lambda: open_cropro_settings(parent=parent))
+    set_config_update_action(config.update_from_addon_manager)
+
+
 def init():
     # init dialog
     d = mw._cropro_main_dialog = CroProMainWindow(ankimw=mw)
+    setup_config_actions(parent=mw)
     # get AJT menu
     root_menu = menu_root_entry()
     # create a new menu item
