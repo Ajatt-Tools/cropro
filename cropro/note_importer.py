@@ -87,6 +87,14 @@ def copy_media_files(new_note: Note, other_note: Note) -> None:
             new_note.fields = [field.replace(file.name, new_filename) for field in new_note.fields]
 
 
+def set_imported_note_tags(new_note: Note, other_note: Union[Note, RemoteNote]) -> None:
+    """Apply configured tags to a note imported into the current profile."""
+    if config.copy_tags:
+        new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
+    if tag := config.imported_tag:
+        new_note.add_tag(tag)
+
+
 def remove_media_files(new_note: Note) -> None:
     """
     If the user pressed the Edit button, but then canceled the import operation,
@@ -233,11 +241,7 @@ class NoteImporter:
             if key in other_note:
                 new_note[key] = other_note[key].strip()
 
-        # copy field tags into new other_note object
-        if config.copy_tags:
-            new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
-        if tag := config.imported_tag:
-            new_note.add_tag(tag)
+        set_imported_note_tags(new_note, other_note)
 
         # check if note is dupe of existing one
         if config.skip_duplicates and new_note.dupeOrEmpty():

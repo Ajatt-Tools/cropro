@@ -18,6 +18,7 @@ from .note_importer import (
     get_matching_model,
     import_card_info,
     remove_media_files,
+    set_imported_note_tags,
 )
 from .widgets.note_list import NoteList
 from .widgets.status_bar import StatusBar
@@ -85,10 +86,7 @@ class AddDialogLauncher:
         # Copy media just yet, so it can still be deleted later but causes no unwanted behaviour
         copy_media_files(self.new_note, other_note)
 
-        if "tags" in other_note and config.copy_tags:
-            self.new_note.tags = [tag for tag in other_note.tags if tag != "leech"]
-        if tag := config.imported_tag:
-            self.new_note.add_tag(tag)
+        set_imported_note_tags(self.new_note, other_note)
 
         if config.exported_tag:
             assert other_note.id, "Other note must be in the database."
