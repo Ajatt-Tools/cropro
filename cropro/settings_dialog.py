@@ -1,15 +1,18 @@
 # Copyright: Ajatt-Tools and contributors; https://github.com/Ajatt-Tools
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 import functools
+from typing import cast
 
+from aqt.addons import AddonsDialog, ConfigEditor
 from aqt.qt import *
 from aqt.utils import disable_help_button, openFolder, restoreGeom, saveGeom, showText
 from aqt.webview import AnkiWebView
 
 from .ajt_common.about_menu import tweak_window
+from .ajt_common.addon_config import MgrPropMixIn
 from .ajt_common.anki_field_selector import AnkiFieldSelector
 from .ajt_common.utils import ui_translate
-from .common import ADDON_NAME, CONFIG_MD_PATH
+from .common import ADDON_NAME, CONFIG_MD_PATH, THIS_ADDON_MODULE
 from .config import config
 from .debug_log import LogDebug
 from .widgets.item_edit import ItemEditBox
@@ -42,7 +45,7 @@ def make_remote_field_combos() -> dict[str, QComboBox]:
     return d
 
 
-class CroProSettingsDialog(QDialog):
+class CroProSettingsDialog(QDialog, MgrPropMixIn):
     name = "cropro_settings_dialog"
 
     def __init__(self, *args, **kwargs) -> None:
@@ -66,6 +69,7 @@ class CroProSettingsDialog(QDialog):
         self._create_tabs()
         self._setup_ui()
         self.connect_widgets()
+        self._add_advanced_button()
         self.add_tooltips()
 
         tweak_window(self)
@@ -186,6 +190,18 @@ class CroProSettingsDialog(QDialog):
         qconnect(self.button_box.accepted, self.accept)
         qconnect(self.button_box.rejected, self.reject)
         qconnect(self.button_box.helpRequested, self.show_help)
+
+    def _add_advanced_button(self) -> None:
+        def on_advanced_clicked() -> None:
+            dialog = ConfigEditor(
+                dlg=cast(AddonsDialog, self),
+                addon=THIS_ADDON_MODULE,
+                conf=config.dict_copy(),
+            )
+            qconnect(dialog.accepted, self.reject)
+
+        button = self.button_box.addButton("Advanced", QDialogButtonBox.ButtonRole.ResetRole)
+        qconnect(button.clicked, on_advanced_clicked)
 
     def add_tooltips(self) -> None:
         self.sentence_field_edit.setToolTip("Use this field to sort search results.")
